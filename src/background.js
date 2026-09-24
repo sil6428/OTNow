@@ -6,6 +6,7 @@ import {
   SYNC_MINUTES,
   TYPE_LABELS,
   UPDATE_ALARM,
+  UPDATE_CHECK_ENABLED,
   UPDATE_CHECK_MINUTES,
   UPDATE_GUIDE_URL,
   UPDATE_MANIFEST_URL,
@@ -179,6 +180,15 @@ async function syncCanvas({ userInitiated = false } = {}) {
 }
 
 async function checkForUpdate({ force = false } = {}) {
+  if (!UPDATE_CHECK_ENABLED) {
+    return {
+      status: "managed",
+      installedVersion: chrome.runtime.getManifest().version,
+      latestVersion: null,
+      checkedAt: null,
+      error: null,
+    };
+  }
   if (updatePromise) return updatePromise;
   updatePromise = (async () => {
     const before = await getState();
@@ -269,7 +279,11 @@ async function setup() {
   await chrome.storage.local.set({ settings });
   chrome.alarms.create(SYNC_ALARM, { delayInMinutes: 1, periodInMinutes: SYNC_MINUTES });
   chrome.alarms.create(REMINDER_ALARM, { delayInMinutes: 1, periodInMinutes: REMINDER_MINUTES });
-  chrome.alarms.create(UPDATE_ALARM, { delayInMinutes: 2, periodInMinutes: UPDATE_CHECK_MINUTES });
+  if (UPDATE_CHECK_ENABLED) {
+    chrome.alarms.create(UPDATE_ALARM, { delayInMinutes: 2, periodInMinutes: UPDATE_CHECK_MINUTES });
+  } else {
+    await chrome.alarms.clear(UPDATE_ALARM);
+  }
   await refreshBadge();
 }
 

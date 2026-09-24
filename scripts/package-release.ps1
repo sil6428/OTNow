@@ -21,4 +21,19 @@ $releaseFiles = @(
 ) | ForEach-Object { Join-Path $projectRoot $_ }
 
 Compress-Archive -Path $releaseFiles -DestinationPath $archive -Force
+
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$zip = [System.IO.Compression.ZipFile]::OpenRead($archive)
+try {
+  $entryNames = @($zip.Entries | ForEach-Object { $_.FullName.Replace("\\", "/") })
+  if ($entryNames -notcontains "manifest.json") {
+    throw "The release ZIP is invalid: manifest.json is not at the archive root."
+  }
+  if ($entryNames | Where-Object { $_ -match "^[^/]+/manifest\.json$" }) {
+    throw "The release ZIP is invalid: manifest.json is nested inside another folder."
+  }
+} finally {
+  $zip.Dispose()
+}
+
 Write-Output $archive

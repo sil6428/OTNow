@@ -4,6 +4,11 @@ OTNow checks its public GitHub repository for a newer version about every six ho
 
 Because OTNow is installed as an unpacked extension, Chrome cannot replace its files automatically. Updating the same folder keeps the extension identity and local settings intact.
 
+Chrome Web Store installations update automatically. The steps below are only for copies installed manually from GitHub.
+
+> [!IMPORTANT]
+> Download the packaged ZIP under **Assets** on the releases page. Do **not** use GitHub's green **Code > Download ZIP** button; that source archive adds an extra repository folder.
+
 ## Step-by-step update
 
 1. Open the [latest OTNow release](https://github.com/sil6428/OTNow/releases/latest).
@@ -11,7 +16,7 @@ Because OTNow is installed as an unpacked extension, Chrome cannot replace its f
 3. Close the OTNow side panel.
 4. Find the folder from which OTNow is currently loaded. Keep using this same folder so Chrome preserves the same unpacked extension and its settings.
 5. Right-click the downloaded ZIP and choose **Extract All**.
-6. Open the extracted folder and confirm that `manifest.json` is at its top level.
+6. Open the extracted folder and confirm that `manifest.json` is directly visible beside the `icons`, `options`, `panel`, and `src` folders.
 7. Copy all extracted files and folders into the existing OTNow folder. Choose **Replace the files in the destination** when Windows asks.
 8. In Chrome, open `chrome://extensions`.
 9. Find **OTNow** and select **Reload**.
@@ -21,6 +26,7 @@ Because OTNow is installed as an unpacked extension, Chrome cannot replace its f
 
 - Confirm that you replaced files in the exact folder Chrome originally loaded.
 - Confirm that `manifest.json` is directly inside that folder rather than nested one folder deeper.
+- If you downloaded a file named `OTNow-main.zip`, delete it and download the packaged ZIP from the latest release instead.
 - Return to `chrome://extensions` and select **Reload** again.
 - Avoid removing and reinstalling OTNow unless necessary, because removing an extension can delete its locally stored settings.
 

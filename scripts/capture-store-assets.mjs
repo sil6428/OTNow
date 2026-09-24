@@ -32,8 +32,13 @@ try {
   await narrowPage.goto("http://127.0.0.1:8766/docs/demo-panel.html?update=1", { waitUntil: "networkidle" });
   await narrowPage.screenshot({ path: resolve(media, "otnow-update-360x800.png") });
   await narrowPage.close();
+
+  const promoPage = await browser.newPage({ viewport: { width: 440, height: 280 }, deviceScaleFactor: 1 });
+  await promoPage.goto("http://127.0.0.1:8766/docs/demo-promo.html", { waitUntil: "networkidle" });
+  await promoPage.screenshot({ path: resolve(media, "otnow-promo-440x280.png") });
+  await promoPage.close();
 } finally {
   await browser.close();
 }
 
-console.log("Captured deadline, course, dark-mode, narrow-panel, and update-notice screenshots");
+console.log("Captured deadline, course, dark-mode, narrow-panel, update-notice, and promotional images");

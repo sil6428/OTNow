@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.1 — 2026-09-24
+
+- Replaced the README preview with the final sanitized real-session image.
+- Added beginner-proof release installation instructions and a warning against GitHub's nested source ZIP.
+- Added a complete Chrome Web Store submission guide, live support/privacy URLs, and a 440×280 promotional tile.
+- Clarified that Chrome Web Store installs update automatically while GitHub-installed copies use the manual update guide.
+- Added a store-specific package that disables the manual GitHub updater and removes its host permission because Chrome handles store updates.
+
 ## 0.5.0 — 2026-09-24
 
 - Added a six-hour public repository version check with no credentials or student-data transmission.

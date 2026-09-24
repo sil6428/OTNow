@@ -4,7 +4,24 @@ OTNow is an unofficial Chrome extension for Ontario Tech students who use Canvas
 
 The project name is **OTNow**.
 
-![OTNow deadline groups beside a sanitized Canvas dashboard](docs/media/otnow-store-1280x800.png)
+![OTNow beside a sanitized Ontario Tech Canvas dashboard](docs/media/otnow-real-ui-sanitized-v3.png)
+
+## Install OTNow from GitHub
+
+OTNow is being prepared for the Chrome Web Store. Until its listing is approved, use the packaged release rather than GitHub's source-code download.
+
+> [!IMPORTANT]
+> Open the [latest OTNow release](https://github.com/sil6428/OTNow/releases/latest) and download the file named `otnow-VERSION.zip` under **Assets**. Do **not** use the green **Code > Download ZIP** button. GitHub's source ZIP adds an extra repository folder and can cause Chrome's “manifest file is missing or unreadable” error when the wrong folder is selected.
+
+1. Download `otnow-VERSION.zip` from the [latest release](https://github.com/sil6428/OTNow/releases/latest).
+2. Right-click the downloaded ZIP and choose **Extract All**.
+3. Open the extracted folder and confirm that `manifest.json` is visible beside the `icons`, `options`, `panel`, and `src` folders.
+4. In Chrome, open `chrome://extensions`.
+5. Turn on **Developer mode**.
+6. Select **Load unpacked** and choose the exact folder that directly contains `manifest.json`.
+7. Pin **OTNow**, open Ontario Tech Canvas, and click the OTNow toolbar icon.
+
+If Chrome reports that it cannot read the manifest, the selected folder is one level too high. Open the folder inside it and select the folder where `manifest.json` is directly visible.
 
 ## Current feature set
 
@@ -19,7 +36,7 @@ The project name is **OTNow**.
 - Allows reminder notifications to be muted for individual courses without hiding their deadlines.
 - Keeps the last successful read available when Canvas or the network is unavailable.
 - Supports light, dark, or system appearance.
-- Checks the public OTNow repository for a newer version and links to [step-by-step update instructions](UPDATE_GUIDE.md).
+- GitHub-installed copies check the public OTNow repository for a newer version and link to [step-by-step update instructions](UPDATE_GUIDE.md); Chrome Web Store copies update automatically.
 - Refreshes every 30 minutes while Chrome is running.
 
 ## Privacy and security model
@@ -29,25 +46,18 @@ The project name is **OTNow**.
 - The Canvas bridge permits only two read-only endpoints:
   - `GET /api/v1/courses`
   - `GET /api/v1/planner/items`
-- The updater reads only OTNow's public `manifest.json` from GitHub about every six hours and sends no student or course information.
+- GitHub-installed copies read only OTNow's public `manifest.json` about every six hours and send no student or course information; the Chrome Web Store build disables this request because Chrome supplies automatic updates.
 - All course data, settings, manual check-offs, and reminder history live in `chrome.storage.local` on the student's computer.
 - There is no telemetry, analytics SDK, ad code, external API, or OTNow account.
 - OTNow is not affiliated with or endorsed by Ontario Tech University or Instructure.
 
 See [PRIVACY.md](PRIVACY.md) for a publishable privacy policy.
 
-## Install the development build
+If Canvas was already open before installing OTNow, reload that Canvas tab once. Future versions can be installed without removing OTNow; follow [UPDATE_GUIDE.md](UPDATE_GUIDE.md) so local settings remain attached to the same unpacked extension folder.
 
-1. Open `https://learn.ontariotechu.ca` and sign in.
-2. In Chrome, open `chrome://extensions`.
-3. Turn on **Developer mode**.
-4. Select **Load unpacked**.
-5. Choose the extracted `OTNow` folder (the folder containing `manifest.json`).
-6. Pin **OTNow**, click its toolbar icon, and allow the first refresh to finish.
+## Chrome Web Store status
 
-If Canvas was already open before installing the extension, reload that Canvas tab once.
-
-Future versions can be installed without removing OTNow. Follow [UPDATE_GUIDE.md](UPDATE_GUIDE.md) so local settings remain attached to the same unpacked extension folder.
+The extension package, listing copy, permission justifications, privacy policy, and sanitized screenshots are prepared. The remaining external steps are registering a Chrome Web Store developer account, paying Google's one-time registration fee, uploading the ZIP, completing the dashboard disclosures, and submitting the listing for Google's review. See [the store submission guide](docs/CHROME_WEB_STORE_SUBMISSION.md).
 
 ## Development
 
@@ -74,8 +84,10 @@ npm run check
 Create the clean Chrome Web Store ZIP on Windows:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/package-release.ps1
+npm run package:store
 ```
+
+Create the GitHub release ZIP with the manual update guide using `npm run package:release`.
 
 ## Live validation
 

@@ -39,20 +39,23 @@
 - [x] No analytics, ads, trackers, remote scripts, or external application server.
 - [x] Local-data deletion control.
 - [x] Incognito mode disabled.
-- [ ] Publish the privacy policy at a stable HTTPS URL.
+- [x] Publish the privacy policy at a stable HTTPS URL.
 
 ## Store submission
 
+- [x] Release packaging fails if `manifest.json` is not at the ZIP root.
+- [x] Store package removes the GitHub updater and `raw.githubusercontent.com` permission.
 - [x] 128×128 icon.
 - [x] Store description draft.
 - [x] Permission justifications.
-- [ ] Public GitHub repository and issue tracker.
-- [ ] Public support URL.
-- [ ] Public privacy-policy URL.
+- [x] Public GitHub repository and issue tracker.
+- [x] Public support URL.
+- [x] Public privacy-policy URL.
 - [x] 1280×800 screenshot without real student information.
 - [x] Course-directory screenshot without real student information.
 - [x] Real-session screenshot sanitized with fictional course and coursework data.
-- [ ] Optional 440×280 promotional tile.
+- [x] Required 440×280 promotional tile.
+- [ ] Enable 2-Step Verification on the publishing Google account.
 - [ ] Create the Chrome Web Store developer account and pay Google's one-time registration fee.
 - [ ] Upload the clean release ZIP.
 - [ ] Complete data-use disclosures using `PERMISSION_JUSTIFICATIONS.md`.

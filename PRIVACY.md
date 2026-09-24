@@ -20,7 +20,7 @@ Course information, settings, manual check-offs, and reminder history are stored
 
 OTNow connects to `https://learn.ontariotechu.ca` through read-only `GET` requests to Canvas course and planner endpoints. It does not modify course content or submit work.
 
-About every six hours, OTNow also retrieves its public `manifest.json` from `https://raw.githubusercontent.com` to compare the published version number with the installed version. This request uses no credentials and does not contain course information, settings, browsing history, or a user identifier. OTNow does not download or execute remote code.
+Copies installed manually from GitHub retrieve OTNow's public `manifest.json` from `https://raw.githubusercontent.com` about every six hours to compare version numbers. This request uses no credentials and does not contain course information, settings, browsing history, or a user identifier. OTNow does not download or execute remote code. The Chrome Web Store package disables this request because Chrome supplies automatic extension updates.
 
 ## Retention and deletion
 
@@ -32,4 +32,6 @@ OTNow is an independent student project and is not affiliated with or endorsed b
 
 ## Contact
 
-Before public release, replace this section with a monitored project email address and a link to the public issue tracker.
+General questions can be submitted through the [public OTNow issue tracker](https://github.com/sil6428/OTNow/issues). Do not include private course information, student identifiers, security-sensitive details, or screenshots containing personal data. If a report requires private information, open an issue containing no sensitive details and request a private contact channel.
+
+OTNow's use of information obtained from Ontario Tech Canvas complies with the Chrome Web Store User Data Policy, including its Limited Use requirements. The information is used only to provide and improve OTNow's visible deadline and reminder features.
