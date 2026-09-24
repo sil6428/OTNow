@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OTNow settings</title>
+    <link rel="stylesheet" href="options.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">OTNow</p>
+        <h1>Settings</h1>
+        <p class="intro">Your preferences and Canvas cache stay in Chrome on this computer.</p>
+      </header>
+
+      <section class="card">
+        <h2>Appearance</h2>
+        <label class="field">
+          <span>Theme</span>
+          <select id="theme">
+            <option value="system">Follow system</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </label>
+        <label class="switch-row">
+          <span><strong>Show completed items</strong><small>Keep submitted and manually checked work in the list.</small></span>
+          <input id="show-completed" type="checkbox">
+        </label>
+      </section>
+
+      <section class="card">
+        <h2>Reminders</h2>
+        <label class="switch-row">
+          <span><strong>Deadline notifications</strong><small>Chrome must be running for reminders to appear.</small></span>
+          <input id="notifications" type="checkbox">
+        </label>
+        <label class="switch-row">
+          <span><strong>Moved-date notifications</strong><small>Tell me when a professor changes a due date.</small></span>
+          <input id="moved-dates" type="checkbox">
+        </label>
+        <div id="lead-settings" class="lead-settings"></div>
+      </section>
+
+      <section class="card">
+        <h2>Course notifications</h2>
+        <p class="section-copy">Deadlines remain visible when a course is muted; only its reminder notifications stop.</p>
+        <div id="course-settings" class="course-settings"></div>
+      </section>
+
+      <section class="card privacy-card">
+        <h2>Privacy</h2>
+        <p>OTNow reads only Ontario Tech Canvas pages and uses only <code>GET</code> requests. It has no analytics, account system, or external server.</p>
+        <button id="delete-data" class="danger" type="button">Delete local OTNow data</button>
+      </section>
+
+      <p id="saved" class="saved" role="status"></p>
+    </main>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

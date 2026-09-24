@@ -1,0 +1,43 @@
+export const CANVAS_ORIGIN = "https://learn.ontariotechu.ca";
+
+export const SYNC_ALARM = "otnow-sync";
+export const REMINDER_ALARM = "otnow-reminders";
+export const SYNC_MINUTES = 30;
+export const REMINDER_MINUTES = 5;
+export const MOVED_DATE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+export const DEFAULT_SETTINGS = {
+  theme: "system",
+  notificationsEnabled: true,
+  notifyMovedDates: true,
+  showCompleted: false,
+  reminderLeads: {
+    assignment: 24 * 60,
+    quiz: 12 * 60,
+    discussion: 12 * 60,
+    event: 3 * 60,
+    note: 24 * 60,
+    other: 24 * 60,
+  },
+  mutedCourseIds: [],
+};
+
+export const TYPE_LABELS = {
+  assignment: "Assignment",
+  quiz: "Quiz",
+  discussion: "Discussion",
+  event: "Event",
+  note: "Planner note",
+  other: "Course item",
+};
+
+export const COURSE_COLORS = [
+  "#2563eb",
+  "#7c3aed",
+  "#0891b2",
+  "#0f766e",
+  "#b45309",
+  "#be123c",
+  "#4f46e5",
+  "#15803d",
+];
