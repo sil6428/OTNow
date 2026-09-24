@@ -42,7 +42,7 @@ See [PRIVACY.md](PRIVACY.md) for a publishable privacy policy.
 2. In Chrome, open `chrome://extensions`.
 3. Turn on **Developer mode**.
 4. Select **Load unpacked**.
-5. Choose this repository's `projects/otnow-extension` folder.
+5. Choose the extracted `OTNow` folder (the folder containing `manifest.json`).
 6. Pin **OTNow**, click its toolbar icon, and allow the first refresh to finish.
 
 If Canvas was already open before installing the extension, reload that Canvas tab once.
@@ -83,7 +83,7 @@ The extension's installation, Ontario Tech Canvas session bridge, first course/d
 
 ### Remaining release checks
 
-The automated tests use representative Canvas response shapes. Before publishing, validate these cases with consenting Ontario Tech test users:
+The automated tests use representative Canvas response shapes. Before recommending OTNow for broad use, validate these cases with consenting Ontario Tech test users:
 
 - SSO sign-in and sign-out
 - a course nickname and a long course name
