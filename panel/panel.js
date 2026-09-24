@@ -1,5 +1,6 @@
 import { bucketFor, formatDate, formatTime, relativeDue } from "../src/dates.js";
-import { TYPE_LABELS } from "../src/constants.js";
+import { CANVAS_ORIGIN, TYPE_LABELS } from "../src/constants.js";
+import { countPlannerTypes, groupPlannerItems, TYPE_GROUPS } from "../src/view-model.js";
 
 const app = document.querySelector("#app");
 const refreshButton = document.querySelector("#refresh");
@@ -9,16 +10,10 @@ const notice = document.querySelector("#notice");
 const syncStatus = document.querySelector("#sync-status");
 
 let current = { state: null, settings: null };
-let courseFilter = "all";
-
-const GROUPS = [
-  ["overdue", "Overdue"],
-  ["today", "Today"],
-  ["week", "This week"],
-  ["next", "Next week"],
-  ["later", "Later"],
-  ["completed", "Completed"],
-];
+let activeView = localStorage.getItem("otnow:view") === "courses" ? "courses" : "deadlines";
+let courseFilter = localStorage.getItem("otnow:course") || "all";
+let typeFilter = localStorage.getItem("otnow:type") || "all";
+let groupMode = localStorage.getItem("otnow:group") === "date" ? "date" : "type";
 
 function element(tag, className, text) {
   const node = document.createElement(tag);
@@ -47,7 +42,7 @@ function relativeSync(iso) {
 function showState(title, message, { openCanvas = false, retry = false } = {}) {
   app.replaceChildren();
   const screen = element("section", "state-screen");
-  screen.append(element("div", "state-icon", "O"), element("h1", "", title), element("p", "", message));
+  screen.append(element("div", "state-icon", "OT"), element("h1", "", title), element("p", "", message));
   const actions = element("div");
   if (openCanvas) {
     const button = element("button", "primary-button", "Open Canvas");
@@ -65,51 +60,108 @@ function showState(title, message, { openCanvas = false, retry = false } = {}) {
   app.append(screen);
 }
 
-function renderFilters(courses, items) {
-  const filters = element("nav", "filters");
-  filters.setAttribute("aria-label", "Filter deadlines by course");
-  const choices = [{ id: "all", code: "All" }, ...courses.filter((course) => items.some((item) => item.courseId === course.id))];
-  for (const course of choices) {
-    const button = element("button", `filter${courseFilter === course.id ? " active" : ""}`, course.code);
+function renderViewTabs(state) {
+  const tabs = element("nav", "view-tabs");
+  tabs.setAttribute("aria-label", "OTNow sections");
+  const openCount = state.items.filter((item) => item.status === "open").length;
+  const choices = [
+    ["deadlines", "Deadlines", openCount],
+    ["courses", "Courses", state.courses.length],
+  ];
+  for (const [id, label, count] of choices) {
+    const button = element("button", `view-tab${activeView === id ? " active" : ""}`);
     button.type = "button";
+    button.setAttribute("aria-selected", String(activeView === id));
+    button.append(element("span", "", label), element("span", "tab-count", String(count)));
     button.addEventListener("click", () => {
-      courseFilter = course.id;
+      activeView = id;
+      localStorage.setItem("otnow:view", id);
       render();
     });
-    filters.append(button);
+    tabs.append(button);
   }
-  return filters;
+  return tabs;
 }
 
-function renderSummary(items) {
+function renderOverview(items) {
   const now = new Date();
   const open = items.filter((item) => item.status === "open");
   const overdue = open.filter((item) => bucketFor(item, now) === "overdue").length;
-  const today = open.filter((item) => bucketFor(item, now) === "today").length;
-  const thisWeek = open.filter((item) => ["today", "week"].includes(bucketFor(item, now))).length;
+  const dueToday = open.filter((item) => bucketFor(item, now) === "today").length;
   const next = open.find((item) => Date.parse(item.dueAt) >= now.getTime());
-  const summary = element("section", "summary");
-  summary.append(element("div", "eyebrow", "Ontario Tech Canvas"));
-  const headline = today
-    ? `${today} ${today === 1 ? "deadline" : "deadlines"} due today`
-    : overdue
-      ? `${overdue} overdue ${overdue === 1 ? "item" : "items"}`
-      : "Nothing due today";
-  summary.append(element("h1", "", headline));
-  summary.append(element("p", "", next ? `Next: ${next.courseCode} · ${next.title}` : "Everything in the current planner window is complete."));
-  const metrics = element("div", "summary-metrics");
-  for (const [value, label, danger] of [[today, "Today"], [thisWeek, "This week"], [overdue, "Overdue", true]]) {
-    const metric = element("div", `metric${danger ? " danger" : ""}`);
-    metric.append(element("strong", "", String(value)), element("span", "", label));
-    metrics.append(metric);
-  }
-  summary.append(metrics);
-  return summary;
+  const overview = element("section", "overview");
+  const copy = element("div", "overview-copy");
+  copy.append(
+    element("h1", "", "Deadlines"),
+    element("p", "", next ? `Next: ${next.courseCode} · ${next.title}` : "No upcoming dated coursework."),
+  );
+  const status = element("div", "overview-status");
+  status.append(
+    element("strong", "", String(open.length)),
+    element("span", "", "open"),
+    element("strong", dueToday ? "is-warning" : "", String(dueToday)),
+    element("span", "", "today"),
+    element("strong", overdue ? "is-danger" : "", String(overdue)),
+    element("span", "", "overdue"),
+  );
+  overview.append(copy, status);
+  return overview;
 }
 
-function renderItem(item, groupId) {
-  const row = element("article", `item${groupId === "overdue" ? " is-overdue" : ""}${item.status !== "open" ? " is-complete" : ""}`);
-  row.style.setProperty("--course-color", item.color || "#2563eb");
+function selectControl(label, value, options, onChange) {
+  const field = element("label", "control");
+  field.append(element("span", "control-label", label));
+  const select = element("select");
+  for (const option of options) {
+    const entry = element("option", "", option.label);
+    entry.value = option.value;
+    entry.selected = option.value === value;
+    select.append(entry);
+  }
+  select.addEventListener("change", () => onChange(select.value));
+  field.append(select);
+  return field;
+}
+
+function renderControls(courses, items) {
+  const controls = element("section", "controls");
+  const courseOptions = [
+    { value: "all", label: "All courses" },
+    ...courses.map((course) => ({ value: course.id, label: course.code })),
+  ];
+  const courseItems = courseFilter === "all" ? items : items.filter((item) => item.courseId === courseFilter);
+  const typeCounts = countPlannerTypes(courseItems);
+  const typeOptions = [
+    { value: "all", label: `All types (${courseItems.length})` },
+    ...TYPE_GROUPS.map(([id, label]) => ({ value: id, label: `${label} (${typeCounts[id]})` })),
+  ];
+  controls.append(
+    selectControl("Course", courseFilter, courseOptions, (value) => {
+      courseFilter = value;
+      localStorage.setItem("otnow:course", value);
+      render();
+    }),
+    selectControl("Type", typeFilter, typeOptions, (value) => {
+      typeFilter = value;
+      localStorage.setItem("otnow:type", value);
+      render();
+    }),
+    selectControl("Group", groupMode, [
+      { value: "type", label: "By type" },
+      { value: "date", label: "By date" },
+    ], (value) => {
+      groupMode = value;
+      localStorage.setItem("otnow:group", value);
+      render();
+    }),
+  );
+  return controls;
+}
+
+function renderItem(item, now) {
+  const itemBucket = bucketFor(item, now);
+  const row = element("article", `item${itemBucket === "overdue" ? " is-overdue" : ""}${item.status !== "open" ? " is-complete" : ""}`);
+  row.style.setProperty("--course-color", item.color || "#0077ca");
 
   const check = element("button", `check${item.status !== "open" ? " checked" : ""}`);
   check.type = "button";
@@ -122,7 +174,7 @@ function renderItem(item, groupId) {
 
   const main = element("div", "item-main");
   const meta = element("div", "item-meta");
-  meta.append(element("span", "course-pill", item.courseCode), element("span", "", TYPE_LABELS[item.type] || TYPE_LABELS.other));
+  meta.append(element("span", "course-code", item.courseCode), element("span", "item-type", TYPE_LABELS[item.type] || TYPE_LABELS.other));
   const title = element("a", "item-title", item.title);
   title.href = item.url;
   title.target = "_blank";
@@ -130,9 +182,7 @@ function renderItem(item, groupId) {
   main.append(meta, title);
   if (item.moved) {
     const moved = element("div", "moved");
-    moved.append("Moved from ");
-    const oldDate = element("s", "", `${formatDate(item.moved.from)} ${formatTime(item.moved.from)}`);
-    moved.append(oldDate);
+    moved.append("Moved from ", element("s", "", `${formatDate(item.moved.from)} ${formatTime(item.moved.from)}`));
     main.append(moved);
   }
 
@@ -143,27 +193,88 @@ function renderItem(item, groupId) {
   return row;
 }
 
-function renderReady(state, settings) {
-  const visibleItems = state.items
-    .filter((item) => settings.showCompleted || item.status === "open")
-    .filter((item) => courseFilter === "all" || item.courseId === courseFilter);
-  app.replaceChildren(renderSummary(state.items), renderFilters(state.courses, state.items));
-  if (!visibleItems.length) {
-    app.append(element("div", "empty", courseFilter === "all" ? "No deadlines to show." : "No deadlines for this course."));
-    return;
-  }
+function renderDeadlineGroups(items) {
   const now = new Date();
-  for (const [id, label] of GROUPS) {
-    const items = visibleItems.filter((item) => bucketFor(item, now) === id);
-    if (!items.length) continue;
+  const groups = groupPlannerItems(items, groupMode, now);
+  if (!groups.length) return element("div", "empty", "No matching dated coursework.");
+  const output = document.createDocumentFragment();
+  for (const groupData of groups) {
     const group = element("section", "group");
     const heading = element("div", "group-heading");
-    heading.append(element("h2", "", label), element("span", "", String(items.length)));
+    heading.append(element("h2", "", groupData.label), element("span", "", String(groupData.items.length)));
     const list = element("div", "items");
-    items.forEach((item) => list.append(renderItem(item, id)));
+    groupData.items.forEach((item) => list.append(renderItem(item, now)));
     group.append(heading, list);
-    app.append(group);
+    output.append(group);
   }
+  return output;
+}
+
+function canvasCourseUrl(courseId, section = "") {
+  const base = `${CANVAS_ORIGIN}/courses/${encodeURIComponent(courseId)}`;
+  return section ? `${base}/${section}` : base;
+}
+
+function courseLink(label, url, primary = false) {
+  const link = element("a", primary ? "course-link primary" : "course-link", label);
+  link.href = url;
+  link.target = "_blank";
+  link.rel = "noreferrer";
+  return link;
+}
+
+function renderCourseDirectory(courses, items) {
+  const section = element("section", "course-directory");
+  const header = element("div", "section-intro");
+  header.append(
+    element("h1", "", "Courses"),
+    element("p", "", "Open the official Canvas pages for course material. OTNow does not copy files or module content."),
+  );
+  section.append(header);
+  const list = element("div", "course-list");
+  for (const course of courses) {
+    const openItems = items.filter((item) => item.courseId === course.id && item.status === "open").length;
+    const row = element("article", "course-row");
+    row.style.setProperty("--course-color", course.color || "#0077ca");
+    const identity = element("div", "course-identity");
+    identity.append(element("span", "course-dot"), element("div", "course-name"));
+    identity.lastElementChild.append(element("strong", "", course.code), element("span", "", course.name));
+    const count = element("div", "course-open-count", `${openItems} open`);
+    const links = element("div", "course-links");
+    links.append(
+      courseLink("Home", canvasCourseUrl(course.id), true),
+      courseLink("Modules", canvasCourseUrl(course.id, "modules")),
+      courseLink("Assignments", canvasCourseUrl(course.id, "assignments")),
+      courseLink("Quizzes", canvasCourseUrl(course.id, "quizzes")),
+      courseLink("Discussions", canvasCourseUrl(course.id, "discussion_topics")),
+      courseLink("Files", canvasCourseUrl(course.id, "files")),
+      courseLink("Grades", canvasCourseUrl(course.id, "grades")),
+    );
+    row.append(identity, count, links);
+    list.append(row);
+  }
+  if (!courses.length) list.append(element("div", "empty", "No active Canvas courses were returned."));
+  section.append(list);
+  return section;
+}
+
+function renderReady(state, settings) {
+  if (courseFilter !== "all" && !state.courses.some((course) => course.id === courseFilter)) courseFilter = "all";
+  app.replaceChildren(renderViewTabs(state));
+
+  if (activeView === "courses") {
+    app.append(renderCourseDirectory(state.courses, state.items));
+    return;
+  }
+
+  const statusItems = state.items.filter((item) => settings.showCompleted || item.status === "open");
+  const visibleItems = statusItems
+    .filter((item) => courseFilter === "all" || item.courseId === courseFilter)
+    .filter((item) => typeFilter === "all" || item.type === typeFilter);
+
+  app.append(renderOverview(state.items), renderControls(state.courses, statusItems));
+  const sourceNote = element("p", "source-note", "Assignments, quizzes, discussions, events, planner notes, and other dated Canvas items are included when Canvas returns them.");
+  app.append(sourceNote, renderDeadlineGroups(visibleItems));
 }
 
 function render() {
@@ -181,7 +292,7 @@ function render() {
   if (state.stale) notice.textContent = `${state.error || "Canvas could not be refreshed."} Showing the last saved deadlines.`;
 
   if (state.status === "idle" || (state.status === "syncing" && !state.items.length)) {
-    showState("Reading Canvas", "OTNow is collecting your current courses and deadlines.");
+    showState("Reading Canvas", "OTNow is collecting your active courses and dated coursework.");
     return;
   }
   if (state.status === "error" && !state.items.length) {

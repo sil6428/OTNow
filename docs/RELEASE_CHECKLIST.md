@@ -6,6 +6,8 @@
 - [x] Toolbar action opens the side panel.
 - [x] Ontario Tech Canvas session is recognized.
 - [x] Active courses and planner items render.
+- [x] Deadlines can be filtered and grouped by Canvas item type.
+- [x] Courses directory opens official Canvas content sections.
 - [x] Manual refresh succeeds.
 - [ ] Confirm a naturally submitted assignment becomes **Submitted**.
 - [ ] Confirm a graded quiz becomes **Submitted**.
@@ -21,7 +23,7 @@
 - [x] Visible focus uses Chrome's native button/link treatment.
 - [x] Light, dark, and system themes with a one-click panel toggle.
 - [x] Screen-reader labels on icon buttons and check-offs.
-- [ ] Test at Chrome's narrowest supported side-panel width.
+- [x] Test at a 360px-wide side panel.
 - [ ] Test at 200% browser zoom.
 - [ ] Run a screen-reader smoke test.
 
@@ -45,6 +47,7 @@
 - [ ] Public support URL.
 - [ ] Public privacy-policy URL.
 - [x] 1280×800 screenshot without real student information.
+- [x] Course-directory screenshot without real student information.
 - [x] Real-session screenshot sanitized with fictional course and coursework data.
 - [ ] Optional 440×280 promotional tile.
 - [ ] Create the Chrome Web Store developer account and pay Google's one-time registration fee.

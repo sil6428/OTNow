@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0 — 2026-09-24
+
+- Reworked the panel into a compact, conventional utility layout without decorative dashboard cards.
+- Added course and item-type filters with persistent grouping by type or due-date range.
+- Kept assignments, quizzes, discussions, events, planner notes, and other dated items in distinct groups.
+- Added a Courses directory linking to official Canvas homes, modules, assignments, quizzes, discussions, files, and grades.
+- Added automated grouping coverage and refreshed the sanitized store screenshots.
+
 ## 0.3.0 — 2026-09-24
 
 - Restyled the panel around Ontario Tech's official Future Blue, Simcoe Blue, Tech Tangerine, and neutral colours.

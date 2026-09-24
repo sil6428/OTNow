@@ -11,6 +11,7 @@ import {
 } from "../src/canvas-model.js";
 import { bucketFor } from "../src/dates.js";
 import { mergeSettings } from "../src/storage.js";
+import { countPlannerTypes, groupPlannerItems } from "../src/view-model.js";
 
 const courses = {
   "42": { id: "42", code: "INFR 4611U", name: "Trust Systems", color: "#2563eb" },
@@ -90,4 +91,25 @@ test("migrates the old default theme to the Canvas-matching light theme", () => 
   assert.equal(mergeSettings({ theme: "system" }).theme, "light");
   assert.equal(mergeSettings({ schemaVersion: 2, theme: "system" }).theme, "system");
   assert.equal(mergeSettings({ theme: "dark" }).theme, "dark");
+});
+
+test("groups planner items by type without hiding supported Canvas types", () => {
+  const items = [
+    { id: "a", type: "assignment", dueAt: "2026-09-28T12:00:00Z", status: "open" },
+    { id: "q", type: "quiz", dueAt: "2026-09-27T12:00:00Z", status: "open" },
+    { id: "d", type: "discussion", dueAt: "2026-09-26T12:00:00Z", status: "open" },
+    { id: "e", type: "event", dueAt: "2026-09-29T12:00:00Z", status: "open" },
+    { id: "n", type: "note", dueAt: "2026-09-30T12:00:00Z", status: "open" },
+    { id: "o", type: "other", dueAt: "2026-10-01T12:00:00Z", status: "open" },
+  ];
+  const groups = groupPlannerItems(items, "type");
+  assert.deepEqual(groups.map((group) => group.id), ["assignment", "quiz", "discussion", "event", "note", "other"]);
+  assert.deepEqual(countPlannerTypes(items), {
+    assignment: 1,
+    quiz: 1,
+    discussion: 1,
+    event: 1,
+    note: 1,
+    other: 1,
+  });
 });

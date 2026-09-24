@@ -4,19 +4,21 @@ OTNow is an unofficial Chrome extension for Ontario Tech students who use Canvas
 
 The project name is **OTNow**.
 
-![Sanitized OTNow running beside Ontario Tech Canvas](docs/media/otnow-real-ui-sanitized.png)
+![OTNow deadline groups beside a sanitized Canvas dashboard](docs/media/otnow-store-1280x800.png)
 
 ## Current feature set
 
 - Reads the current student's active courses and Canvas planner items.
-- Groups open work into **Overdue**, **Today**, **This week**, **Next week**, and **Later**.
+- Groups dated work by **type** or by **due-date range**.
+- Filters by course and item type, including assignments, quizzes, discussions, events, planner notes, and other dated Canvas items.
+- Provides a Courses directory with direct links to each course's home, modules, assignments, quizzes, discussions, files, and grades.
 - Detects assignments Canvas reports as submitted or graded.
 - Lets a student locally check off other items without changing Canvas.
 - Highlights a moved due date for seven days and can notify the student.
 - Supports per-type reminder timing for assignments, quizzes, discussions, events, and planner notes.
 - Allows reminder notifications to be muted for individual courses without hiding their deadlines.
 - Keeps the last successful read available when Canvas or the network is unavailable.
-- Filters the panel by course and supports light, dark, or system appearance.
+- Supports light, dark, or system appearance.
 - Refreshes every 30 minutes while Chrome is running.
 
 ## Privacy and security model
