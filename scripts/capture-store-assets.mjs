@@ -19,8 +19,10 @@ try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
   await page.goto("http://127.0.0.1:8766/docs/demo-host.html", { waitUntil: "networkidle" });
   await page.screenshot({ path: resolve(media, "otnow-store-1280x800.png") });
+  await page.frameLocator("iframe").locator("#theme-toggle").click();
+  await page.screenshot({ path: resolve(media, "otnow-dark-1280x800.png") });
 } finally {
   await browser.close();
 }
 
-console.log("Captured docs/media/otnow-store-1280x800.png");
+console.log("Captured light and dark 1280x800 store screenshots");

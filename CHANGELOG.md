@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0 — 2026-09-24
+
+- Restyled the panel around Ontario Tech's official Future Blue, Simcoe Blue, Tech Tangerine, and neutral colours.
+- Matched Canvas's flatter cards, compact blue navigation bar, square controls, and Lato-first typography.
+- Added a persistent one-click light/dark theme toggle to the panel header.
+- Migrated existing default-theme installs to the new Canvas-matching light appearance.
+
 ## 0.2.0 — 2026-09-24
 
 - Confirmed the Canvas session bridge and side panel against Ontario Tech's live Canvas instance.

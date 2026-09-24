@@ -92,6 +92,7 @@ The automated tests use representative Canvas response shapes. Before publishing
 ## Sources and design references
 
 - [Ontario Tech Canvas service page](https://itsc.ontariotechu.ca/services/canvas.php)
+- [Ontario Tech official colour standards](https://brand.ontariotechu.ca/guidelines/brand-standards/colours-design-graphics-and-fonts/colours.php)
 - [Canvas Planner API](https://developerdocs.instructure.com/services/canvas/resources/planner)
 - [Canvas Courses API](https://developerdocs.instructure.com/services/canvas/resources/courses)
 - [Chrome Side Panel API](https://developer.chrome.com/docs/extensions/reference/api/sidePanel)

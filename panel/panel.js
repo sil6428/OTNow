@@ -3,6 +3,7 @@ import { TYPE_LABELS } from "../src/constants.js";
 
 const app = document.querySelector("#app");
 const refreshButton = document.querySelector("#refresh");
+const themeButton = document.querySelector("#theme-toggle");
 const settingsButton = document.querySelector("#settings");
 const notice = document.querySelector("#notice");
 const syncStatus = document.querySelector("#sync-status");
@@ -29,6 +30,10 @@ function element(tag, className, text) {
 function applyTheme(theme) {
   if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
   else delete document.documentElement.dataset.theme;
+}
+
+function usingDarkTheme(theme) {
+  return theme === "dark" || (theme === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
 }
 
 function relativeSync(iso) {
@@ -165,6 +170,10 @@ function render() {
   const { state, settings } = current;
   if (!state || !settings) return;
   applyTheme(settings.theme);
+  const dark = usingDarkTheme(settings.theme);
+  themeButton.classList.toggle("is-dark", dark);
+  themeButton.setAttribute("aria-label", dark ? "Use light theme" : "Use dark theme");
+  themeButton.title = dark ? "Use light theme" : "Use dark theme";
   refreshButton.classList.toggle("spinning", state.status === "syncing");
   refreshButton.disabled = state.status === "syncing";
   syncStatus.textContent = relativeSync(state.lastSyncAt);
@@ -197,7 +206,17 @@ async function syncNow() {
 }
 
 refreshButton.addEventListener("click", syncNow);
+themeButton.addEventListener("click", async () => {
+  const theme = usingDarkTheme(current.settings.theme) ? "light" : "dark";
+  const response = await chrome.runtime.sendMessage({ type: "options:set", settings: { theme } });
+  current.settings = response.settings;
+  render();
+});
 settingsButton.addEventListener("click", () => chrome.runtime.sendMessage({ type: "panel:open-options" }));
+
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+  if (current.settings?.theme === "system") render();
+});
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "local") return;

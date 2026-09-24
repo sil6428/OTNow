@@ -19,7 +19,7 @@
 
 - [x] Keyboard-operable buttons, filters, links, and check-offs.
 - [x] Visible focus uses Chrome's native button/link treatment.
-- [x] Light, dark, and system themes.
+- [x] Light, dark, and system themes with a one-click panel toggle.
 - [x] Screen-reader labels on icon buttons and check-offs.
 - [ ] Test at Chrome's narrowest supported side-panel width.
 - [ ] Test at 200% browser zoom.

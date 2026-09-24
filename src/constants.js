@@ -7,7 +7,8 @@ export const REMINDER_MINUTES = 5;
 export const MOVED_DATE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 export const DEFAULT_SETTINGS = {
-  theme: "system",
+  schemaVersion: 2,
+  theme: "light",
   notificationsEnabled: true,
   notifyMovedDates: true,
   showCompleted: false,
@@ -32,12 +33,12 @@ export const TYPE_LABELS = {
 };
 
 export const COURSE_COLORS = [
-  "#2563eb",
-  "#7c3aed",
-  "#0891b2",
+  "#0077ca",
+  "#003c71",
+  "#e75d2a",
+  "#005793",
+  "#5b6770",
   "#0f766e",
-  "#b45309",
-  "#be123c",
-  "#4f46e5",
+  "#7c3aed",
   "#15803d",
 ];

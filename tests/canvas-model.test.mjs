@@ -10,6 +10,7 @@ import {
   submissionComplete,
 } from "../src/canvas-model.js";
 import { bucketFor } from "../src/dates.js";
+import { mergeSettings } from "../src/storage.js";
 
 const courses = {
   "42": { id: "42", code: "INFR 4611U", name: "Trust Systems", color: "#2563eb" },
@@ -83,4 +84,10 @@ test("buckets open and completed items", () => {
   assert.equal(bucketFor({ status: "open", dueAt: "2026-09-24T20:00:00Z" }, now), "today");
   assert.equal(bucketFor({ status: "open", dueAt: "2026-09-24T10:00:00Z" }, now), "overdue");
   assert.equal(bucketFor({ status: "done", dueAt: "2026-09-24T20:00:00Z" }, now), "completed");
+});
+
+test("migrates the old default theme to the Canvas-matching light theme", () => {
+  assert.equal(mergeSettings({ theme: "system" }).theme, "light");
+  assert.equal(mergeSettings({ schemaVersion: 2, theme: "system" }).theme, "system");
+  assert.equal(mergeSettings({ theme: "dark" }).theme, "dark");
 });

@@ -24,6 +24,11 @@ let settings;
 let state;
 let saveTimer;
 
+function applyTheme(value) {
+  if (value === "light" || value === "dark") document.documentElement.dataset.theme = value;
+  else delete document.documentElement.dataset.theme;
+}
+
 function flashSaved(text = "Saved") {
   saved.textContent = text;
   setTimeout(() => { if (saved.textContent === text) saved.textContent = ""; }, 1800);
@@ -96,6 +101,7 @@ function renderCourses() {
 async function load() {
   ({ settings, state } = await chrome.runtime.sendMessage({ type: "options:get" }));
   theme.value = settings.theme;
+  applyTheme(settings.theme);
   showCompleted.checked = settings.showCompleted;
   notifications.checked = settings.notificationsEnabled;
   movedDates.checked = settings.notifyMovedDates;
@@ -103,7 +109,7 @@ async function load() {
   renderCourses();
 }
 
-theme.addEventListener("change", () => { settings.theme = theme.value; queueSave(); });
+theme.addEventListener("change", () => { settings.theme = theme.value; applyTheme(settings.theme); queueSave(); });
 showCompleted.addEventListener("change", () => { settings.showCompleted = showCompleted.checked; queueSave(); });
 notifications.addEventListener("change", () => { settings.notificationsEnabled = notifications.checked; queueSave(); });
 movedDates.addEventListener("change", () => { settings.notifyMovedDates = movedDates.checked; queueSave(); });

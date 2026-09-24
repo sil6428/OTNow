@@ -17,9 +17,12 @@ export function emptyState() {
 }
 
 export function mergeSettings(saved = {}) {
+  const migratedTheme = !saved.schemaVersion && saved.theme === "system" ? "light" : saved.theme;
   return {
     ...DEFAULT_SETTINGS,
     ...saved,
+    schemaVersion: DEFAULT_SETTINGS.schemaVersion,
+    theme: migratedTheme || DEFAULT_SETTINGS.theme,
     reminderLeads: {
       ...DEFAULT_SETTINGS.reminderLeads,
       ...(saved.reminderLeads || {}),
