@@ -5,10 +5,15 @@ import {
   SYNC_ALARM,
   SYNC_MINUTES,
   TYPE_LABELS,
+  UPDATE_ALARM,
+  UPDATE_CHECK_MINUTES,
+  UPDATE_GUIDE_URL,
+  UPDATE_MANIFEST_URL,
 } from "./constants.js";
 import { sameDay } from "./dates.js";
 import { mergePlannerItems } from "./canvas-model.js";
 import { readCanvas } from "./canvas-client.js";
+import { compareVersions, readPublishedVersion } from "./update-check.js";
 import {
   getManualDone,
   getSettings,
@@ -20,6 +25,7 @@ import {
 } from "./storage.js";
 
 let syncPromise = null;
+let updatePromise = null;
 
 function reminderKey(item, leadMinutes) {
   return `${item.id}|${item.dueAt}|${leadMinutes}`;
@@ -172,6 +178,74 @@ async function syncCanvas({ userInitiated = false } = {}) {
   return syncPromise;
 }
 
+async function checkForUpdate({ force = false } = {}) {
+  if (updatePromise) return updatePromise;
+  updatePromise = (async () => {
+    const before = await getState();
+    const installedVersion = chrome.runtime.getManifest().version;
+    const previous = before.update || {};
+    const checkedAt = Date.parse(previous.checkedAt || "");
+    const stillFresh = Number.isFinite(checkedAt)
+      && Date.now() - checkedAt < UPDATE_CHECK_MINUTES * 60_000;
+    if (!force && stillFresh) return previous;
+
+    await updateState((draft) => {
+      draft.update = {
+        ...previous,
+        status: "checking",
+        installedVersion,
+        error: null,
+      };
+      return draft;
+    });
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10_000);
+    try {
+      const response = await fetch(UPDATE_MANIFEST_URL, {
+        method: "GET",
+        credentials: "omit",
+        cache: "no-store",
+        referrerPolicy: "no-referrer",
+        headers: { Accept: "application/json" },
+        signal: controller.signal,
+      });
+      if (!response.ok) throw new Error(`Update check failed (HTTP ${response.status}).`);
+      const latestVersion = readPublishedVersion(await response.json());
+      const update = {
+        status: compareVersions(latestVersion, installedVersion) > 0 ? "available" : "current",
+        installedVersion,
+        latestVersion,
+        checkedAt: new Date().toISOString(),
+        error: null,
+      };
+      await updateState((draft) => {
+        draft.update = update;
+        return draft;
+      });
+      return update;
+    } catch (error) {
+      const update = {
+        ...previous,
+        status: "error",
+        installedVersion,
+        checkedAt: new Date().toISOString(),
+        error: String(error?.message || error),
+      };
+      await updateState((draft) => {
+        draft.update = update;
+        return draft;
+      });
+      return update;
+    } finally {
+      clearTimeout(timer);
+    }
+  })().finally(() => {
+    updatePromise = null;
+  });
+  return updatePromise;
+}
+
 async function toggleManualDone(itemId) {
   const manualDone = await getManualDone();
   manualDone[itemId] = !manualDone[itemId];
@@ -195,15 +269,17 @@ async function setup() {
   await chrome.storage.local.set({ settings });
   chrome.alarms.create(SYNC_ALARM, { delayInMinutes: 1, periodInMinutes: SYNC_MINUTES });
   chrome.alarms.create(REMINDER_ALARM, { delayInMinutes: 1, periodInMinutes: REMINDER_MINUTES });
+  chrome.alarms.create(UPDATE_ALARM, { delayInMinutes: 2, periodInMinutes: UPDATE_CHECK_MINUTES });
   await refreshBadge();
 }
 
-chrome.runtime.onInstalled.addListener(() => setup());
-chrome.runtime.onStartup.addListener(() => setup().then(() => syncCanvas()));
+chrome.runtime.onInstalled.addListener(() => setup().then(() => checkForUpdate({ force: true })));
+chrome.runtime.onStartup.addListener(() => setup().then(() => Promise.all([syncCanvas(), checkForUpdate()])));
 
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === SYNC_ALARM) syncCanvas();
   if (alarm.name === REMINDER_ALARM) runReminders();
+  if (alarm.name === UPDATE_ALARM) checkForUpdate();
 });
 
 chrome.notifications.onClicked.addListener(async (id) => {
@@ -219,6 +295,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     switch (message.type) {
       case "panel:get":
         sendResponse({ state: await getState(), settings: await getSettings() });
+        checkForUpdate().catch(() => {});
         break;
       case "panel:sync":
         sendResponse(await syncCanvas({ userInitiated: true }));
@@ -232,6 +309,13 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         break;
       case "panel:open-options":
         await chrome.runtime.openOptionsPage();
+        sendResponse({ ok: true });
+        break;
+      case "panel:check-update":
+        sendResponse({ update: await checkForUpdate({ force: true }) });
+        break;
+      case "panel:open-update-guide":
+        await chrome.tabs.create({ url: UPDATE_GUIDE_URL });
         sendResponse({ ok: true });
         break;
       case "options:get":

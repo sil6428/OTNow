@@ -13,6 +13,13 @@ export function emptyState() {
     sentReminders: {},
     notificationLinks: {},
     firstSyncComplete: false,
+    update: {
+      status: "idle",
+      installedVersion: null,
+      latestVersion: null,
+      checkedAt: null,
+      error: null,
+    },
   };
 }
 

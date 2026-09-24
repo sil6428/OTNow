@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0 — 2026-09-24
+
+- Added a six-hour public repository version check with no credentials or student-data transmission.
+- Added an in-panel update notice that appears only when the repository contains a newer semantic version.
+- Added a separate step-by-step guide for safely updating the same unpacked extension folder.
+- Displayed the installed version in the panel footer and improved filter sizing at real side-panel widths.
+
 ## 0.4.1 — 2026-09-24
 
 - Softened the panel to blend with Canvas using open lists, lighter dividers, natural title casing, and restrained course-colour dots.

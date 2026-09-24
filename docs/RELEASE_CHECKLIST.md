@@ -8,6 +8,8 @@
 - [x] Active courses and planner items render.
 - [x] Deadlines can be filtered and grouped by Canvas item type.
 - [x] Courses directory opens official Canvas content sections.
+- [x] Public repository version check detects a newer semantic version.
+- [x] Update notice links to a separate step-by-step guide.
 - [x] Manual refresh succeeds.
 - [ ] Confirm a naturally submitted assignment becomes **Submitted**.
 - [ ] Confirm a graded quiz becomes **Submitted**.
@@ -29,7 +31,8 @@
 
 ## Privacy and security
 
-- [x] Only `learn.ontariotechu.ca` is in host permissions.
+- [x] Host permissions are limited to Ontario Tech Canvas and GitHub's public raw-content origin.
+- [x] GitHub host access is limited to the public raw-content origin used for the version manifest.
 - [x] Canvas bridge accepts only allowlisted `/api/v1/courses` and `/api/v1/planner/items` paths.
 - [x] Canvas network requests are hard-coded to `GET`.
 - [x] No cookie, broad tab, web-request, scripting, or clipboard permission.

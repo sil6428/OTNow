@@ -14,6 +14,8 @@ $releaseFiles = @(
   "options",
   "icons",
   "LICENSE",
+  "README.md",
+  "UPDATE_GUIDE.md",
   "PRIVACY.md",
   "THIRD_PARTY_NOTICES.md"
 ) | ForEach-Object { Join-Path $projectRoot $_ }

@@ -17,6 +17,7 @@ const browser = await chromium.launch({
 });
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
+  page.on("pageerror", (error) => console.error(`Preview error: ${error.message}`));
   await page.goto("http://127.0.0.1:8766/docs/demo-host.html", { waitUntil: "networkidle" });
   await page.screenshot({ path: resolve(media, "otnow-store-1280x800.png") });
   await page.frameLocator("iframe").locator(".view-tab").filter({ hasText: "Courses" }).click();
@@ -28,9 +29,11 @@ try {
   const narrowPage = await browser.newPage({ viewport: { width: 360, height: 800 }, deviceScaleFactor: 1 });
   await narrowPage.goto("http://127.0.0.1:8766/docs/demo-panel.html", { waitUntil: "networkidle" });
   await narrowPage.screenshot({ path: resolve(media, "otnow-narrow-360x800.png") });
+  await narrowPage.goto("http://127.0.0.1:8766/docs/demo-panel.html?update=1", { waitUntil: "networkidle" });
+  await narrowPage.screenshot({ path: resolve(media, "otnow-update-360x800.png") });
   await narrowPage.close();
 } finally {
   await browser.close();
 }
 
-console.log("Captured deadline, course, dark-mode, and narrow-panel screenshots");
+console.log("Captured deadline, course, dark-mode, narrow-panel, and update-notice screenshots");

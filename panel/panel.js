@@ -8,6 +8,7 @@ const themeButton = document.querySelector("#theme-toggle");
 const settingsButton = document.querySelector("#settings");
 const notice = document.querySelector("#notice");
 const syncStatus = document.querySelector("#sync-status");
+const appVersion = document.querySelector("#app-version");
 
 let current = { state: null, settings: null };
 let activeView = localStorage.getItem("otnow:view") === "courses" ? "courses" : "deadlines";
@@ -81,6 +82,21 @@ function renderViewTabs(state) {
     tabs.append(button);
   }
   return tabs;
+}
+
+function renderUpdateNotice(update) {
+  if (update?.status !== "available") return null;
+  const banner = element("section", "update-notice");
+  const copy = element("div", "update-copy");
+  copy.append(
+    element("strong", "", `OTNow ${update.latestVersion} is available`),
+    element("span", "", `You have ${update.installedVersion}.`),
+  );
+  const button = element("button", "update-button", "Update steps");
+  button.type = "button";
+  button.addEventListener("click", () => chrome.runtime.sendMessage({ type: "panel:open-update-guide" }));
+  banner.append(copy, button);
+  return banner;
 }
 
 function renderOverview(items) {
@@ -261,6 +277,8 @@ function renderCourseDirectory(courses, items) {
 function renderReady(state, settings) {
   if (courseFilter !== "all" && !state.courses.some((course) => course.id === courseFilter)) courseFilter = "all";
   app.replaceChildren(renderViewTabs(state));
+  const updateNotice = renderUpdateNotice(state.update);
+  if (updateNotice) app.append(updateNotice);
 
   if (activeView === "courses") {
     app.append(renderCourseDirectory(state.courses, state.items));
@@ -304,6 +322,7 @@ function render() {
 }
 
 async function load() {
+  appVersion.textContent = `v${chrome.runtime.getManifest().version}`;
   current = await chrome.runtime.sendMessage({ type: "panel:get" });
   render();
   if (current.state.status === "idle") syncNow();

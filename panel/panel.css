@@ -157,6 +157,23 @@ main { padding: 0 14px 58px; }
 .tab-count { min-width: 19px; padding: 1px 5px; border-radius: 9px; background: var(--surface-subtle); color: var(--muted); font-size: 11px; text-align: center; }
 .view-tab.active .tab-count { background: color-mix(in srgb, var(--blue) 13%, var(--surface)); color: var(--blue); }
 
+.update-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: -3px 0 16px;
+  padding: 10px 2px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.update-copy strong,
+.update-copy span { display: block; }
+.update-copy strong { font-size: 12px; }
+.update-copy span { margin-top: 2px; color: var(--muted); font-size: 10px; }
+.update-button { flex: 0 0 auto; padding: 5px 8px; border: 1px solid var(--blue); border-radius: 5px; background: var(--surface); color: var(--blue); font-size: 11px; font-weight: 700; cursor: pointer; }
+.update-button:hover { background: color-mix(in srgb, var(--blue) 8%, var(--surface)); }
+
 .overview {
   display: flex;
   align-items: center;
@@ -189,7 +206,7 @@ main { padding: 0 14px 58px; }
 
 .controls {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, .85fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 92px;
   gap: 8px;
   margin-top: 12px;
   padding: 10px;
@@ -306,6 +323,7 @@ main { padding: 0 14px 58px; }
 }
 
 .privacy { display: inline-flex; align-items: center; gap: 5px; }
+.footer-version { color: var(--line-strong); }
 .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
 
 @media (max-width: 390px) {

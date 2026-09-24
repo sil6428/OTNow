@@ -18,7 +18,9 @@ Course information, settings, manual check-offs, and reminder history are stored
 
 ## Network access
 
-OTNow connects only to `https://learn.ontariotechu.ca` and only through read-only `GET` requests to Canvas course and planner endpoints. It does not modify course content or submit work.
+OTNow connects to `https://learn.ontariotechu.ca` through read-only `GET` requests to Canvas course and planner endpoints. It does not modify course content or submit work.
+
+About every six hours, OTNow also retrieves its public `manifest.json` from `https://raw.githubusercontent.com` to compare the published version number with the installed version. This request uses no credentials and does not contain course information, settings, browsing history, or a user identifier. OTNow does not download or execute remote code.
 
 ## Retention and deletion
 

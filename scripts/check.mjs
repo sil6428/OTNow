@@ -8,7 +8,10 @@ const manifest = JSON.parse(await readFile(resolve(root, "manifest.json"), "utf8
 
 assert.equal(manifest.manifest_version, 3);
 assert.equal(manifest.background.type, "module");
-assert.deepEqual(manifest.host_permissions, ["https://learn.ontariotechu.ca/*"]);
+assert.deepEqual(manifest.host_permissions, [
+  "https://learn.ontariotechu.ca/*",
+  "https://raw.githubusercontent.com/*",
+]);
 assert(!manifest.permissions.includes("cookies"), "OTNow must not request cookie access");
 assert(!manifest.permissions.includes("webRequest"), "OTNow must not intercept general browsing");
 assert(!manifest.permissions.includes("tabs"), "OTNow should rely on its narrow Canvas host permission, not broad tab access");

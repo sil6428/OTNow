@@ -19,6 +19,7 @@ The project name is **OTNow**.
 - Allows reminder notifications to be muted for individual courses without hiding their deadlines.
 - Keeps the last successful read available when Canvas or the network is unavailable.
 - Supports light, dark, or system appearance.
+- Checks the public OTNow repository for a newer version and links to [step-by-step update instructions](UPDATE_GUIDE.md).
 - Refreshes every 30 minutes while Chrome is running.
 
 ## Privacy and security model
@@ -28,6 +29,7 @@ The project name is **OTNow**.
 - The Canvas bridge permits only two read-only endpoints:
   - `GET /api/v1/courses`
   - `GET /api/v1/planner/items`
+- The updater reads only OTNow's public `manifest.json` from GitHub about every six hours and sends no student or course information.
 - All course data, settings, manual check-offs, and reminder history live in `chrome.storage.local` on the student's computer.
 - There is no telemetry, analytics SDK, ad code, external API, or OTNow account.
 - OTNow is not affiliated with or endorsed by Ontario Tech University or Instructure.
@@ -44,6 +46,8 @@ See [PRIVACY.md](PRIVACY.md) for a publishable privacy policy.
 6. Pin **OTNow**, click its toolbar icon, and allow the first refresh to finish.
 
 If Canvas was already open before installing the extension, reload that Canvas tab once.
+
+Future versions can be installed without removing OTNow. Follow [UPDATE_GUIDE.md](UPDATE_GUIDE.md) so local settings remain attached to the same unpacked extension folder.
 
 ## Development
 

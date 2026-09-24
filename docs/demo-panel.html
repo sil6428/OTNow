@@ -24,10 +24,11 @@
     </header>
     <div id="notice" class="notice" hidden></div>
     <main id="app" aria-live="polite"></main>
-    <footer class="footer"><span id="sync-status">Synced just now</span><span class="privacy"><span class="status-dot"></span> Local only</span></footer>
+    <footer class="footer"><span id="sync-status">Synced just now</span><span id="app-version" class="footer-version"></span><span class="privacy"><span class="status-dot"></span> Local only</span></footer>
     <script>
       const now = Date.now();
       const iso = (hours) => new Date(now + hours * 60 * 60 * 1000).toISOString();
+      const updateAvailable = new URLSearchParams(location.search).has("update");
       const courses = [
         { id: "1", code: "TECH 2100", name: "Introduction to Networking", color: "#2563eb" },
         { id: "2", code: "TECH 2200", name: "Information Security", color: "#7c3aed" },
@@ -41,8 +42,9 @@
       ];
       window.chrome = {
         runtime: {
+          getManifest: () => ({ version: "0.5.0" }),
           sendMessage: async (message) => message.type === "panel:get" ? {
-            state: { status: "ready", items, courses, lastSyncAt: new Date().toISOString(), error: null, errorKind: null, stale: null },
+            state: { status: "ready", items, courses, lastSyncAt: new Date().toISOString(), error: null, errorKind: null, stale: null, update: updateAvailable ? { status: "available", installedVersion: "0.5.0", latestVersion: "0.5.1" } : { status: "current", installedVersion: "0.5.0", latestVersion: "0.5.0" } },
             settings: { theme: "light", showCompleted: false },
           } : message.type === "options:set" ? { settings: { theme: message.settings.theme, showCompleted: false } } : { ok: true },
         },

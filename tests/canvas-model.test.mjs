@@ -12,6 +12,7 @@ import {
 import { bucketFor } from "../src/dates.js";
 import { mergeSettings } from "../src/storage.js";
 import { countPlannerTypes, groupPlannerItems } from "../src/view-model.js";
+import { compareVersions, readPublishedVersion, versionParts } from "../src/update-check.js";
 
 const courses = {
   "42": { id: "42", code: "INFR 4611U", name: "Trust Systems", color: "#2563eb" },
@@ -112,4 +113,18 @@ test("groups planner items by type without hiding supported Canvas types", () =>
     note: 1,
     other: 1,
   });
+});
+
+test("compares strict three-part OTNow versions", () => {
+  assert.deepEqual(versionParts("1.2.3"), [1, 2, 3]);
+  assert.equal(versionParts("1.2"), null);
+  assert.equal(compareVersions("0.5.1", "0.5.0"), 1);
+  assert.equal(compareVersions("0.5.0", "0.5.0"), 0);
+  assert.equal(compareVersions("0.4.9", "0.5.0"), -1);
+});
+
+test("accepts only a valid OTNow repository manifest", () => {
+  assert.equal(readPublishedVersion({ name: "OTNow", version: "0.5.0" }), "0.5.0");
+  assert.throws(() => readPublishedVersion({ name: "Different extension", version: "9.9.9" }));
+  assert.throws(() => readPublishedVersion({ name: "OTNow", version: "latest" }));
 });

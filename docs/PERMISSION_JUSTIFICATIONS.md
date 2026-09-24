@@ -16,7 +16,7 @@ Required to save the last successful Canvas read for offline viewing, user remin
 
 ## `alarms`
 
-Required to refresh Canvas periodically and check whether a configured deadline reminder should be displayed while Chrome is running.
+Required to refresh Canvas periodically, check whether a configured deadline reminder should be displayed, and periodically compare the installed version with the public repository version while Chrome is running.
 
 ## `notifications`
 
@@ -24,11 +24,15 @@ Required to show the deadline and changed-due-date notifications explicitly conf
 
 ## Host access: `https://learn.ontariotechu.ca/*`
 
-Required to make read-only requests to the institution's Canvas Courses and Planner endpoints using the student's existing signed-in session. The extension does not request access to any other website.
+Required to make read-only requests to the institution's Canvas Courses and Planner endpoints using the student's existing signed-in session.
+
+## Host access: `https://raw.githubusercontent.com/*`
+
+Required to retrieve the public OTNow `manifest.json` and compare its version number with the installed extension. No Canvas data, settings, credentials, or user identifier are included in this request. The downloaded JSON is treated only as data and is never executed.
 
 ## Remote code
 
-OTNow does not execute remote code. All JavaScript is included in the extension package, and there are no remotely hosted scripts, WebAssembly modules, or runtime-loaded packages.
+OTNow does not execute remote code. All JavaScript is included in the extension package, and there are no remotely hosted scripts, WebAssembly modules, or runtime-loaded packages. The update check reads a version string from a public JSON manifest and only displays a link to manual instructions.
 
 ## Data-use disclosure
 
