@@ -45,6 +45,7 @@
 - [ ] Public support URL.
 - [ ] Public privacy-policy URL.
 - [x] 1280×800 screenshot without real student information.
+- [x] Real-session screenshot sanitized with fictional course and coursework data.
 - [ ] Optional 440×280 promotional tile.
 - [ ] Create the Chrome Web Store developer account and pay Google's one-time registration fee.
 - [ ] Upload the clean release ZIP.

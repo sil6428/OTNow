@@ -6,6 +6,7 @@
 - Matched Canvas's flatter cards, compact blue navigation bar, square controls, and Lato-first typography.
 - Added a persistent one-click light/dark theme toggle to the panel header.
 - Migrated existing default-theme installs to the new Canvas-matching light appearance.
+- Added a sanitized real-session project screenshot using fictional course and coursework data.
 
 ## 0.2.0 — 2026-09-24
 

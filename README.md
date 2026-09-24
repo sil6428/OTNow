@@ -4,7 +4,7 @@ OTNow is an unofficial Chrome extension for Ontario Tech students who use Canvas
 
 The project name is **OTNow**.
 
-![Sanitized preview of OTNow beside a course dashboard](docs/media/otnow-store-1280x800.png)
+![Sanitized OTNow running beside Ontario Tech Canvas](docs/media/otnow-real-ui-sanitized.png)
 
 ## Current feature set
 

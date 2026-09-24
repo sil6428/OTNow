@@ -51,6 +51,7 @@ Publish `PRIVACY.md` at a stable public HTTPS URL before submission.
 - 128×128 extension icon — complete
 - 1280×800 light screenshot — complete (`docs/media/otnow-store-1280x800.png`)
 - 1280×800 dark-mode screenshot — complete (`docs/media/otnow-dark-1280x800.png`)
+- Sanitized real-session screenshot with fictional courses and coursework — complete (`docs/media/otnow-real-ui-sanitized.png`)
 - Optional 440×280 small promotional tile
 - Public privacy-policy URL
 - Public support URL
