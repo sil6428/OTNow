@@ -29,15 +29,15 @@
       const now = Date.now();
       const iso = (hours) => new Date(now + hours * 60 * 60 * 1000).toISOString();
       const courses = [
-        { id: "1", code: "INFR 2600U", name: "Network Security", color: "#2563eb" },
-        { id: "2", code: "INFR 4611U", name: "Trust Systems", color: "#7c3aed" },
-        { id: "3", code: "INFR 3600U", name: "Cloud Computing", color: "#0f766e" },
+        { id: "1", code: "TECH 2100", name: "Introduction to Networking", color: "#2563eb" },
+        { id: "2", code: "TECH 2200", name: "Information Security", color: "#7c3aed" },
+        { id: "3", code: "TECH 2300", name: "Cloud Fundamentals", color: "#0f766e" },
       ];
       const items = [
-        { id: "assignment:1", courseId: "1", courseCode: "INFR 2600U", courseName: "Network Security", color: "#2563eb", title: "Firewall policy analysis", type: "assignment", dueAt: iso(-2), url: "#", status: "open", submitted: false, canvasComplete: false, manuallyComplete: false, moved: null },
-        { id: "quiz:2", courseId: "2", courseCode: "INFR 4611U", courseName: "Trust Systems", color: "#7c3aed", title: "Week 3 trust models quiz", type: "quiz", dueAt: iso(6), url: "#", status: "open", submitted: false, canvasComplete: false, manuallyComplete: false, moved: null },
-        { id: "discussion:3", courseId: "1", courseCode: "INFR 2600U", courseName: "Network Security", color: "#2563eb", title: "Incident response discussion", type: "discussion", dueAt: iso(27), url: "#", status: "open", submitted: false, canvasComplete: false, manuallyComplete: false, moved: { from: iso(3), at: new Date().toISOString() } },
-        { id: "assignment:4", courseId: "2", courseCode: "INFR 4611U", courseName: "Trust Systems", color: "#7c3aed", title: "Designed alliance reflection", type: "assignment", dueAt: iso(72), url: "#", status: "open", submitted: false, canvasComplete: false, manuallyComplete: false, moved: null },
+        { id: "assignment:1", courseId: "1", courseCode: "TECH 2100", courseName: "Introduction to Networking", color: "#2563eb", title: "Network lab report", type: "assignment", dueAt: iso(-2), url: "#", status: "open", submitted: false, canvasComplete: false, manuallyComplete: false, moved: null },
+        { id: "quiz:2", courseId: "2", courseCode: "TECH 2200", courseName: "Information Security", color: "#7c3aed", title: "Security concepts quiz", type: "quiz", dueAt: iso(6), url: "#", status: "open", submitted: false, canvasComplete: false, manuallyComplete: false, moved: null },
+        { id: "discussion:3", courseId: "1", courseCode: "TECH 2100", courseName: "Introduction to Networking", color: "#2563eb", title: "Team project discussion", type: "discussion", dueAt: iso(27), url: "#", status: "open", submitted: false, canvasComplete: false, manuallyComplete: false, moved: { from: iso(3), at: new Date().toISOString() } },
+        { id: "assignment:4", courseId: "3", courseCode: "TECH 2300", courseName: "Cloud Fundamentals", color: "#0f766e", title: "Cloud setup checklist", type: "assignment", dueAt: iso(72), url: "#", status: "open", submitted: false, canvasComplete: false, manuallyComplete: false, moved: null },
       ];
       window.chrome = {
         runtime: {

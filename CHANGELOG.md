@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1 — 2026-09-24
+
+- Softened the panel to blend with Canvas using open lists, lighter dividers, natural title casing, and restrained course-colour dots.
+- Replaced the outlined brand symbol and heavy row accents with subtler interface details.
+- Reworked sanitized screenshots with generic course names, generic coursework, and non-identifying course artwork.
+
 ## 0.4.0 — 2026-09-24
 
 - Reworked the panel into a compact, conventional utility layout without decorative dashboard cards.

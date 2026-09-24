@@ -1,4 +1,3 @@
-import { TYPE_LABELS } from "./constants.js";
 import { bucketFor } from "./dates.js";
 
 export const DATE_GROUPS = [
@@ -11,12 +10,12 @@ export const DATE_GROUPS = [
 ];
 
 export const TYPE_GROUPS = [
-  ["assignment", TYPE_LABELS.assignment],
-  ["quiz", TYPE_LABELS.quiz],
-  ["discussion", TYPE_LABELS.discussion],
-  ["event", TYPE_LABELS.event],
-  ["note", TYPE_LABELS.note],
-  ["other", TYPE_LABELS.other],
+  ["assignment", "Assignments"],
+  ["quiz", "Quizzes"],
+  ["discussion", "Discussions"],
+  ["event", "Events"],
+  ["note", "Planner notes"],
+  ["other", "Other items"],
 ];
 
 export function groupPlannerItems(items, mode = "type", now = new Date()) {
