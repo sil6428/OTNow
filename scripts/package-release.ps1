@@ -14,6 +14,7 @@ $releaseFiles = @(
   "options",
   "icons",
   "LICENSE",
+  "INSTALL.md",
   "README.md",
   "UPDATE_GUIDE.md",
   "PRIVACY.md",

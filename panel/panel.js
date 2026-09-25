@@ -1,5 +1,5 @@
 import { bucketFor, formatDate, formatTime, relativeDue } from "../src/dates.js";
-import { CANVAS_ORIGIN, TYPE_LABELS } from "../src/constants.js";
+import { CANVAS_ORIGIN, SUPPORT_URL, TYPE_LABELS } from "../src/constants.js";
 import { countPlannerTypes, groupPlannerItems, TYPE_GROUPS } from "../src/view-model.js";
 
 const app = document.querySelector("#app");
@@ -9,6 +9,8 @@ const settingsButton = document.querySelector("#settings");
 const notice = document.querySelector("#notice");
 const syncStatus = document.querySelector("#sync-status");
 const appVersion = document.querySelector("#app-version");
+const support = document.querySelector("#support");
+const supportLink = document.querySelector("#support-link");
 
 let current = { state: null, settings: null };
 let activeView = localStorage.getItem("otnow:view") === "courses" ? "courses" : "deadlines";
@@ -21,6 +23,18 @@ function element(tag, className, text) {
   if (className) node.className = className;
   if (text != null) node.textContent = text;
   return node;
+}
+
+function configureSupportLink() {
+  if (!SUPPORT_URL) return;
+  try {
+    const url = new URL(SUPPORT_URL);
+    if (url.protocol !== "https:" || url.hostname !== "ko-fi.com") return;
+    supportLink.href = url.href;
+    support.hidden = false;
+  } catch {
+    // Keep the optional support section hidden if its URL is invalid.
+  }
 }
 
 function applyTheme(theme) {
@@ -355,6 +369,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
   render();
 });
 
+configureSupportLink();
 load();
 setInterval(() => {
   if (current.state) syncStatus.textContent = relativeSync(current.state.lastSyncAt);

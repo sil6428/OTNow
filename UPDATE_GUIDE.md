@@ -12,7 +12,7 @@ Chrome Web Store installations update automatically. The steps below are only fo
 ## Step-by-step update
 
 1. Open the [latest OTNow release](https://github.com/sil6428/OTNow/releases/latest).
-2. Under **Assets**, download the ZIP named `otnow-VERSION.zip`.
+2. Under **Assets**, download the ZIP named `otnow-VERSION.zip`. Ignore the automatically generated **Source code** downloads.
 3. Close the OTNow side panel.
 4. Find the folder from which OTNow is currently loaded. Keep using this same folder so Chrome preserves the same unpacked extension and its settings.
 5. Right-click the downloaded ZIP and choose **Extract All**.

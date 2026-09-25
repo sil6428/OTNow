@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "OTNow",
   "short_name": "OTNow",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "An unofficial, private-by-default Canvas deadline panel for Ontario Tech students.",
   "minimum_chrome_version": "116",
   "incognito": "not_allowed",

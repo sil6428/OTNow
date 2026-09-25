@@ -9,6 +9,7 @@ export const UPDATE_CHECK_MINUTES = 6 * 60;
 export const UPDATE_CHECK_ENABLED = true;
 export const MOVED_DATE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 export const REPOSITORY_URL = "https://github.com/sil6428/OTNow";
+export const SUPPORT_URL = "";
 export const UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/sil6428/OTNow/main/manifest.json";
 export const UPDATE_GUIDE_URL = `${REPOSITORY_URL}/blob/main/UPDATE_GUIDE.md`;
 

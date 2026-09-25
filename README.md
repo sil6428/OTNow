@@ -10,10 +10,12 @@ The project name is **OTNow**.
 
 OTNow is being prepared for the Chrome Web Store. Until its listing is approved, use the packaged release rather than GitHub's source-code download.
 
+**[Download the latest packaged release](https://github.com/sil6428/OTNow/releases/latest)** · [Open the full beginner installation guide](INSTALL.md)
+
 > [!IMPORTANT]
 > Open the [latest OTNow release](https://github.com/sil6428/OTNow/releases/latest) and download the file named `otnow-VERSION.zip` under **Assets**. Do **not** use the green **Code > Download ZIP** button. GitHub's source ZIP adds an extra repository folder and can cause Chrome's “manifest file is missing or unreadable” error when the wrong folder is selected.
 
-1. Download `otnow-VERSION.zip` from the [latest release](https://github.com/sil6428/OTNow/releases/latest).
+1. Under **Assets**, download `otnow-VERSION.zip` from the [latest release](https://github.com/sil6428/OTNow/releases/latest). Ignore the automatically generated **Source code** downloads.
 2. Right-click the downloaded ZIP and choose **Extract All**.
 3. Open the extracted folder and confirm that `manifest.json` is visible beside the `icons`, `options`, `panel`, and `src` folders.
 4. In Chrome, open `chrome://extensions`.

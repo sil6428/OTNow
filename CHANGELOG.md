@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.2 — 2026-09-24
+
+- Added a dedicated beginner installation guide with clear warnings against GitHub's nested source archives.
+- Included the installation guide in packaged GitHub releases and added an automated check for the optional support URL.
+- Prepared an unobtrusive support link below all side-panel content; it remains hidden until the official Ko-fi page is available.
+- Recorded the WATnow creator's approval to publish OTNow while preserving the original MIT attribution.
+
 ## 0.5.1 — 2026-09-24
 
 - Replaced the README preview with the final sanitized real-session image.

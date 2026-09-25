@@ -29,4 +29,13 @@ const bridge = await readFile(resolve(root, "src/content/canvas-bridge.js"), "ut
 assert.match(bridge, /method:\s*"GET"/);
 assert.doesNotMatch(bridge, /method:\s*"(?:POST|PUT|PATCH|DELETE)"/);
 
+const constantsSource = await readFile(resolve(root, "src/constants.js"), "utf8");
+const supportUrl = constantsSource.match(/export const SUPPORT_URL = "([^"]*)";/)?.[1];
+assert.notEqual(supportUrl, undefined, "SUPPORT_URL must be declared");
+if (supportUrl) {
+  const parsedSupportUrl = new URL(supportUrl);
+  assert.equal(parsedSupportUrl.protocol, "https:");
+  assert.equal(parsedSupportUrl.hostname, "ko-fi.com");
+}
+
 console.log(`OTNow package check passed (${requiredFiles.length} required files).`);
