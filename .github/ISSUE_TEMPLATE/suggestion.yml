@@ -1,0 +1,52 @@
+name: Suggestion
+description: Suggest a practical improvement for OTNow.
+title: "[Suggestion]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sharing an idea. Keep suggestions focused on helping Ontario Tech students navigate Canvas. GitHub issues are public, so do not include personal or private course information.
+
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: My suggestion does not contain names, student numbers, grades, private course content, or other personal information.
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Explain the student need before describing the feature.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like OTNow to do?
+      description: Describe the smallest useful version of your idea.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: How often would this help?
+      options:
+        - Every day
+        - A few times per week
+        - A few times per semester
+        - Once or rarely
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Current workaround
+      description: Optional. Tell us how you handle this today.

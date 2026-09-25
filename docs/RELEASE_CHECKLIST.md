@@ -40,6 +40,14 @@
 - [x] Local-data deletion control.
 - [x] Incognito mode disabled.
 - [x] Publish the privacy policy at a stable HTTPS URL.
+- [x] Publish a security policy with private vulnerability-reporting instructions.
+- [x] Public bug and suggestion forms warn users not to share student or course data.
+
+## Repository health
+
+- [x] Automated tests, validation, and both release packages run on pushes and pull requests.
+- [x] Validated build artifacts are retained for review.
+- [ ] Require the automated quality check before merging to `main`.
 
 ## Store submission
 

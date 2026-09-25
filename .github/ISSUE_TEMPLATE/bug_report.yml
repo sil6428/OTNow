@@ -1,0 +1,84 @@
+name: Bug report
+description: Report something in OTNow that is broken or behaving unexpectedly.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve OTNow. GitHub issues are public. Do not include your student number, grades, private course content, session details, or screenshots containing personal information.
+
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed names, student numbers, grades, private course content, and other personal information from this report.
+          required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: OTNow version
+      description: Find this on chrome://extensions or in the OTNow update section.
+      placeholder: 0.5.2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Deadlines
+        - Courses
+        - Reminders or notifications
+        - Canvas connection
+        - Theme or layout
+        - Installation or updating
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe what you saw and what you expected instead.
+      placeholder: Tell us what went wrong without including private Canvas information.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open...
+        2. Select...
+        3. See...
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Chrome version and operating system
+      placeholder: Chrome 140 on Windows 11
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Optional. Attach only sanitized screenshots with fictional or fully hidden identifying information.
+
+  - type: checkboxes
+    id: security
+    attributes:
+      label: Security check
+      options:
+        - label: This is not a security vulnerability. I will use the private security-reporting instructions for vulnerabilities.
+          required: true
