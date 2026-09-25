@@ -26,8 +26,8 @@
 - [x] Light, dark, and system themes with a one-click panel toggle.
 - [x] Screen-reader labels on icon buttons and check-offs.
 - [x] Test at a 360px-wide side panel.
-- [ ] Test at 200% browser zoom.
-- [ ] Run a screen-reader smoke test.
+- [x] Test at 200% browser zoom with no horizontal overflow.
+- [x] Run a screen-reader accessibility-tree smoke test for navigation, controls, headings, links, status text, and check-offs.
 
 ## Privacy and security
 
@@ -53,6 +53,7 @@
 
 - [x] Release packaging fails if `manifest.json` is not at the ZIP root.
 - [x] Store package removes the GitHub updater and `raw.githubusercontent.com` permission.
+- [x] Smoke-test the exact store package's interface in a browser with sanitized runtime data.
 - [x] 128×128 icon.
 - [x] Store description draft.
 - [x] Permission justifications.
