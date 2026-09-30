@@ -1,6 +1,6 @@
 # OTNow Privacy Policy
 
-Last updated: September 24, 2026
+Last updated: September 30, 2026
 
 OTNow is an unofficial browser extension for Ontario Tech students. It is designed to operate locally and does not run an OTNow server.
 
@@ -14,7 +14,7 @@ The information is used only to display deadlines, preserve an offline cache, de
 
 ## Storage and sharing
 
-Course information, settings, manual check-offs, and reminder history are stored locally through Chrome extension storage. OTNow does not sell, share, transmit, or use this information for advertising, analytics, profiling, or model training. OTNow does not collect passwords or authentication tokens.
+Course information, settings, manual check-offs, reminder history, and the totals shown in the Insights view are stored locally through Chrome extension storage. Insights records only local counters and opaque Canvas item identifiers needed to avoid counting the same deadline twice; it does not retain coursework titles for measurement. OTNow does not sell, share, transmit, or use this information for advertising, analytics, profiling, or model training. OTNow does not collect passwords or authentication tokens.
 
 ## Network access
 
@@ -24,7 +24,7 @@ Copies installed manually from GitHub retrieve OTNow's public `manifest.json` fr
 
 ## Retention and deletion
 
-Saved information remains on the local Chrome profile until the student uses **Delete local OTNow data**, clears extension data, or removes the extension.
+Saved information remains on the local Chrome profile until the student uses **Delete local OTNow data**, clears extension data, or removes the extension. That control also deletes the local Insights totals.
 
 ## Affiliation
 

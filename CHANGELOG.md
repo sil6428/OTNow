@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0 — 2026-09-30
+
+- Prepared the first stable Chrome Web Store release.
+- Added a local-only Insights view for deadlines organized, changed dates detected, reminders delivered, manual check-offs, successful refreshes, and days used.
+- Kept all activity totals on the student's device; no telemetry or analytics were added to the extension.
+- Added a release workflow that tests, packages, checksums, and publishes tagged GitHub releases automatically.
+- Simplified GitHub updates so users replace files in the same folder and select **Reload** without removing the extension or losing local settings.
+- Added a measurement guide for using Chrome Web Store and GitHub aggregate statistics in accurate portfolio and resume claims.
+
 ## 0.5.2 — 2026-09-24
 
 - Added a dedicated beginner installation guide with clear warnings against GitHub's nested source archives.

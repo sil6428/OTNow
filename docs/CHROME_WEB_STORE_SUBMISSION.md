@@ -27,12 +27,14 @@ OTNow can be published on the Chrome Web Store. Its Manifest V3 package is alrea
 9. Set distribution to Canada unless there is a reason to make an Ontario Tech-specific extension visible worldwide.
 10. Save the draft, run the dashboard's automated checks, and review every warning.
 11. Submit the item for Google review only after the unchecked live-session tests in `docs/RELEASE_CHECKLIST.md` are complete.
+12. After publication, opt in to the Store listing's managed Google Analytics property and record the aggregate dashboard numbers described in `docs/METRICS.md`. Do not add an analytics library to OTNow.
 
 ## Review notes
 
 - **Single purpose:** show Ontario Tech Canvas deadlines and provide student-configured deadline reminders.
 - **Remote code:** none. The store package contains all executable code locally and does not contact GitHub for updates.
 - **User data:** Canvas course and planner information is stored only in `chrome.storage.local`; it is not sent to the developer, analytics providers, advertisers, or an OTNow server.
+- **Insights:** the Insights tab contains on-device counters only. Nothing from that view is uploaded or aggregated by OTNow.
 - **Permissions:** each permission is tied to the visible deadline, reminder, local-storage, or side-panel features.
 - **Affiliation:** keep the unofficial-project disclaimer in the listing and privacy policy.
 

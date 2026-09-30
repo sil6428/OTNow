@@ -6,10 +6,18 @@ Because OTNow is installed as an unpacked extension, Chrome cannot replace its f
 
 Chrome Web Store installations update automatically. The steps below are only for copies installed manually from GitHub.
 
+## The short version
+
+1. Download and extract the newest `otnow-VERSION.zip` release.
+2. Copy its contents over the files in the **same folder Chrome already uses for OTNow**, accepting **Replace the files in the destination**.
+3. Open `chrome://extensions`, find OTNow, and select **Reload**.
+
+Do not select **Remove** and do not use **Load unpacked** again. Reusing the same folder preserves OTNow's extension identity and local data.
+
 > [!IMPORTANT]
 > Download the packaged ZIP under **Assets** on the releases page. Do **not** use GitHub's green **Code > Download ZIP** button; that source archive adds an extra repository folder.
 
-## Step-by-step update
+## Detailed update steps
 
 1. Open the [latest OTNow release](https://github.com/sil6428/OTNow/releases/latest).
 2. Under **Assets**, download the ZIP named `otnow-VERSION.zip`. Ignore the automatically generated **Source code** downloads.

@@ -42,9 +42,26 @@
       ];
       window.chrome = {
         runtime: {
-          getManifest: () => ({ version: "0.5.0" }),
+          getManifest: () => ({ version: "1.0.0" }),
           sendMessage: async (message) => message.type === "panel:get" ? {
-            state: { status: "ready", items, courses, lastSyncAt: new Date().toISOString(), error: null, errorKind: null, stale: null, update: updateAvailable ? { status: "available", installedVersion: "0.5.0", latestVersion: "0.5.1" } : { status: "current", installedVersion: "0.5.0", latestVersion: "0.5.0" } },
+            state: {
+              status: "ready",
+              items,
+              courses,
+              lastSyncAt: new Date().toISOString(),
+              error: null,
+              errorKind: null,
+              stale: null,
+              metrics: {
+                deadlinesDiscovered: 47,
+                movedDeadlinesDetected: 3,
+                remindersSent: 18,
+                manualCompletions: 11,
+                successfulSyncs: 86,
+                activeDays: Array.from({ length: 14 }, (_, index) => `2026-09-${String(index + 10).padStart(2, "0")}`),
+              },
+              update: updateAvailable ? { status: "available", installedVersion: "1.0.0", latestVersion: "1.0.1" } : { status: "current", installedVersion: "1.0.0", latestVersion: "1.0.0" },
+            },
             settings: { theme: "light", showCompleted: false },
           } : message.type === "options:set" ? { settings: { theme: message.settings.theme, showCompleted: false } } : { ok: true },
         },

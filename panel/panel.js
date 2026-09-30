@@ -13,7 +13,8 @@ const support = document.querySelector("#support");
 const supportLink = document.querySelector("#support-link");
 
 let current = { state: null, settings: null };
-let activeView = localStorage.getItem("otnow:view") === "courses" ? "courses" : "deadlines";
+const savedView = localStorage.getItem("otnow:view");
+let activeView = ["courses", "insights"].includes(savedView) ? savedView : "deadlines";
 let courseFilter = localStorage.getItem("otnow:course") || "all";
 let typeFilter = localStorage.getItem("otnow:type") || "all";
 let groupMode = localStorage.getItem("otnow:group") === "date" ? "date" : "type";
@@ -82,12 +83,14 @@ function renderViewTabs(state) {
   const choices = [
     ["deadlines", "Deadlines", openCount],
     ["courses", "Courses", state.courses.length],
+    ["insights", "Insights", null],
   ];
   for (const [id, label, count] of choices) {
     const button = element("button", `view-tab${activeView === id ? " active" : ""}`);
     button.type = "button";
     button.setAttribute("aria-selected", String(activeView === id));
-    button.append(element("span", "", label), element("span", "tab-count", String(count)));
+    button.append(element("span", "", label));
+    if (count != null) button.append(element("span", "tab-count", String(count)));
     button.addEventListener("click", () => {
       activeView = id;
       localStorage.setItem("otnow:view", id);
@@ -288,6 +291,46 @@ function renderCourseDirectory(courses, items) {
   return section;
 }
 
+function formatMetric(value) {
+  return new Intl.NumberFormat().format(Number(value) || 0);
+}
+
+function insightRow(label, value, detail) {
+  const row = element("div", "insight-row");
+  const copy = element("div", "insight-copy");
+  copy.append(element("strong", "", label), element("span", "", detail));
+  row.append(copy, element("span", "insight-value", formatMetric(value)));
+  return row;
+}
+
+function renderInsights(metrics = {}) {
+  const section = element("section", "insights");
+  const header = element("div", "section-intro");
+  header.append(
+    element("h1", "", "Your OTNow activity"),
+    element("p", "", "A private summary of how OTNow has helped on this Chrome profile."),
+  );
+
+  const rows = element("div", "insight-list");
+  rows.append(
+    insightRow("Deadlines organized", metrics.deadlinesDiscovered, "Distinct dated Canvas items found"),
+    insightRow("Changed dates caught", metrics.movedDeadlinesDetected, "Due-date changes detected after a refresh"),
+    insightRow("Reminders delivered", metrics.remindersSent, "Deadline notifications created"),
+    insightRow("Manual check-offs", metrics.manualCompletions, "Items marked complete inside OTNow"),
+    insightRow("Successful refreshes", metrics.successfulSyncs, "Canvas updates completed"),
+    insightRow("Days used", metrics.activeDays?.length, "Distinct days OTNow was opened or refreshed"),
+  );
+
+  const privacy = element("div", "insight-privacy");
+  privacy.append(
+    element("strong", "", "Private by design"),
+    element("p", "", "These approximate totals stay in Chrome storage on this device. OTNow does not send them to the developer or any analytics service."),
+  );
+
+  section.append(header, rows, privacy);
+  return section;
+}
+
 function renderReady(state, settings) {
   if (courseFilter !== "all" && !state.courses.some((course) => course.id === courseFilter)) courseFilter = "all";
   app.replaceChildren(renderViewTabs(state));
@@ -296,6 +339,10 @@ function renderReady(state, settings) {
 
   if (activeView === "courses") {
     app.append(renderCourseDirectory(state.courses, state.items));
+    return;
+  }
+  if (activeView === "insights") {
+    app.append(renderInsights(state.metrics));
     return;
   }
 
@@ -335,9 +382,13 @@ function render() {
   renderReady(state, settings);
 }
 
-async function load() {
+async function load({ recordOpen = false } = {}) {
   appVersion.textContent = `v${chrome.runtime.getManifest().version}`;
   current = await chrome.runtime.sendMessage({ type: "panel:get" });
+  if (recordOpen) {
+    const response = await chrome.runtime.sendMessage({ type: "panel:opened" });
+    if (response?.state) current.state = response.state;
+  }
   render();
   if (current.state.status === "idle") syncNow();
 }
@@ -370,7 +421,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 
 configureSupportLink();
-load();
+load({ recordOpen: true });
 setInterval(() => {
   if (current.state) syncStatus.textContent = relativeSync(current.state.lastSyncAt);
 }, 60_000);

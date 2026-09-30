@@ -5,9 +5,11 @@ import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const manifest = JSON.parse(await readFile(resolve(root, "manifest.json"), "utf8"));
+const packageMetadata = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
 
 assert.equal(manifest.manifest_version, 3);
 assert.equal(manifest.background.type, "module");
+assert.equal(packageMetadata.version, manifest.version, "package.json and manifest.json versions must match");
 assert.deepEqual(manifest.host_permissions, [
   "https://learn.ontariotechu.ca/*",
   "https://raw.githubusercontent.com/*",
@@ -22,6 +24,7 @@ const requiredFiles = [
   manifest.options_page,
   ...manifest.content_scripts.flatMap((script) => script.js),
   "icons/icon-128.png",
+  "src/metrics.js",
 ];
 await Promise.all(requiredFiles.map((file) => access(resolve(root, file), constants.R_OK)));
 
@@ -37,5 +40,11 @@ if (supportUrl) {
   assert.equal(parsedSupportUrl.protocol, "https:");
   assert.equal(parsedSupportUrl.hostname, "ko-fi.com");
 }
+
+const privacy = await readFile(resolve(root, "PRIVACY.md"), "utf8");
+assert.match(privacy, /Insights/i, "Privacy policy must describe local Insights totals");
+
+const panelSource = await readFile(resolve(root, "panel/panel.js"), "utf8");
+assert.match(panelSource, /renderInsights/, "Side panel must expose the local Insights view");
 
 console.log(`OTNow package check passed (${requiredFiles.length} required files).`);

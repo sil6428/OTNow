@@ -8,6 +8,7 @@
 - [x] Active courses and planner items render.
 - [x] Deadlines can be filtered and grouped by Canvas item type.
 - [x] Courses directory opens official Canvas content sections.
+- [x] Insights totals update locally without retaining coursework titles for measurement.
 - [x] Public repository version check detects a newer semantic version.
 - [x] Update notice links to a separate step-by-step guide.
 - [x] Manual refresh succeeds.
@@ -37,6 +38,7 @@
 - [x] Canvas network requests are hard-coded to `GET`.
 - [x] No cookie, broad tab, web-request, scripting, or clipboard permission.
 - [x] No analytics, ads, trackers, remote scripts, or external application server.
+- [x] Local Insights totals are covered by deletion, documentation, and migration tests.
 - [x] Local-data deletion control.
 - [x] Incognito mode disabled.
 - [x] Publish the privacy policy at a stable HTTPS URL.
@@ -46,6 +48,7 @@
 ## Repository health
 
 - [x] Automated tests, validation, and both release packages run on pushes and pull requests.
+- [x] Version-matched tags automatically publish both release packages and SHA-256 checksums.
 - [x] Validated build artifacts are retained for review.
 - [ ] Require the automated quality check before merging to `main`.
 
@@ -62,9 +65,11 @@
 - [x] Public privacy-policy URL.
 - [x] 1280×800 screenshot without real student information.
 - [x] Course-directory screenshot without real student information.
+- [x] Local Insights screenshot without real student information.
 - [x] Real-session screenshot sanitized with fictional course and coursework data.
 - [x] Required 440×280 promotional tile.
 - [ ] Enable 2-Step Verification on the publishing Google account.
 - [ ] Create the Chrome Web Store developer account and pay Google's one-time registration fee.
 - [ ] Upload the clean release ZIP.
 - [ ] Complete data-use disclosures using `PERMISSION_JUSTIFICATIONS.md`.
+- [ ] Opt in to the Chrome Web Store's managed listing analytics after publication; do not add an analytics SDK to the extension.

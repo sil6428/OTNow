@@ -16,6 +16,13 @@ import { mergePlannerItems } from "./canvas-model.js";
 import { readCanvas } from "./canvas-client.js";
 import { compareVersions, readPublishedVersion } from "./update-check.js";
 import {
+  recordFailedSync,
+  recordManualCompletion,
+  recordPanelOpen,
+  recordReminders,
+  recordSuccessfulSync,
+} from "./metrics.js";
+import {
   getManualDone,
   getSettings,
   getState,
@@ -93,6 +100,7 @@ async function runReminders({ initial = false } = {}) {
   const state = await getState();
   const now = Date.now();
   let changed = false;
+  let remindersSent = 0;
 
   for (const item of state.items) {
     if (item.status !== "open" || settings.mutedCourseIds.includes(item.courseId)) continue;
@@ -119,8 +127,10 @@ async function runReminders({ initial = false } = {}) {
     );
     state.notificationLinks[id] = item.url;
     state.sentReminders[key] = new Date().toISOString();
+    remindersSent += 1;
     changed = true;
   }
+  if (remindersSent) state.metrics = recordReminders(state.metrics, remindersSent);
   if (changed) await setState(state);
 }
 
@@ -151,6 +161,7 @@ async function syncCanvas({ userInitiated = false } = {}) {
         errorKind: null,
         stale: null,
         firstSyncComplete: true,
+        metrics: recordSuccessfulSync(before.metrics, items, moved.length),
       };
       pruneTracking(next, items);
       await setState(next);
@@ -168,6 +179,7 @@ async function syncCanvas({ userInitiated = false } = {}) {
         error: String(error?.message || error),
         errorKind: error?.code || "error",
         stale: hasCache ? { at: new Date().toISOString(), kind: error?.code || "error" } : null,
+        metrics: recordFailedSync(before.metrics),
       };
       await setState(next);
       await refreshBadge(next);
@@ -262,6 +274,7 @@ async function toggleManualDone(itemId) {
   if (!manualDone[itemId]) delete manualDone[itemId];
   await setManualDone(manualDone);
   const state = await updateState((draft) => {
+    if (manualDone[itemId]) draft.metrics = recordManualCompletion(draft.metrics);
     draft.items = draft.items.map((item) => {
       if (item.id !== itemId || item.submitted || item.canvasComplete) return item;
       const manuallyComplete = Boolean(manualDone[itemId]);
@@ -309,6 +322,15 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     switch (message.type) {
       case "panel:get":
         sendResponse({ state: await getState(), settings: await getSettings() });
+        checkForUpdate().catch(() => {});
+        break;
+      case "panel:opened":
+        sendResponse({
+          state: await updateState((draft) => {
+            draft.metrics = recordPanelOpen(draft.metrics);
+            return draft;
+          }),
+        });
         checkForUpdate().catch(() => {});
         break;
       case "panel:sync":

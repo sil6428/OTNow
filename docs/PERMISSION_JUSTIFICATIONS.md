@@ -12,7 +12,7 @@ Required to keep the deadline list visible beside any browser tab without replac
 
 ## `storage`
 
-Required to save the last successful Canvas read for offline viewing, user reminder preferences, manual check-offs, due-date-change history, and reminder deduplication records. The data remains in the local Chrome profile.
+Required to save the last successful Canvas read for offline viewing, user reminder preferences, manual check-offs, due-date-change history, reminder deduplication records, and the counters displayed in the local Insights view. The data remains in the local Chrome profile.
 
 ## `alarms`
 
@@ -40,4 +40,4 @@ OTNow does not execute remote code. All JavaScript is included in the extension 
 
 OTNow handles website content consisting of Canvas course names, course codes, planner items, due dates, Canvas links, completion states, and the student's submission status for those items. This information is used only for the extension's visible deadline and reminder features. It is stored locally and is not transmitted to the developer or third parties.
 
-OTNow does not collect authentication information, personally identifiable information, health information, financial information, personal communications, location, web history outside Ontario Tech Canvas, or user activity for analytics or advertising.
+OTNow does not collect authentication information, personally identifiable information, health information, financial information, personal communications, location, web history outside Ontario Tech Canvas, or transmit user activity for analytics or advertising. The activity totals shown to the student in Insights remain on that student's device.

@@ -22,6 +22,8 @@ try {
   await page.screenshot({ path: resolve(media, "otnow-store-1280x800.png") });
   await page.frameLocator("iframe").locator(".view-tab").filter({ hasText: "Courses" }).click();
   await page.screenshot({ path: resolve(media, "otnow-courses-1280x800.png") });
+  await page.frameLocator("iframe").locator(".view-tab").filter({ hasText: "Insights" }).click();
+  await page.screenshot({ path: resolve(media, "otnow-insights-1280x800.png") });
   await page.frameLocator("iframe").locator(".view-tab").filter({ hasText: "Deadlines" }).click();
   await page.frameLocator("iframe").locator("#theme-toggle").click();
   await page.screenshot({ path: resolve(media, "otnow-dark-1280x800.png") });
@@ -41,4 +43,4 @@ try {
   await browser.close();
 }
 
-console.log("Captured deadline, course, dark-mode, narrow-panel, update-notice, and promotional images");
+console.log("Captured deadline, course, insights, dark-mode, narrow-panel, update-notice, and promotional images");

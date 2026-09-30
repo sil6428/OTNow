@@ -13,8 +13,8 @@ Do not download either of GitHub's automatically generated **Source code** files
 ## Add OTNow to Chrome
 
 1. Right-click `otnow-X.Y.Z.zip` and select **Extract All**.
-2. Open the extracted folder.
-3. Confirm that `manifest.json` is directly visible beside the `icons`, `options`, `panel`, and `src` folders.
+2. Move the extracted folder to a stable location that you will keep, such as `Documents\OTNow`. Do not leave the only copy in a temporary Downloads folder.
+3. Open that stable folder and confirm that `manifest.json` is directly visible beside the `icons`, `options`, `panel`, and `src` folders.
 4. Open `chrome://extensions` in Chrome.
 5. Turn on **Developer mode** in the top-right corner.
 6. Select **Load unpacked**.
@@ -31,4 +31,4 @@ If the downloaded file is named `OTNow-main.zip` or the release page labels it *
 
 ## Updating later
 
-Copies installed from GitHub update manually. Follow [UPDATE_GUIDE.md](UPDATE_GUIDE.md) to replace the files without losing the extension's local settings. Chrome Web Store copies will update automatically after the store version is available.
+Copies installed from GitHub update manually, but they do not need to be removed or installed again. Follow [UPDATE_GUIDE.md](UPDATE_GUIDE.md) to replace the files in the same folder and select **Reload**. Chrome Web Store copies update automatically after the store version is available.

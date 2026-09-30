@@ -1,4 +1,5 @@
 import { DEFAULT_SETTINGS } from "./constants.js";
+import { emptyMetrics, mergeMetrics } from "./metrics.js";
 
 export function emptyState() {
   return {
@@ -13,6 +14,7 @@ export function emptyState() {
     sentReminders: {},
     notificationLinks: {},
     firstSyncComplete: false,
+    metrics: emptyMetrics(),
     update: {
       status: "idle",
       installedVersion: null,
@@ -55,7 +57,14 @@ export async function setSettings(nextOrUpdater) {
 
 export async function getState() {
   const { state } = await chrome.storage.local.get("state");
-  return state ? { ...emptyState(), ...state } : emptyState();
+  if (!state) return emptyState();
+  const empty = emptyState();
+  return {
+    ...empty,
+    ...state,
+    metrics: mergeMetrics(state.metrics),
+    update: { ...empty.update, ...(state.update || {}) },
+  };
 }
 
 export async function setState(state) {

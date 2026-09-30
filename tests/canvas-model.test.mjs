@@ -13,6 +13,15 @@ import { bucketFor } from "../src/dates.js";
 import { mergeSettings } from "../src/storage.js";
 import { countPlannerTypes, groupPlannerItems } from "../src/view-model.js";
 import { compareVersions, readPublishedVersion, versionParts } from "../src/update-check.js";
+import {
+  emptyMetrics,
+  mergeMetrics,
+  recordFailedSync,
+  recordManualCompletion,
+  recordPanelOpen,
+  recordReminders,
+  recordSuccessfulSync,
+} from "../src/metrics.js";
 
 const courses = {
   "42": { id: "42", code: "INFR 4611U", name: "Trust Systems", color: "#2563eb" },
@@ -127,4 +136,42 @@ test("accepts only a valid OTNow repository manifest", () => {
   assert.equal(readPublishedVersion({ name: "OTNow", version: "0.5.0" }), "0.5.0");
   assert.throws(() => readPublishedVersion({ name: "Different extension", version: "9.9.9" }));
   assert.throws(() => readPublishedVersion({ name: "OTNow", version: "latest" }));
+});
+
+test("records local activity without storing coursework content", () => {
+  const opened = recordPanelOpen(emptyMetrics(), new Date("2026-09-25T12:00:00Z"));
+  const synced = recordSuccessfulSync(opened, [
+    { id: "assignment:1", title: "Private title" },
+    { id: "quiz:2", title: "Another private title" },
+  ], 1, new Date("2026-09-25T12:05:00Z"));
+  const repeated = recordSuccessfulSync(synced, [{ id: "assignment:1" }], 0, new Date("2026-09-26T12:05:00Z"));
+  const testNow = new Date("2026-09-26T13:00:00Z");
+  const reminded = recordReminders(repeated, 2, testNow);
+  const completed = recordManualCompletion(reminded, testNow);
+  const failed = recordFailedSync(completed, testNow);
+
+  assert.equal(failed.panelOpens, 1);
+  assert.equal(failed.successfulSyncs, 2);
+  assert.equal(failed.failedSyncs, 1);
+  assert.equal(failed.deadlinesDiscovered, 2);
+  assert.equal(failed.movedDeadlinesDetected, 1);
+  assert.equal(failed.remindersSent, 2);
+  assert.equal(failed.manualCompletions, 1);
+  assert.deepEqual(failed.activeDays, ["2026-09-25", "2026-09-26"]);
+  assert(!JSON.stringify(failed).includes("Private title"));
+});
+
+test("repairs malformed saved activity totals", () => {
+  const metrics = mergeMetrics({
+    panelOpens: -4,
+    successfulSyncs: "3",
+    deadlinesDiscovered: 1,
+    seenItemIds: ["assignment:1", "assignment:1", "quiz:2"],
+    activeDays: ["2026-09-25", "2026-09-25"],
+  });
+  assert.equal(metrics.panelOpens, 0);
+  assert.equal(metrics.successfulSyncs, 3);
+  assert.equal(metrics.deadlinesDiscovered, 2);
+  assert.deepEqual(metrics.seenItemIds, ["assignment:1", "quiz:2"]);
+  assert.deepEqual(metrics.activeDays, ["2026-09-25"]);
 });
