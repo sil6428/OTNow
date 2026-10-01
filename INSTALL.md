@@ -1,6 +1,8 @@
-# Install OTNow from GitHub
+# Install OTNow
 
-OTNow is being prepared for the Chrome Web Store. Until the store listing is available, install the packaged GitHub release using the steps below.
+OTNow v1.5.0 has been submitted to the Chrome Web Store for review. After approval, the Chrome Web Store will be the preferred option because it provides one-click installation, automatic updates, no Developer mode, no unpacked extension folder to maintain, and Chrome-managed package delivery.
+
+Until the listing is published, install the packaged GitHub release using the steps below. Manual GitHub installation will remain available afterward for development and users who specifically prefer it.
 
 ## Download the correct file
 

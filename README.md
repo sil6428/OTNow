@@ -6,9 +6,13 @@ The project name is **OTNow**.
 
 ![OTNow beside a sanitized Ontario Tech Canvas dashboard](docs/media/otnow-real-deadlines-1280x800.png)
 
-## Install OTNow from GitHub
+## Install OTNow
 
-OTNow is being prepared for the Chrome Web Store. Until its listing is approved, use the packaged release rather than GitHub's source-code download.
+The Chrome Web Store will be the preferred installation method after Google's review is complete. Store installation provides one-click setup, automatic background updates, no Developer mode or permanent unpacked folder, and Chrome-managed package delivery. The Store build also removes OTNow's manual GitHub update checker and its related GitHub host permission because Chrome handles updates directly.
+
+**Status:** OTNow v1.5.0 has been submitted to the Chrome Web Store for review. The store link will be added here when Google publishes the listing.
+
+Until then, install the packaged GitHub release using the manual steps below. The GitHub release remains available afterward for development and manual installation, but most students should use the Chrome Web Store version.
 
 **[Download the latest packaged release](https://github.com/sil6428/OTNow/releases/latest)** · [Open the full beginner installation guide](INSTALL.md)
 
@@ -72,7 +76,7 @@ Overall reach is measured with Chrome Web Store reports. A [public OTNow statist
 
 ## Chrome Web Store status
 
-The extension package, listing copy, permission justifications, privacy policy, and sanitized screenshots are prepared. The remaining external steps are registering a Chrome Web Store developer account, paying Google's one-time registration fee, uploading the ZIP, completing the dashboard disclosures, and submitting the listing for Google's review. See [the store submission guide](docs/CHROME_WEB_STORE_SUBMISSION.md).
+OTNow v1.5.0 has been submitted to the Chrome Web Store for Google review. After approval, the published listing will become the recommended installation path and its link will be added above. The packaged GitHub release will remain available as a transparent manual-installation and development option. See [the store submission guide](docs/CHROME_WEB_STORE_SUBMISSION.md) for the release process.
 
 ## Development
 
