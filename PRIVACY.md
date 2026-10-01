@@ -30,6 +30,12 @@ OTNow never includes names, course names or codes, assignment or quiz titles, UR
 
 The statistics service is hosted on Cloudflare Workers and stores aggregate rows in Cloudflare D1. Public rating statistics expose only an average and response count. Cloudflare may process ordinary network and security metadata as the hosting provider, but OTNow does not place IP addresses or user-agent strings in its statistics database.
 
+## Website ratings and Google Form feedback
+
+The public OTNow statistics page lets a visitor submit a whole-number rating from 1 to 5. The rating service stores only the selected number and submission time; it does not place an email address, account identifier, extension installation identifier, IP address, or user-agent string in the database. A rating contributes to the public average and response count. Browser storage remembers on that device when a visitor has already rated to discourage accidental duplicate submissions.
+
+Written feedback is handled through a separate Google Form. The form does not collect email addresses, and the name field is optional. It asks whether a written note may remain private, be featured anonymously, or be featured with the submitted name. Form responses are saved to a private Google Sheet and are not published automatically. Google may process ordinary network, account, and security metadata under its own terms when the form is opened or submitted.
+
 ## Network access
 
 OTNow connects to `https://learn.ontariotechu.ca` through read-only `GET` requests to Canvas course and planner endpoints. It does not modify course content or submit work.

@@ -1,4 +1,7 @@
+import { DASHBOARD_PAGE, DASHBOARD_SCRIPT } from "./dashboard-assets.js";
+
 const MAX_BODY_BYTES = 4096;
+const MAX_RATING_BYTES = 256;
 const MAX_COUNTER = 10_000_000;
 const VERSION_PATTERN = /^\d+\.\d+\.\d+$/;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -20,6 +23,7 @@ export const COUNTER_KEYS = [
 
 const ALLOWED_REPORT_KEYS = new Set(["schema", "installId", "version", "counters", "rating"]);
 const ALLOWED_COUNTER_KEYS = new Set(COUNTER_KEYS);
+const ALLOWED_SITE_RATING_KEYS = new Set(["rating", "website"]);
 
 function json(body, status = 200, headers = {}) {
   return new Response(JSON.stringify(body), {
@@ -49,6 +53,24 @@ export function validateReport(payload) {
   if (Object.keys(payload.counters).some((key) => !ALLOWED_COUNTER_KEYS.has(key))) return false;
   if (payload.rating != null && (!Number.isSafeInteger(payload.rating) || payload.rating < 1 || payload.rating > 5)) return false;
   return COUNTER_KEYS.every((key) => counter(payload.counters[key]));
+}
+
+export function validateSiteRating(payload) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
+  if (Object.keys(payload).some((key) => !ALLOWED_SITE_RATING_KEYS.has(key))) return false;
+  if (!Number.isSafeInteger(payload.rating) || payload.rating < 1 || payload.rating > 5) return false;
+  if (payload.website != null && typeof payload.website !== "string") return false;
+  return String(payload.website || "").length <= 200;
+}
+
+async function readSiteRating(request) {
+  const contentLength = Number(request.headers.get("content-length") || 0);
+  if (contentLength > MAX_RATING_BYTES) throw new Error("too-large");
+  const text = await request.text();
+  if (new TextEncoder().encode(text).byteLength > MAX_RATING_BYTES) throw new Error("too-large");
+  const payload = JSON.parse(text);
+  if (!validateSiteRating(payload)) throw new Error("invalid-rating");
+  return payload;
 }
 
 async function readReport(request) {
@@ -162,8 +184,34 @@ async function removeReport(request, env) {
   return json({ ok: true });
 }
 
+async function submitSiteRating(request, env) {
+  const origin = request.headers.get("origin");
+  if (origin && origin !== new URL(request.url).origin) return json({ ok: false, error: "Origin not allowed." }, 403);
+
+  let payload;
+  try {
+    payload = await readSiteRating(request);
+  } catch (error) {
+    return json({ ok: false, error: error.message === "too-large" ? "Rating request is too large." : "Choose a rating from 1 to 5." }, 400);
+  }
+
+  // A filled honeypot receives a normal-looking response without storing anything.
+  if (String(payload.website || "").trim()) return json({ ok: true, ratingAccepted: true }, 202);
+
+  const limit = await env.DB.prepare(`
+    SELECT
+      SUM(CASE WHEN created_at >= datetime('now', '-2 seconds') THEN 1 ELSE 0 END) AS recent,
+      SUM(CASE WHEN created_at >= datetime('now', '-1 day') THEN 1 ELSE 0 END) AS today
+    FROM site_ratings
+  `).first();
+  if (Number(limit?.recent) > 0 || Number(limit?.today) >= 500) return json({ ok: false, error: "Ratings are busy. Please wait a moment and try again." }, 429);
+
+  await env.DB.prepare("INSERT INTO site_ratings (rating, created_at) VALUES (?, ?)").bind(payload.rating, sqliteTimestamp()).run();
+  return json({ ok: true, ratingAccepted: true }, 202);
+}
+
 async function globalStats(env) {
-  const [summaryResult, activityResult, versionsResult, growthResult] = await env.DB.batch([
+  const [summaryResult, activityResult, versionsResult, growthResult, siteRatingResult] = await env.DB.batch([
     env.DB.prepare(`
       SELECT
         COUNT(*) AS reportingInstallations,
@@ -179,7 +227,7 @@ async function globalStats(env) {
         COALESCE(SUM(manual_completions), 0) AS manualCompletions,
         COALESCE(SUM(successful_syncs), 0) AS successfulSyncs,
         COALESCE(SUM(active_days), 0) AS activeDays,
-        ROUND(AVG(rating), 1) AS averageRating,
+        COALESCE(SUM(rating), 0) AS ratingSum,
         COUNT(rating) AS ratingCount
       FROM installations
     `),
@@ -192,11 +240,20 @@ async function globalStats(env) {
     `),
     env.DB.prepare("SELECT version, COUNT(*) AS installations FROM installations GROUP BY version ORDER BY installations DESC, version DESC LIMIT 10"),
     env.DB.prepare("SELECT substr(first_seen, 1, 10) AS day, COUNT(*) AS installs FROM installations WHERE first_seen >= datetime('now', '-30 days') GROUP BY day ORDER BY day"),
+    env.DB.prepare("SELECT COALESCE(SUM(rating), 0) AS ratingSum, COUNT(rating) AS ratingCount FROM site_ratings"),
   ]);
+
+  const summary = summaryResult.results?.[0] || {};
+  const siteRatings = siteRatingResult?.results?.[0] || {};
+  const ratingSum = Number(summary.ratingSum || 0) + Number(siteRatings.ratingSum || 0);
+  const ratingCount = Number(summary.ratingCount || 0) + Number(siteRatings.ratingCount || 0);
+  summary.ratingCount = ratingCount;
+  summary.averageRating = ratingCount ? Math.round((ratingSum / ratingCount) * 10) / 10 : null;
+  delete summary.ratingSum;
 
   return {
     generatedAt: new Date().toISOString(),
-    summary: summaryResult.results?.[0] || {},
+    summary,
     activity: activityResult.results?.[0] || {},
     versions: versionsResult.results || [],
     newInstallations: growthResult.results || [],
@@ -592,12 +649,18 @@ export default {
       return response;
     }
     if (url.pathname === "/api/stats" && request.method === "GET") return publicStats(request, env, context);
-    if ((url.pathname === "/" || url.pathname === "/dashboard") && request.method === "GET") return htmlResponse(MINIMAL_DASHBOARD_HTML);
-    if (url.pathname === "/dashboard.js" && request.method === "GET") return htmlResponse(MINIMAL_DASHBOARD_JS, "text/javascript; charset=utf-8");
+    if (url.pathname === "/api/rating" && request.method === "POST") {
+      const response = await submitSiteRating(request, env);
+      if (response.ok) clearStatsCache(request, context);
+      return response;
+    }
+    if ((url.pathname === "/" || url.pathname === "/dashboard") && request.method === "GET") return htmlResponse(DASHBOARD_PAGE);
+    if (url.pathname === "/dashboard.js" && request.method === "GET") return htmlResponse(DASHBOARD_SCRIPT, "text/javascript; charset=utf-8");
     if (url.pathname === "/favicon.svg" && request.method === "GET") return htmlResponse(FAVICON_SVG, "image/svg+xml; charset=utf-8");
     return json({ ok: false, error: "Not found" }, 404);
   },
   async scheduled(_controller, env) {
     await env.DB.prepare("DELETE FROM installations WHERE last_seen < datetime('now', '-180 days')").run();
+    await env.DB.prepare("DELETE FROM site_ratings WHERE created_at < datetime('now', '-180 days')").run();
   },
 };
