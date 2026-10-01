@@ -9,10 +9,11 @@ OTNow can be published on the Chrome Web Store. Its Manifest V3 package is alrea
 - Listing copy in `docs/STORE_LISTING.md`
 - Permission explanations in `docs/PERMISSION_JUSTIFICATIONS.md`
 - Public privacy policy at `https://github.com/sil6428/OTNow/blob/main/PRIVACY.md`
-- Public support page at `https://github.com/sil6428/OTNow/issues`
+- Private feedback and support form at `https://docs.google.com/forms/d/e/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw/viewform`
 - Sanitized 1280×800 light, dark, and course-directory screenshots
 - A sanitized real-session image with fictional course and coursework data
 - 440×280 promotional tile in `docs/media/otnow-promo-440x280.png`
+- 1400×560 marquee promotional tile in `docs/media/otnow-marquee-1400x560.png`
 
 ## External steps that require the developer account owner
 
@@ -21,7 +22,7 @@ OTNow can be published on the Chrome Web Store. Its Manifest V3 package is alrea
 3. Register as a developer, accept the agreement, and pay the one-time registration fee shown by Google.
 4. Run `scripts/package-store.ps1`, choose **Add new item**, and upload `dist/otnow-store-VERSION.zip`.
 5. Copy the name, category, and description from `docs/STORE_LISTING.md`.
-6. Add the store icon, at least one 1280×800 screenshot, and a 440×280 small promotional tile.
+6. Add the store icon, the prepared 1280×800 screenshots, the 440×280 small promotional tile, and the optional 1400×560 marquee tile.
 7. Enter the homepage, support, and privacy-policy URLs from `docs/STORE_LISTING.md`.
 8. Complete the privacy fields using `docs/PERMISSION_JUSTIFICATIONS.md`. Disclose that OTNow handles Canvas course and planner website content locally and optionally collects anonymous aggregate user-activity and website-content counts after explicit consent.
 9. Set distribution to Canada unless there is a reason to make an Ontario Tech-specific extension visible worldwide.

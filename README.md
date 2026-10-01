@@ -61,11 +61,10 @@ See [PRIVACY.md](PRIVACY.md) for a publishable privacy policy.
 
 ## Feedback and security
 
-- [Report a bug](https://github.com/sil6428/OTNow/issues/new?template=bug_report.yml)
-- [Suggest an improvement](https://github.com/sil6428/OTNow/issues/new?template=suggestion.yml)
+- [Report a bug or suggest an improvement](https://docs.google.com/forms/d/e/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw/viewform)
 - [Report a vulnerability privately](https://github.com/sil6428/OTNow/security/advisories/new)
 
-GitHub issues are public. Remove student names, student numbers, grades, private course content, and other personal information before submitting feedback. Security vulnerabilities should never be posted publicly; follow [SECURITY.md](SECURITY.md) instead.
+The feedback form accepts an optional name and sends responses privately to the OTNow maintainer. Remove student numbers, grades, private course content, session details, and other personal information before submitting. Security vulnerabilities should not be submitted through the general feedback form; follow [SECURITY.md](SECURITY.md) instead.
 
 If Canvas was already open before installing OTNow, reload that Canvas tab once. Future versions can be installed without removing OTNow; follow [UPDATE_GUIDE.md](UPDATE_GUIDE.md) so local settings remain attached to the same unpacked extension folder.
 
