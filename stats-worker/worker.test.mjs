@@ -16,6 +16,7 @@ test("accepts a strictly numeric anonymous report", () => {
   const report = validReport();
   report.counters.assignments = 12;
   assert.equal(validateReport(report), true);
+  assert.equal(validateReport({ ...report, rating: 5 }), true);
 });
 
 test("rejects identifying or coursework fields", () => {
@@ -32,4 +33,7 @@ test("rejects malformed identifiers, versions, and counters", () => {
   const report = validReport();
   report.counters.assignments = -1;
   assert.equal(validateReport(report), false);
+  assert.equal(validateReport({ ...validReport(), rating: 0 }), false);
+  assert.equal(validateReport({ ...validReport(), rating: 6 }), false);
+  assert.equal(validateReport({ ...validReport(), rating: "5" }), false);
 });

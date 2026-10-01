@@ -29,6 +29,7 @@ import {
   deleteAnonymousStats,
   getAnonymousStatsStatus,
   reportAnonymousStats,
+  setAnonymousRating,
 } from "./global-stats.js";
 import {
   getManualDone,
@@ -363,7 +364,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   (async () => {
     switch (message.type) {
       case "panel:get":
-        sendResponse({ state: await getState(), settings: await getSettings() });
+        sendResponse({ state: await getState(), settings: await getSettings(), globalStats: await getAnonymousStatsStatus() });
         checkForUpdate().catch(() => {});
         break;
       case "panel:opened":
@@ -439,6 +440,14 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       case "stats:report":
         sendResponse({ report: await runGlobalStats({ force: true }), globalStats: await getAnonymousStatsStatus() });
         break;
+      case "stats:rate": {
+        const settings = await getSettings();
+        if (!settings.shareAnonymousStats || !(await hasGlobalStatsPermission())) throw new Error("Enable anonymous statistics before sharing a rating.");
+        await setAnonymousRating(message.rating);
+        const report = await runGlobalStats({ force: true });
+        sendResponse({ ok: true, report, globalStats: await getAnonymousStatsStatus() });
+        break;
+      }
       case "options:delete-data":
         if ((await getSettings()).shareAnonymousStats) {
           if (!(await hasGlobalStatsPermission())) throw new Error("Anonymous statistics permission is missing. Disable sharing before deleting data.");

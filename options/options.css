@@ -72,3 +72,16 @@ code { padding: 2px 5px; border-radius: 3px; background: var(--surface-2); color
 button { padding: 9px 12px; border-radius: 3px; font: inherit; font-weight: 700; cursor: pointer; }
 .danger { border: 1px solid #f0b7b2; background: #fff0ed; color: #b42318; }
 .saved { min-height: 20px; color: #087f5b; text-align: center; }
+.delete-card { position: relative; overflow: hidden; }
+.delete-card.is-shredding { animation: shred-card .52s cubic-bezier(.5,0,.85,.55) both; }
+.delete-card.is-shredding::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: repeating-linear-gradient(90deg,transparent 0 8px,var(--bg) 8px 12px);
+  animation: shred-mask .52s steps(8,end) both;
+  pointer-events: none;
+}
+@keyframes shred-card { to { opacity: 0; transform: translateY(28px) scaleY(.2); filter: blur(3px); } }
+@keyframes shred-mask { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .delete-card.is-shredding,.delete-card.is-shredding::after { animation: none; } }

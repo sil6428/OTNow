@@ -1,0 +1,2 @@
+ALTER TABLE installations
+ADD COLUMN rating INTEGER DEFAULT NULL CHECK (rating IS NULL OR rating BETWEEN 1 AND 5);

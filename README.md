@@ -39,7 +39,7 @@ If Chrome reports that it cannot read the manifest, the selected folder is one l
 - Keeps the last successful read available when Canvas or the network is unavailable.
 - Supports light, dark, or system appearance.
 - Shows a local-only Insights summary of deadlines organized, due-date changes detected, reminders delivered, manual check-offs, successful refreshes, and days used.
-- Offers separate, off-by-default anonymous global statistics that send only a random installation ID, version, and numerical totals after explicit consent.
+- Offers separate, off-by-default anonymous global statistics that send only a random installation ID, version, numerical totals, and an optional 1–5 rating after explicit consent.
 - Shows a one-time first-run consent screen with clear **Share anonymous statistics** and **Not now** choices; neither is preselected.
 - GitHub-installed copies check the public OTNow repository for a newer version and link to [step-by-step update instructions](UPDATE_GUIDE.md); Chrome Web Store copies update automatically.
 - Refreshes every 30 minutes while Chrome is running.

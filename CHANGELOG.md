@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.0 — 2026-10-01
+
+- Rebuilt the public statistics page as a single-screen, no-scroll snapshot with a cursor-reactive particle field and only four broad community totals.
+- Added an optional 1–5 rating after seven active days for users who already opted in to anonymous statistics; the public page shows only the average and response count.
+- Added purposeful micro-interactions inspired by React Bits: spring check-offs, swipe-to-complete rows, a refresh success mark, a rating peek, and a delete-data shred transition.
+- Preserved keyboard controls, reduced-motion support, and the dependency-free Worker implementation.
+
 ## 1.3.0 — 2026-10-01
 
 - Rebuilt the anonymous statistics dashboard as a polished, responsive public page with live aggregate activity, category totals, release distribution, growth, and prominent privacy boundaries.

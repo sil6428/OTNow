@@ -22,7 +22,7 @@ OTNow refreshes Canvas every 30 minutes while Chrome is running. When a due date
 
 The Insights tab provides a private, on-device summary of deadlines organized, changed dates caught, reminders delivered, manual check-offs, successful refreshes, and days used.
 
-On first run, students see a one-time consent screen for anonymous global statistics with **Share anonymous statistics** and **Not now** choices. Nothing is preselected or shared by default. Enabling the feature requests its own limited host permission and sends only a random installation ID, the OTNow version, and numerical totals by broad item or feature type. It never sends course names, coursework titles, URLs, due dates, grades, emails, student identifiers, or Canvas identifiers. Opting out deletes the installation's aggregate row.
+On first run, students see a one-time consent screen for anonymous global statistics with **Share anonymous statistics** and **Not now** choices. Nothing is preselected or shared by default. Enabling the feature requests its own limited host permission and sends only a random installation ID, the OTNow version, numerical totals by broad item or feature type, and an optional 1–5 rating if the student later chooses one. It never sends course names, coursework titles, URLs, due dates, grades, emails, student identifiers, or Canvas identifiers. Opting out deletes the installation's aggregate row.
 
 Privacy is part of the design:
 

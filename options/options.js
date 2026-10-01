@@ -156,8 +156,12 @@ anonymousStats.addEventListener("change", async () => {
 
 deleteData.addEventListener("click", async () => {
   if (!confirm("Delete saved deadlines, settings, reminder history, Insights totals, and any opted-in anonymous statistics?")) return;
+  const card = deleteData.closest(".delete-card");
+  card?.classList.add("is-shredding");
+  await new Promise((resolve) => setTimeout(resolve, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 520));
   const response = await chrome.runtime.sendMessage({ type: "options:delete-data" });
   if (!response?.ok) {
+    card?.classList.remove("is-shredding");
     flashSaved(response?.error || "Data could not be deleted");
     return;
   }

@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS installations (
   manual_completions INTEGER NOT NULL DEFAULT 0,
   successful_syncs INTEGER NOT NULL DEFAULT 0,
   active_days INTEGER NOT NULL DEFAULT 0,
+  rating INTEGER DEFAULT NULL CHECK (rating IS NULL OR rating BETWEEN 1 AND 5),
   report_count INTEGER NOT NULL DEFAULT 1
 );
 

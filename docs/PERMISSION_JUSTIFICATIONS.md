@@ -34,7 +34,7 @@ This permission exists only in the manually installed GitHub release. The Chrome
 
 ## Optional host access: `https://otnow-stats.sil6428-archtech.workers.dev/*`
 
-This permission is not granted during installation. Chrome displays a separate permission request only after the student actively selects **Share anonymous statistics** on the first-run consent screen or turns on **Help measure OTNow** in Settings. The consent screen also provides **Not now**, sends nothing by default, and does not preselect either choice. The permission permits anonymous numerical usage reports and a deletion request when the student opts out. Reports contain only a random installation identifier, extension version, and cumulative numeric totals. They never contain names, course names or codes, coursework titles, URLs, due dates, grades, email addresses, student numbers, Canvas identifiers, passwords, or authentication data.
+This permission is not granted during installation. Chrome displays a separate permission request only after the student actively selects **Share anonymous statistics** on the first-run consent screen or turns on **Help measure OTNow** in Settings. The consent screen also provides **Not now**, sends nothing by default, and does not preselect either choice. The permission permits anonymous numerical usage reports and a deletion request when the student opts out. Reports contain only a random installation identifier, extension version, cumulative numeric totals, and an optional whole-number 1–5 rating if the student chooses one after seven active days. They never contain names, course names or codes, coursework titles, URLs, due dates, grades, email addresses, student numbers, Canvas identifiers, passwords, or authentication data.
 
 ## Remote code
 

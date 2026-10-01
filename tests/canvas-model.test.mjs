@@ -189,6 +189,23 @@ test("builds a strict anonymous report containing only numerical totals", () => 
   assert(!serialized.includes("PRIVATE 101"));
 });
 
+test("adds only a bounded numeric rating to an anonymous report", () => {
+  const report = buildAnonymousReport(
+    emptyMetrics(),
+    "7787bed6-b0bf-4b20-95db-a3ef5c069b1b",
+    "1.4.0",
+    4,
+  );
+  assert.equal(report.rating, 4);
+  const invalid = buildAnonymousReport(
+    emptyMetrics(),
+    "7787bed6-b0bf-4b20-95db-a3ef5c069b1b",
+    "1.4.0",
+    8,
+  );
+  assert.equal("rating" in invalid, false);
+});
+
 test("repairs malformed saved activity totals", () => {
   const metrics = mergeMetrics({
     panelOpens: -4,

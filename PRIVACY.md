@@ -1,6 +1,6 @@
 # OTNow Privacy Policy
 
-Last updated: September 30, 2026
+Last updated: October 1, 2026
 
 OTNow is an unofficial browser extension for Ontario Tech students. Coursework remains on the student's device. OTNow also offers a separate, optional anonymous statistics feature that is off by default.
 
@@ -24,10 +24,11 @@ On first run, OTNow presents **Share anonymous statistics** and **Not now** choi
 - the installed OTNow version;
 - cumulative numbers of dated Canvas items organized, separated into assignment, quiz, discussion, event, planner-note, and other categories;
 - cumulative numbers of reminders delivered, changed deadlines detected, manual check-offs, successful Canvas refreshes, and days used.
+- an optional whole-number rating from 1 to 5, but only if the student chooses a rating after anonymous statistics are already enabled.
 
 OTNow never includes names, course names or codes, assignment or quiz titles, URLs, due dates, grades, emails, student numbers, Canvas identifiers, passwords, authentication data, or general browsing history in this report. The random installation identifier is hashed before it is stored in the database. The service uses the information only to produce aggregate product statistics such as reporting installations and total items organized. It does not support advertising or student profiling.
 
-The statistics service is hosted on Cloudflare Workers and stores aggregate rows in Cloudflare D1. Cloudflare may process ordinary network and security metadata as the hosting provider, but OTNow does not place IP addresses or user-agent strings in its statistics database.
+The statistics service is hosted on Cloudflare Workers and stores aggregate rows in Cloudflare D1. Public rating statistics expose only an average and response count. Cloudflare may process ordinary network and security metadata as the hosting provider, but OTNow does not place IP addresses or user-agent strings in its statistics database.
 
 ## Network access
 

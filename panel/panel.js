@@ -12,7 +12,7 @@ const appVersion = document.querySelector("#app-version");
 const support = document.querySelector("#support");
 const supportLink = document.querySelector("#support-link");
 
-let current = { state: null, settings: null };
+let current = { state: null, settings: null, globalStats: null };
 const savedView = localStorage.getItem("otnow:view");
 let activeView = ["courses", "insights"].includes(savedView) ? savedView : "deadlines";
 let courseFilter = localStorage.getItem("otnow:course") || "all";
@@ -191,6 +191,58 @@ function renderControls(courses, items) {
   return controls;
 }
 
+function pause(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function toggleWithMotion(row, check, item) {
+  if (check.disabled) return;
+  check.disabled = true;
+  row.classList.add("is-settling");
+  check.classList.add("springing");
+  await pause(matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 240);
+  await chrome.runtime.sendMessage({ type: "panel:toggle", itemId: item.id });
+}
+
+function addSwipeCompletion(row, check, item) {
+  if (item.status !== "open" || check.disabled) return;
+  let startX = 0;
+  let startY = 0;
+  let dragging = false;
+  let distance = 0;
+  row.classList.add("is-swipeable");
+  row.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0 || event.target.closest("a,button,select")) return;
+    startX = event.clientX;
+    startY = event.clientY;
+    distance = 0;
+    dragging = true;
+    row.setPointerCapture(event.pointerId);
+  });
+  row.addEventListener("pointermove", (event) => {
+    if (!dragging) return;
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
+    if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 8) {
+      dragging = false;
+      row.style.removeProperty("--swipe-x");
+      return;
+    }
+    distance = Math.max(0, Math.min(92, dx));
+    row.style.setProperty("--swipe-x", distance + "px");
+    row.classList.toggle("swipe-ready", distance >= 68);
+  });
+  const finish = async () => {
+    if (!dragging) return;
+    dragging = false;
+    row.classList.remove("swipe-ready");
+    row.style.removeProperty("--swipe-x");
+    if (distance >= 68) await toggleWithMotion(row, check, item);
+  };
+  row.addEventListener("pointerup", finish);
+  row.addEventListener("pointercancel", finish);
+}
+
 function renderItem(item, now) {
   const itemBucket = bucketFor(item, now);
   const row = element("article", `item${itemBucket === "overdue" ? " is-overdue" : ""}${item.status !== "open" ? " is-complete" : ""}`);
@@ -200,10 +252,7 @@ function renderItem(item, now) {
   check.type = "button";
   check.setAttribute("aria-label", item.status === "open" ? `Mark ${item.title} complete` : `Mark ${item.title} incomplete`);
   check.disabled = item.submitted || item.canvasComplete;
-  check.addEventListener("click", async () => {
-    check.disabled = true;
-    await chrome.runtime.sendMessage({ type: "panel:toggle", itemId: item.id });
-  });
+  check.addEventListener("click", () => toggleWithMotion(row, check, item));
 
   const main = element("div", "item-main");
   const meta = element("div", "item-meta");
@@ -223,6 +272,7 @@ function renderItem(item, now) {
   const primary = item.status === "submitted" ? "Submitted" : item.status === "done" ? "Done" : relativeDue(item.dueAt);
   due.append(element("strong", "", primary), element("span", "", `${formatDate(item.dueAt)} · ${formatTime(item.dueAt)}`));
   row.append(check, main, due);
+  addSwipeCompletion(row, check, item);
   return row;
 }
 
@@ -303,7 +353,43 @@ function insightRow(label, value, detail) {
   return row;
 }
 
-function renderInsights(metrics = {}) {
+function renderRating(metrics = {}, globalStats = {}, settings = {}) {
+  const days = metrics.activeDays?.length || 0;
+  if (days < 7 || !settings.shareAnonymousStats) return null;
+  const wrap = element("section", "rating-peek");
+  const copy = element("div", "rating-copy");
+  copy.append(
+    element("strong", "", globalStats.rating ? "Thanks for rating OTNow" : "How is OTNow working for you?"),
+    element("span", "", globalStats.rating ? "Your anonymous rating can be changed anytime." : "One anonymous number. No written review or coursework data."),
+  );
+  const choices = element("div", "rating-choices");
+  choices.setAttribute("role", "radiogroup");
+  choices.setAttribute("aria-label", "Rate OTNow from 1 to 5");
+  for (let value = 1; value <= 5; value += 1) {
+    const button = element("button", `rating-choice${globalStats.rating === value ? " selected" : ""}`, "★");
+    button.type = "button";
+    button.setAttribute("role", "radio");
+    button.setAttribute("aria-checked", String(globalStats.rating === value));
+    button.setAttribute("aria-label", `${value} out of 5`);
+    button.addEventListener("click", async () => {
+      choices.classList.add("is-submitting");
+      const response = await chrome.runtime.sendMessage({ type: "stats:rate", rating: value });
+      if (!response?.ok) {
+        choices.classList.remove("is-submitting");
+        notice.hidden = false;
+        notice.textContent = response?.error || "The rating could not be saved.";
+        return;
+      }
+      current.globalStats = response.globalStats;
+      render();
+    });
+    choices.append(button);
+  }
+  wrap.append(copy, choices);
+  return wrap;
+}
+
+function renderInsights(metrics = {}, globalStats = {}, settings = {}) {
   const section = element("section", "insights");
   const header = element("div", "section-intro");
   header.append(
@@ -327,7 +413,10 @@ function renderInsights(metrics = {}) {
     element("p", "", "These approximate totals stay in Chrome storage on this device. OTNow does not send them to the developer or any analytics service."),
   );
 
-  section.append(header, rows, privacy);
+  const rating = renderRating(metrics, globalStats, settings);
+  section.append(header, rows);
+  if (rating) section.append(rating);
+  section.append(privacy);
   return section;
 }
 
@@ -342,7 +431,7 @@ function renderReady(state, settings) {
     return;
   }
   if (activeView === "insights") {
-    app.append(renderInsights(state.metrics));
+    app.append(renderInsights(state.metrics, current.globalStats, settings));
     return;
   }
 
@@ -394,10 +483,15 @@ async function load({ recordOpen = false } = {}) {
 }
 
 async function syncNow() {
+  refreshButton.classList.remove("success");
   refreshButton.classList.add("spinning");
   refreshButton.disabled = true;
-  await chrome.runtime.sendMessage({ type: "panel:sync" });
+  const result = await chrome.runtime.sendMessage({ type: "panel:sync" });
   await load();
+  if (result?.status !== "error") {
+    refreshButton.classList.add("success");
+    setTimeout(() => refreshButton.classList.remove("success"), 1400);
+  }
 }
 
 refreshButton.addEventListener("click", syncNow);

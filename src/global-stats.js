@@ -8,9 +8,9 @@ function number(value) {
   return Math.max(0, Math.floor(Number(value) || 0));
 }
 
-export function buildAnonymousReport(metrics, installId, version) {
+export function buildAnonymousReport(metrics, installId, version, rating = null) {
   const clean = mergeMetrics(metrics);
-  return {
+  const report = {
     schema: 1,
     installId,
     version,
@@ -29,6 +29,8 @@ export function buildAnonymousReport(metrics, installId, version) {
       activeDays: clean.activeDays.length,
     },
   };
+  if (Number.isSafeInteger(rating) && rating >= 1 && rating <= 5) report.rating = rating;
+  return report;
 }
 
 async function readMeta({ create = false } = {}) {
@@ -73,6 +75,7 @@ export async function reportAnonymousStats(metrics, { force = false } = {}) {
       metrics,
       meta.installId,
       chrome.runtime.getManifest().version,
+      meta.rating,
     ));
     const next = {
       ...meta,
@@ -95,11 +98,21 @@ export async function deleteAnonymousStats() {
   return { ok: true };
 }
 
+export async function setAnonymousRating(rating) {
+  const value = Number(rating);
+  if (!Number.isSafeInteger(value) || value < 1 || value > 5) throw new Error("Rating must be from 1 to 5.");
+  const meta = await readMeta({ create: true });
+  const next = { ...meta, rating: value, ratedAt: new Date().toISOString() };
+  await chrome.storage.local.set({ [META_KEY]: next });
+  return next;
+}
+
 export async function getAnonymousStatsStatus() {
   const meta = await readMeta();
   return {
     hasAnonymousId: Boolean(meta.installId),
     lastReportAt: meta.lastReportAt || null,
     lastError: meta.lastError || null,
+    rating: Number.isSafeInteger(meta.rating) ? meta.rating : null,
   };
 }
