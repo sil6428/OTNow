@@ -63,6 +63,11 @@ input[type="checkbox"] { width: 38px; height: 21px; accent-color: var(--canvas-b
 .course-name strong { display: block; overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
 .course-name small { display: block; margin-top: 3px; overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
 .privacy-card p { color: var(--muted); line-height: 1.55; }
+.stats-switch { align-items: flex-start; }
+.disclosure { margin-top: 14px; padding: 14px 16px; border-left: 3px solid var(--canvas-blue-bright); background: var(--surface-2); }
+.disclosure strong { display: block; font-size: 13px; }
+.disclosure p { margin: 4px 0 12px; }
+.disclosure p:last-child { margin-bottom: 0; }
 code { padding: 2px 5px; border-radius: 3px; background: var(--surface-2); color: var(--text); }
 button { padding: 9px 12px; border-radius: 3px; font: inherit; font-weight: 700; cursor: pointer; }
 .danger { border: 1px solid #f0b7b2; background: #fff0ed; color: #b42318; }

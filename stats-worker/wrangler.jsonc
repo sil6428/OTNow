@@ -1,0 +1,22 @@
+{
+  "name": "otnow-stats",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-09-30",
+  "workers_dev": true,
+  "preview_urls": false,
+  "triggers": {
+    "crons": ["17 4 * * *"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "otnow-stats",
+      "database_id": "41ab313a-9f26-4677-93df-a0785933a853"
+    }
+  ],
+  "secrets": {
+    "required": [
+      "DASHBOARD_TOKEN"
+    ]
+  }
+}

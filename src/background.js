@@ -1,5 +1,8 @@
 import {
   CANVAS_ORIGIN,
+  GLOBAL_STATS_ALARM,
+  GLOBAL_STATS_INTERVAL_MINUTES,
+  GLOBAL_STATS_ORIGIN,
   REMINDER_ALARM,
   REMINDER_MINUTES,
   SYNC_ALARM,
@@ -23,6 +26,11 @@ import {
   recordSuccessfulSync,
 } from "./metrics.js";
 import {
+  deleteAnonymousStats,
+  getAnonymousStatsStatus,
+  reportAnonymousStats,
+} from "./global-stats.js";
+import {
   getManualDone,
   getSettings,
   getState,
@@ -34,6 +42,19 @@ import {
 
 let syncPromise = null;
 let updatePromise = null;
+
+async function hasGlobalStatsPermission() {
+  return chrome.permissions.contains({ origins: [`${GLOBAL_STATS_ORIGIN}/*`] });
+}
+
+async function runGlobalStats({ force = false } = {}) {
+  const settings = await getSettings();
+  if (!settings.shareAnonymousStats || !(await hasGlobalStatsPermission())) {
+    return { ok: false, disabled: true };
+  }
+  const state = await getState();
+  return reportAnonymousStats(state.metrics, { force });
+}
 
 function reminderKey(item, leadMinutes) {
   return `${item.id}|${item.dueAt}|${leadMinutes}`;
@@ -169,6 +190,7 @@ async function syncCanvas({ userInitiated = false } = {}) {
       const settings = await getSettings();
       if (!firstSync) await notifyMoved(moved, settings);
       await runReminders({ initial: firstSync });
+      runGlobalStats().catch(() => {});
       return { ok: true };
     } catch (error) {
       const hasCache = before.items.length > 0;
@@ -297,6 +319,14 @@ async function setup() {
   } else {
     await chrome.alarms.clear(UPDATE_ALARM);
   }
+  if (settings.shareAnonymousStats && await hasGlobalStatsPermission()) {
+    chrome.alarms.create(GLOBAL_STATS_ALARM, {
+      delayInMinutes: 1,
+      periodInMinutes: GLOBAL_STATS_INTERVAL_MINUTES,
+    });
+  } else {
+    await chrome.alarms.clear(GLOBAL_STATS_ALARM);
+  }
   await refreshBadge();
 }
 
@@ -307,6 +337,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === SYNC_ALARM) syncCanvas();
   if (alarm.name === REMINDER_ALARM) runReminders();
   if (alarm.name === UPDATE_ALARM) checkForUpdate();
+  if (alarm.name === GLOBAL_STATS_ALARM) runGlobalStats();
 });
 
 chrome.notifications.onClicked.addListener(async (id) => {
@@ -355,14 +386,45 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         sendResponse({ ok: true });
         break;
       case "options:get":
-        sendResponse({ state: await getState(), settings: await getSettings() });
+        sendResponse({
+          state: await getState(),
+          settings: await getSettings(),
+          globalStats: await getAnonymousStatsStatus(),
+        });
         break;
       case "options:set":
         sendResponse({ settings: await setSettings(message.settings || {}) });
         await runReminders();
         break;
+      case "stats:enable": {
+        if (!(await hasGlobalStatsPermission())) throw new Error("Permission was not granted.");
+        const settings = await setSettings({ shareAnonymousStats: true });
+        chrome.alarms.create(GLOBAL_STATS_ALARM, {
+          delayInMinutes: 1,
+          periodInMinutes: GLOBAL_STATS_INTERVAL_MINUTES,
+        });
+        const report = await runGlobalStats({ force: true });
+        sendResponse({ ok: true, settings, report, globalStats: await getAnonymousStatsStatus() });
+        break;
+      }
+      case "stats:disable": {
+        if (await hasGlobalStatsPermission()) await deleteAnonymousStats();
+        else await chrome.storage.local.remove("globalStatsMeta");
+        const settings = await setSettings({ shareAnonymousStats: false });
+        await chrome.alarms.clear(GLOBAL_STATS_ALARM);
+        sendResponse({ ok: true, settings, globalStats: await getAnonymousStatsStatus() });
+        break;
+      }
+      case "stats:report":
+        sendResponse({ report: await runGlobalStats({ force: true }), globalStats: await getAnonymousStatsStatus() });
+        break;
       case "options:delete-data":
+        if ((await getSettings()).shareAnonymousStats) {
+          if (!(await hasGlobalStatsPermission())) throw new Error("Anonymous statistics permission is missing. Disable sharing before deleting data.");
+          await deleteAnonymousStats();
+        }
         await chrome.storage.local.clear();
+        await chrome.permissions.remove({ origins: [`${GLOBAL_STATS_ORIGIN}/*`] });
         await setup();
         sendResponse({ ok: true });
         break;

@@ -22,6 +22,7 @@ import {
   recordReminders,
   recordSuccessfulSync,
 } from "../src/metrics.js";
+import { buildAnonymousReport } from "../src/global-stats.js";
 
 const courses = {
   "42": { id: "42", code: "INFR 4611U", name: "Trust Systems", color: "#2563eb" },
@@ -141,8 +142,8 @@ test("accepts only a valid OTNow repository manifest", () => {
 test("records local activity without storing coursework content", () => {
   const opened = recordPanelOpen(emptyMetrics(), new Date("2026-09-25T12:00:00Z"));
   const synced = recordSuccessfulSync(opened, [
-    { id: "assignment:1", title: "Private title" },
-    { id: "quiz:2", title: "Another private title" },
+    { id: "assignment:1", type: "assignment", title: "Private title" },
+    { id: "quiz:2", type: "quiz", title: "Another private title" },
   ], 1, new Date("2026-09-25T12:05:00Z"));
   const repeated = recordSuccessfulSync(synced, [{ id: "assignment:1" }], 0, new Date("2026-09-26T12:05:00Z"));
   const testNow = new Date("2026-09-26T13:00:00Z");
@@ -157,8 +158,35 @@ test("records local activity without storing coursework content", () => {
   assert.equal(failed.movedDeadlinesDetected, 1);
   assert.equal(failed.remindersSent, 2);
   assert.equal(failed.manualCompletions, 1);
+  assert.deepEqual(failed.itemsByType, {
+    assignment: 1,
+    quiz: 1,
+    discussion: 0,
+    event: 0,
+    note: 0,
+    other: 0,
+  });
   assert.deepEqual(failed.activeDays, ["2026-09-25", "2026-09-26"]);
   assert(!JSON.stringify(failed).includes("Private title"));
+});
+
+test("builds a strict anonymous report containing only numerical totals", () => {
+  const metrics = recordSuccessfulSync(emptyMetrics(), [
+    { id: "assignment:1", type: "assignment", title: "Never transmit this" },
+    { id: "discussion:2", type: "discussion", courseCode: "PRIVATE 101" },
+  ]);
+  const report = buildAnonymousReport(
+    metrics,
+    "7787bed6-b0bf-4b20-95db-a3ef5c069b1b",
+    "1.1.0",
+  );
+  assert.deepEqual(Object.keys(report).sort(), ["counters", "installId", "schema", "version"]);
+  assert.equal(report.counters.deadlinesDiscovered, 2);
+  assert.equal(report.counters.assignments, 1);
+  assert.equal(report.counters.discussions, 1);
+  const serialized = JSON.stringify(report);
+  assert(!serialized.includes("Never transmit this"));
+  assert(!serialized.includes("PRIVATE 101"));
 });
 
 test("repairs malformed saved activity totals", () => {
@@ -174,4 +202,18 @@ test("repairs malformed saved activity totals", () => {
   assert.equal(metrics.deadlinesDiscovered, 2);
   assert.deepEqual(metrics.seenItemIds, ["assignment:1", "quiz:2"]);
   assert.deepEqual(metrics.activeDays, ["2026-09-25"]);
+});
+
+test("backfills broad item types when upgrading legacy Insights data", () => {
+  const legacy = mergeMetrics({
+    deadlinesDiscovered: 2,
+    seenItemIds: ["assignment:1", "quiz:2"],
+  });
+  const migrated = recordSuccessfulSync(legacy, [
+    { id: "assignment:1", type: "assignment" },
+    { id: "quiz:2", type: "quiz" },
+  ]);
+  assert.equal(migrated.deadlinesDiscovered, 2);
+  assert.equal(migrated.itemsByType.assignment, 1);
+  assert.equal(migrated.itemsByType.quiz, 1);
 });

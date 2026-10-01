@@ -12,7 +12,7 @@ Required to keep the deadline list visible beside any browser tab without replac
 
 ## `storage`
 
-Required to save the last successful Canvas read for offline viewing, user reminder preferences, manual check-offs, due-date-change history, reminder deduplication records, and the counters displayed in the local Insights view. The data remains in the local Chrome profile.
+Required to save the last successful Canvas read for offline viewing, user reminder preferences, manual check-offs, due-date-change history, reminder deduplication records, counters displayed in the local Insights view, and the optional anonymous-statistics consent state and random installation identifier. Coursework remains in the local Chrome profile.
 
 ## `alarms`
 
@@ -32,12 +32,16 @@ Required to retrieve the public OTNow `manifest.json` and compare its version nu
 
 This permission exists only in the manually installed GitHub release. The Chrome Web Store package removes the permission and disables the manual version check because Chrome provides automatic store updates. Do not enter this justification in the Web Store dashboard.
 
+## Optional host access: `https://otnow-stats.sil6428-archtech.workers.dev/*`
+
+This permission is not granted during installation. Chrome displays a separate permission request only after the student turns on **Help measure OTNow** in Settings. It permits one anonymous numerical usage report per day and a deletion request when the student opts out. Reports contain only a random installation identifier, extension version, and cumulative numeric totals. They never contain names, course names or codes, coursework titles, URLs, due dates, grades, email addresses, student numbers, Canvas identifiers, passwords, or authentication data.
+
 ## Remote code
 
 OTNow does not execute remote code. All JavaScript is included in the extension package, and there are no remotely hosted scripts, WebAssembly modules, or runtime-loaded packages. In the manually installed GitHub release, the update check reads a version string from a public JSON manifest and only displays a link to manual instructions. The store package disables that check.
 
 ## Data-use disclosure
 
-OTNow handles website content consisting of Canvas course names, course codes, planner items, due dates, Canvas links, completion states, and the student's submission status for those items. This information is used only for the extension's visible deadline and reminder features. It is stored locally and is not transmitted to the developer or third parties.
+OTNow handles website content consisting of Canvas course names, course codes, planner items, due dates, Canvas links, completion states, and the student's submission status for those items. This content is used only for the extension's visible deadline and reminder features and is stored locally. The optional aggregate report transmits counts derived from item categories, not the content itself.
 
-OTNow does not collect authentication information, personally identifiable information, health information, financial information, personal communications, location, web history outside Ontario Tech Canvas, or transmit user activity for analytics or advertising. The activity totals shown to the student in Insights remain on that student's device.
+For the Web Store form, disclose the optional collection of **user activity** and aggregated **website content** because numerical totals are derived from use of Canvas items. Explain that collection is opt-in, limited to the feature described above, and not used for advertising. OTNow does not collect authentication information, personally identifiable information, health information, financial information, personal communications, location, or web history outside Ontario Tech Canvas. The detailed activity totals shown to the student in Insights remain on that student's device.

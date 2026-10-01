@@ -1,4 +1,4 @@
-import { TYPE_LABELS } from "../src/constants.js";
+import { GLOBAL_STATS_ORIGIN, TYPE_LABELS } from "../src/constants.js";
 
 const theme = document.querySelector("#theme");
 const showCompleted = document.querySelector("#show-completed");
@@ -7,6 +7,8 @@ const movedDates = document.querySelector("#moved-dates");
 const leadSettings = document.querySelector("#lead-settings");
 const courseSettings = document.querySelector("#course-settings");
 const deleteData = document.querySelector("#delete-data");
+const anonymousStats = document.querySelector("#anonymous-stats");
+const statsStatus = document.querySelector("#stats-status");
 const saved = document.querySelector("#saved");
 
 const LEADS = [
@@ -22,6 +24,7 @@ const LEADS = [
 const types = ["assignment", "quiz", "discussion", "event", "note", "other"];
 let settings;
 let state;
+let globalStats;
 let saveTimer;
 
 function applyTheme(value) {
@@ -99,12 +102,20 @@ function renderCourses() {
 }
 
 async function load() {
-  ({ settings, state } = await chrome.runtime.sendMessage({ type: "options:get" }));
+  ({ settings, state, globalStats } = await chrome.runtime.sendMessage({ type: "options:get" }));
   theme.value = settings.theme;
   applyTheme(settings.theme);
   showCompleted.checked = settings.showCompleted;
   notifications.checked = settings.notificationsEnabled;
   movedDates.checked = settings.notifyMovedDates;
+  anonymousStats.checked = settings.shareAnonymousStats;
+  if (globalStats.lastReportAt && settings.shareAnonymousStats) {
+    statsStatus.textContent = `Last anonymous report: ${new Date(globalStats.lastReportAt).toLocaleString()}.`;
+  } else if (globalStats.lastError && settings.shareAnonymousStats) {
+    statsStatus.textContent = `Last report failed: ${globalStats.lastError}`;
+  } else {
+    statsStatus.textContent = "Anonymous global statistics are off.";
+  }
   renderLeads();
   renderCourses();
 }
@@ -114,10 +125,43 @@ showCompleted.addEventListener("change", () => { settings.showCompleted = showCo
 notifications.addEventListener("change", () => { settings.notificationsEnabled = notifications.checked; queueSave(); });
 movedDates.addEventListener("change", () => { settings.notifyMovedDates = movedDates.checked; queueSave(); });
 
+anonymousStats.addEventListener("change", async () => {
+  anonymousStats.disabled = true;
+  try {
+    if (anonymousStats.checked) {
+      const granted = await chrome.permissions.request({ origins: [`${GLOBAL_STATS_ORIGIN}/*`] });
+      if (!granted) throw new Error("Permission was not granted, so anonymous statistics remain off.");
+      const response = await chrome.runtime.sendMessage({ type: "stats:enable" });
+      if (!response?.ok) throw new Error(response?.error || "Could not enable anonymous statistics.");
+      settings = response.settings;
+      globalStats = response.globalStats;
+      statsStatus.textContent = "Anonymous statistics are on. The first numerical report was sent successfully.";
+      flashSaved("Anonymous statistics enabled");
+    } else {
+      const response = await chrome.runtime.sendMessage({ type: "stats:disable" });
+      if (!response?.ok) throw new Error(response?.error || "Could not delete anonymous statistics.");
+      settings = response.settings;
+      globalStats = response.globalStats;
+      await chrome.permissions.remove({ origins: [`${GLOBAL_STATS_ORIGIN}/*`] });
+      statsStatus.textContent = "Anonymous statistics are off and this installation's aggregate row was deleted.";
+      flashSaved("Anonymous statistics disabled");
+    }
+  } catch (error) {
+    await load();
+    statsStatus.textContent = String(error?.message || error);
+  } finally {
+    anonymousStats.disabled = false;
+  }
+});
+
 deleteData.addEventListener("click", async () => {
-  if (!confirm("Delete OTNow's saved deadlines, settings, and reminder history from this computer?")) return;
-  await chrome.runtime.sendMessage({ type: "options:delete-data" });
-  flashSaved("Local data deleted");
+  if (!confirm("Delete saved deadlines, settings, reminder history, Insights totals, and any opted-in anonymous statistics?")) return;
+  const response = await chrome.runtime.sendMessage({ type: "options:delete-data" });
+  if (!response?.ok) {
+    flashSaved(response?.error || "Data could not be deleted");
+    return;
+  }
+  flashSaved("OTNow data deleted");
   await load();
 });
 

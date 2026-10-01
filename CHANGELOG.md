@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.0 — 2026-09-30
+
+- Added an optional, off-by-default anonymous global statistics program with a separate Chrome permission and a precise in-product disclosure.
+- Added a private Cloudflare dashboard for reporting installations, aggregate item categories, reminders, date changes, refreshes, days used, versions, and 30-day growth.
+- Added one-click opt-out and server deletion, hashed installation identifiers, daily reporting limits, and automatic 180-day expiry for inactive rows.
+- Kept all course names, coursework titles, URLs, dates, grades, emails, student identifiers, Canvas identifiers, credentials, and detailed coursework on the student's device.
+- Expanded automated checks to lock the anonymous payload schema and prevent identifying coursework fields from entering it.
+
 ## 1.0.0 — 2026-09-30
 
 - Prepared the first stable Chrome Web Store release.

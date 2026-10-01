@@ -11,7 +11,7 @@
       <header>
         <p class="eyebrow">OTNow</p>
         <h1>Settings</h1>
-        <p class="intro">Your preferences, Canvas cache, and Insights totals stay in Chrome on this computer.</p>
+        <p class="intro">Your coursework, preferences, Canvas cache, and personal Insights stay in Chrome on this computer.</p>
       </header>
 
       <section class="card">
@@ -50,9 +50,25 @@
       </section>
 
       <section class="card privacy-card">
+        <h2>Anonymous global statistics</h2>
+        <label class="switch-row stats-switch">
+          <span><strong>Help measure OTNow</strong><small>Off by default. Once a day, share only anonymous numerical totals so the developer can see broad product usage.</small></span>
+          <input id="anonymous-stats" type="checkbox">
+        </label>
+        <div class="disclosure">
+          <strong>Exactly what is sent</strong>
+          <p>A randomly generated installation ID, the OTNow version, and totals for items organized by type, reminders, moved deadlines, manual check-offs, successful refreshes, and days used.</p>
+          <strong>Never sent</strong>
+          <p>Names, course names or codes, assignment titles, URLs, due dates, grades, emails, student numbers, Canvas IDs, passwords, or authentication data.</p>
+          <p>You can turn sharing off at any time. OTNow then asks the server to delete that installation's aggregate row and removes the anonymous ID from this computer.</p>
+        </div>
+        <p id="stats-status" class="section-copy" role="status"></p>
+      </section>
+
+      <section class="card privacy-card">
         <h2>Privacy</h2>
-        <p>OTNow reads only Ontario Tech Canvas pages and uses only <code>GET</code> requests. It has no analytics, account system, or external server. Deleting local data also resets the Insights totals.</p>
-        <button id="delete-data" class="danger" type="button">Delete local OTNow data</button>
+        <p>OTNow reads only Ontario Tech Canvas pages and uses only <code>GET</code> requests. Coursework stays local. The optional anonymous statistics above are the only information OTNow can send to its statistics service.</p>
+        <button id="delete-data" class="danger" type="button">Delete all OTNow data</button>
       </section>
 
       <p id="saved" class="saved" role="status"></p>

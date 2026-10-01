@@ -39,6 +39,7 @@ If Chrome reports that it cannot read the manifest, the selected folder is one l
 - Keeps the last successful read available when Canvas or the network is unavailable.
 - Supports light, dark, or system appearance.
 - Shows a local-only Insights summary of deadlines organized, due-date changes detected, reminders delivered, manual check-offs, successful refreshes, and days used.
+- Offers separate, off-by-default anonymous global statistics that send only a random installation ID, version, and numerical totals after explicit consent.
 - GitHub-installed copies check the public OTNow repository for a newer version and link to [step-by-step update instructions](UPDATE_GUIDE.md); Chrome Web Store copies update automatically.
 - Refreshes every 30 minutes while Chrome is running.
 
@@ -51,7 +52,7 @@ If Chrome reports that it cannot read the manifest, the selected folder is one l
   - `GET /api/v1/planner/items`
 - GitHub-installed copies read only OTNow's public `manifest.json` about every six hours and send no student or course information; the Chrome Web Store build disables this request because Chrome supplies automatic updates.
 - All course data, settings, manual check-offs, reminder history, and Insights totals live in `chrome.storage.local` on the student's computer.
-- There is no telemetry, analytics SDK, ad code, external API, or OTNow account.
+- There is no analytics SDK, ad code, behavioural tracker, or OTNow account. Optional anonymous numerical statistics use a narrow, separately granted host permission and can be deleted by opting out.
 - OTNow is not affiliated with or endorsed by Ontario Tech University or Instructure.
 
 See [PRIVACY.md](PRIVACY.md) for a publishable privacy policy.
@@ -66,7 +67,7 @@ GitHub issues are public. Remove student names, student numbers, grades, private
 
 If Canvas was already open before installing OTNow, reload that Canvas tab once. Future versions can be installed without removing OTNow; follow [UPDATE_GUIDE.md](UPDATE_GUIDE.md) so local settings remain attached to the same unpacked extension folder.
 
-Project reach is measured with the Chrome Web Store's aggregate installs, impressions, weekly-user, rating, and listing-conversion reports rather than extension telemetry. See [Measuring OTNow responsibly](docs/METRICS.md) for the reporting workflow and accurate resume wording.
+Overall reach is measured with Chrome Web Store reports. A private OTNow dashboard separately shows aggregate totals from consenting reporting installations. See [Measuring OTNow responsibly](docs/METRICS.md) for the reporting workflow and accurate resume wording.
 
 ## Chrome Web Store status
 
@@ -82,7 +83,9 @@ src/background.js        Sync, reminders, moved dates, badges, and messages
 src/canvas-client.js      Allowlisted Canvas reads and pagination
 src/content/              Same-origin Canvas session bridge
 src/canvas-model.js       Data normalization and due-date reconciliation
-src/metrics.js            Local-only activity counters and migrations
+src/metrics.js            Local activity counters and migrations
+src/global-stats.js       Strict opt-in anonymous-report payload and deletion
+stats-worker/             Private aggregate dashboard service and D1 schema
 panel/                    Side-panel interface
 options/                  Reminder, appearance, and privacy settings
 tests/                    Node unit tests for pure application logic

@@ -23,7 +23,7 @@ OTNow can be published on the Chrome Web Store. Its Manifest V3 package is alrea
 5. Copy the name, category, and description from `docs/STORE_LISTING.md`.
 6. Add the store icon, at least one 1280×800 screenshot, and a 440×280 small promotional tile.
 7. Enter the homepage, support, and privacy-policy URLs from `docs/STORE_LISTING.md`.
-8. Complete the privacy fields using `docs/PERMISSION_JUSTIFICATIONS.md`. Disclose that OTNow handles Canvas course and planner website content locally.
+8. Complete the privacy fields using `docs/PERMISSION_JUSTIFICATIONS.md`. Disclose that OTNow handles Canvas course and planner website content locally and optionally collects anonymous aggregate user-activity and website-content counts after explicit consent.
 9. Set distribution to Canada unless there is a reason to make an Ontario Tech-specific extension visible worldwide.
 10. Save the draft, run the dashboard's automated checks, and review every warning.
 11. Submit the item for Google review only after the unchecked live-session tests in `docs/RELEASE_CHECKLIST.md` are complete.
@@ -33,9 +33,10 @@ OTNow can be published on the Chrome Web Store. Its Manifest V3 package is alrea
 
 - **Single purpose:** show Ontario Tech Canvas deadlines and provide student-configured deadline reminders.
 - **Remote code:** none. The store package contains all executable code locally and does not contact GitHub for updates.
-- **User data:** Canvas course and planner information is stored only in `chrome.storage.local`; it is not sent to the developer, analytics providers, advertisers, or an OTNow server.
-- **Insights:** the Insights tab contains on-device counters only. Nothing from that view is uploaded or aggregated by OTNow.
-- **Permissions:** each permission is tied to the visible deadline, reminder, local-storage, or side-panel features.
+- **User data:** identifiable Canvas course and planner information is stored only in `chrome.storage.local`; it is not sent to the developer, advertisers, or the OTNow statistics service.
+- **Insights:** the Insights tab contains on-device counters. Only after explicit opt-in, a strict subset of anonymous numerical totals is sent once per day to the aggregate statistics service.
+- **Optional statistics:** the optional permission is requested from Settings, the disclosure lists every transmitted field and excluded category, identifiers are hashed at rest, opt-out deletes the row, and inactive rows expire after 180 days.
+- **Permissions:** each required permission is tied to the visible deadline, reminder, local-storage, or side-panel features. The statistics host is an optional permission and is not granted at installation.
 - **Affiliation:** keep the unofficial-project disclaimer in the listing and privacy policy.
 
 ## After store approval

@@ -20,7 +20,9 @@ Open the Chrome side panel to see dated coursework grouped by item type or due-d
 
 OTNow refreshes Canvas every 30 minutes while Chrome is running. When a due date changes, the new date is highlighted while the previous date remains visible. Reminder timing can be adjusted by item type, and notifications can be muted for individual courses.
 
-The Insights tab provides a private, on-device summary of deadlines organized, changed dates caught, reminders delivered, manual check-offs, successful refreshes, and days used. These totals never leave the student's browser.
+The Insights tab provides a private, on-device summary of deadlines organized, changed dates caught, reminders delivered, manual check-offs, successful refreshes, and days used.
+
+Students may separately opt in to anonymous global statistics. This is off by default and requests its own limited host permission. It sends only a random installation ID, the OTNow version, and numerical totals by broad item or feature type. It never sends course names, coursework titles, URLs, due dates, grades, emails, student identifiers, or Canvas identifiers. Opting out deletes the installation's aggregate row.
 
 Privacy is part of the design:
 
@@ -28,7 +30,8 @@ Privacy is part of the design:
 - It never asks for or stores a Canvas password.
 - It sends only read-only GET requests to Ontario Tech Canvas.
 - Course information and settings stay in local Chrome extension storage.
-- There are no in-extension analytics, ads, trackers, external servers, or OTNow accounts.
+- There are no analytics SDKs, ads, behavioural trackers, or OTNow accounts.
+- Optional anonymous statistics are clearly disclosed, separately permitted, and deletable.
 
 OTNow is an independent student project and is not affiliated with or endorsed by Ontario Tech University or Instructure.
 

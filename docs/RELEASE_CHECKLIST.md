@@ -12,6 +12,8 @@
 - [x] Public repository version check detects a newer semantic version.
 - [x] Update notice links to a separate step-by-step guide.
 - [x] Manual refresh succeeds.
+- [x] Anonymous statistics are off by default and require a separate permission from Settings.
+- [x] Enabling statistics sends a strict numerical report; disabling deletes the server row and local anonymous ID.
 - [ ] Confirm a naturally submitted assignment becomes **Submitted**.
 - [ ] Confirm a graded quiz becomes **Submitted**.
 - [ ] Confirm a professor's real due-date change is detected.
@@ -32,14 +34,18 @@
 
 ## Privacy and security
 
-- [x] Host permissions are limited to Ontario Tech Canvas and GitHub's public raw-content origin.
+- [x] Required host permissions are limited to Ontario Tech Canvas and GitHub's public raw-content origin.
+- [x] Statistics service access is declared as an optional host permission.
 - [x] GitHub host access is limited to the public raw-content origin used for the version manifest.
 - [x] Canvas bridge accepts only allowlisted `/api/v1/courses` and `/api/v1/planner/items` paths.
 - [x] Canvas network requests are hard-coded to `GET`.
 - [x] No cookie, broad tab, web-request, scripting, or clipboard permission.
-- [x] No analytics, ads, trackers, remote scripts, or external application server.
+- [x] No ads, behavioural trackers, analytics SDKs, or remote scripts.
+- [x] Aggregate service stores a hashed random installation ID and allowlisted integer counters only.
+- [x] Opt-out deletion and automatic 180-day inactivity expiry are implemented.
 - [x] Local Insights totals are covered by deletion, documentation, and migration tests.
 - [x] Local-data deletion control.
+- [x] Local deletion also removes the opted-in aggregate server row before clearing the identifier.
 - [x] Incognito mode disabled.
 - [x] Publish the privacy policy at a stable HTTPS URL.
 - [x] Publish a security policy with private vulnerability-reporting instructions.

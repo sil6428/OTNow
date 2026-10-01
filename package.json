@@ -1,11 +1,12 @@
 {
   "name": "otnow-extension",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test",
     "check": "node scripts/check.mjs",
+    "smoke:extension": "node scripts/smoke-extension.mjs",
     "package:release": "powershell -ExecutionPolicy Bypass -File scripts/package-release.ps1",
     "package:store": "powershell -ExecutionPolicy Bypass -File scripts/package-store.ps1"
   }

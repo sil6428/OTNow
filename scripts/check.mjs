@@ -14,6 +14,10 @@ assert.deepEqual(manifest.host_permissions, [
   "https://learn.ontariotechu.ca/*",
   "https://raw.githubusercontent.com/*",
 ]);
+assert.deepEqual(manifest.optional_host_permissions, [
+  "https://otnow-stats.sil6428-archtech.workers.dev/*",
+]);
+assert(!manifest.host_permissions.some((origin) => origin.includes("otnow-stats")), "Anonymous statistics access must remain optional");
 assert(!manifest.permissions.includes("cookies"), "OTNow must not request cookie access");
 assert(!manifest.permissions.includes("webRequest"), "OTNow must not intercept general browsing");
 assert(!manifest.permissions.includes("tabs"), "OTNow should rely on its narrow Canvas host permission, not broad tab access");
@@ -25,6 +29,7 @@ const requiredFiles = [
   ...manifest.content_scripts.flatMap((script) => script.js),
   "icons/icon-128.png",
   "src/metrics.js",
+  "src/global-stats.js",
 ];
 await Promise.all(requiredFiles.map((file) => access(resolve(root, file), constants.R_OK)));
 
@@ -43,6 +48,18 @@ if (supportUrl) {
 
 const privacy = await readFile(resolve(root, "PRIVACY.md"), "utf8");
 assert.match(privacy, /Insights/i, "Privacy policy must describe local Insights totals");
+assert.match(privacy, /opt-in/i, "Privacy policy must describe opt-in anonymous statistics");
+
+const globalStats = await readFile(resolve(root, "src/global-stats.js"), "utf8");
+for (const forbidden of ["courseName", "courseCode", "assignmentTitle", "studentNumber", "email", "dueAt", "grade"]) {
+  assert(!globalStats.includes(forbidden), `Anonymous report code must not reference ${forbidden}`);
+}
+
+await Promise.all([
+  "stats-worker/src/worker.js",
+  "stats-worker/schema.sql",
+  "stats-worker/wrangler.jsonc",
+].map((file) => access(resolve(root, file), constants.R_OK)));
 
 const panelSource = await readFile(resolve(root, "panel/panel.js"), "utf8");
 assert.match(panelSource, /renderInsights/, "Side panel must expose the local Insights view");

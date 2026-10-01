@@ -1,5 +1,6 @@
 const MAX_ACTIVE_DAYS = 730;
 const MAX_SEEN_ITEMS = 5000;
+const ITEM_TYPES = ["assignment", "quiz", "discussion", "event", "note", "other"];
 
 function nonNegativeInteger(value) {
   const number = Number(value);
@@ -27,6 +28,7 @@ export function emptyMetrics() {
     remindersSent: 0,
     movedDeadlinesDetected: 0,
     manualCompletions: 0,
+    itemsByType: Object.fromEntries(ITEM_TYPES.map((type) => [type, 0])),
     activeDays: [],
     seenItemIds: [],
   };
@@ -46,6 +48,10 @@ export function mergeMetrics(saved = {}) {
     remindersSent: nonNegativeInteger(saved.remindersSent),
     movedDeadlinesDetected: nonNegativeInteger(saved.movedDeadlinesDetected),
     manualCompletions: nonNegativeInteger(saved.manualCompletions),
+    itemsByType: Object.fromEntries(ITEM_TYPES.map((type) => [
+      type,
+      nonNegativeInteger(saved.itemsByType?.[type]),
+    ])),
     activeDays: uniqueStrings(saved.activeDays, MAX_ACTIVE_DAYS),
     seenItemIds,
   };
@@ -72,12 +78,24 @@ export function recordPanelOpen(metrics, now = new Date()) {
 export function recordSuccessfulSync(metrics, items = [], movedCount = 0, now = new Date()) {
   const next = touch(metrics, now);
   const seen = new Set(next.seenItemIds);
+  const recordedTypeTotal = Object.values(next.itemsByType).reduce((sum, value) => sum + value, 0);
+  if (recordedTypeTotal === 0 && seen.size > 0) {
+    const backfilled = new Set();
+    for (const item of items) {
+      if (!seen.has(item?.id) || backfilled.has(item.id)) continue;
+      backfilled.add(item.id);
+      const type = ITEM_TYPES.includes(item.type) ? item.type : "other";
+      next.itemsByType[type] += 1;
+    }
+  }
   let newlyDiscovered = 0;
   for (const item of items) {
     const id = typeof item?.id === "string" ? item.id : null;
     if (!id || seen.has(id)) continue;
     seen.add(id);
     newlyDiscovered += 1;
+    const type = ITEM_TYPES.includes(item.type) ? item.type : "other";
+    next.itemsByType[type] += 1;
   }
   next.seenItemIds = [...seen].slice(-MAX_SEEN_ITEMS);
   next.deadlinesDiscovered += newlyDiscovered;
