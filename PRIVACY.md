@@ -56,6 +56,6 @@ OTNow is an independent student project and is not affiliated with or endorsed b
 
 ## Contact
 
-General questions can be submitted through the [public OTNow issue tracker](https://github.com/sil6428/OTNow/issues). Do not include private course information, student identifiers, security-sensitive details, or screenshots containing personal data. Suspected vulnerabilities must be submitted through [GitHub's private vulnerability-reporting form](https://github.com/sil6428/OTNow/security/advisories/new), not a public issue.
+General questions, bug reports, and suggestions can be submitted through the [private OTNow feedback form](https://docs.google.com/forms/d/e/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw/viewform). Do not include private course information, student identifiers, security-sensitive details, or screenshots containing personal data. Suspected vulnerabilities must be submitted through [GitHub's private vulnerability-reporting form](https://github.com/sil6428/OTNow/security/advisories/new), not the general feedback form.
 
 OTNow's use of information obtained from Ontario Tech Canvas complies with the Chrome Web Store User Data Policy, including its Limited Use requirements. The information is used only to provide, secure, and improve OTNow's visible deadline and reminder features.
