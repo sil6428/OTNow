@@ -211,6 +211,9 @@ function addSwipeCompletion(row, check, item) {
   let dragging = false;
   let distance = 0;
   row.classList.add("is-swipeable");
+  const action = element("span", "swipe-action", "Done");
+  action.setAttribute("aria-hidden", "true");
+  row.prepend(action);
   row.addEventListener("pointerdown", (event) => {
     if (event.button !== 0 || event.target.closest("a,button,select")) return;
     startX = event.clientX;
@@ -243,6 +246,94 @@ function addSwipeCompletion(row, check, item) {
   row.addEventListener("pointercancel", finish);
 }
 
+function localDateTimeValue(iso) {
+  const date = new Date(iso);
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 16);
+}
+
+function openDeadlineEditor(item) {
+  const canvasDueAt = item.canvasDueAt || item.dueAt;
+  const suggested = new Date(Math.max(
+    Date.parse(item.dueAt),
+    Date.parse(canvasDueAt) + 24 * 60 * 60 * 1000,
+    Date.now() + 60 * 60 * 1000,
+  ));
+
+  const dialog = element("dialog", "deadline-dialog");
+  const form = element("form", "deadline-form");
+  const heading = element("div", "deadline-dialog-heading");
+  heading.append(
+    element("h2", "", item.deadlineAdjusted ? "Update extension" : "Add an extension"),
+    element("p", "", "Use the due date and time you were given. OTNow will update its groups and reminders, but Canvas will not be changed."),
+  );
+
+  const field = element("label", "deadline-field");
+  field.append(element("span", "", "Approved due date"));
+  const input = element("input");
+  input.type = "datetime-local";
+  input.required = true;
+  input.min = localDateTimeValue(new Date(Date.parse(canvasDueAt) + 60_000).toISOString());
+  input.value = localDateTimeValue(item.deadlineAdjusted ? item.dueAt : suggested.toISOString());
+  field.append(input);
+
+  const original = element("p", "deadline-original", `Canvas due date: ${formatDate(canvasDueAt)} at ${formatTime(canvasDueAt)}`);
+  const error = element("p", "deadline-error");
+  error.hidden = true;
+  const actions = element("div", "deadline-actions");
+  const cancel = element("button", "dialog-button", "Cancel");
+  cancel.type = "button";
+  cancel.addEventListener("click", () => dialog.close());
+  if (item.deadlineAdjusted) {
+    const reset = element("button", "dialog-button reset", "Use Canvas date");
+    reset.type = "button";
+    reset.addEventListener("click", async () => {
+      reset.disabled = true;
+      const response = await chrome.runtime.sendMessage({ type: "panel:set-deadline", itemId: item.id, dueAt: null });
+      if (!response?.state) {
+        reset.disabled = false;
+        error.hidden = false;
+        error.textContent = response?.error || "The deadline could not be reset.";
+        return;
+      }
+      current.state = response.state;
+      dialog.close();
+      render();
+    });
+    actions.append(reset);
+  }
+  const save = element("button", "dialog-button primary", "Save extension");
+  save.type = "submit";
+  actions.append(cancel, save);
+
+  form.append(heading, field, original, error, actions);
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!input.reportValidity()) return;
+    save.disabled = true;
+    error.hidden = true;
+    const dueAt = new Date(input.value).toISOString();
+    const response = await chrome.runtime.sendMessage({ type: "panel:set-deadline", itemId: item.id, dueAt });
+    if (!response?.state) {
+      save.disabled = false;
+      error.hidden = false;
+      error.textContent = response?.error || "The extension could not be saved.";
+      return;
+    }
+    current.state = response.state;
+    dialog.close();
+    render();
+  });
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+  dialog.addEventListener("close", () => dialog.remove(), { once: true });
+  dialog.append(form);
+  document.body.append(dialog);
+  dialog.showModal();
+  input.focus();
+}
+
 function renderItem(item, now) {
   const itemBucket = bucketFor(item, now);
   const row = element("article", `item${itemBucket === "overdue" ? " is-overdue" : ""}${item.status !== "open" ? " is-complete" : ""}`);
@@ -267,10 +358,19 @@ function renderItem(item, now) {
     moved.append("Moved from ", element("s", "", `${formatDate(item.moved.from)} ${formatTime(item.moved.from)}`));
     main.append(moved);
   }
+  if (item.deadlineAdjusted && item.canvasDueAt) {
+    main.append(element("div", "deadline-adjusted", `Extension applied · Canvas: ${formatDate(item.canvasDueAt)} ${formatTime(item.canvasDueAt)}`));
+  }
 
   const due = element("div", "due");
   const primary = item.status === "submitted" ? "Submitted" : item.status === "done" ? "Done" : relativeDue(item.dueAt);
   due.append(element("strong", "", primary), element("span", "", `${formatDate(item.dueAt)} · ${formatTime(item.dueAt)}`));
+  if (!item.submitted && !item.canvasComplete) {
+    const adjust = element("button", `due-adjust${item.deadlineAdjusted ? " active" : ""}`, item.deadlineAdjusted ? "Edit extension" : "Add extension");
+    adjust.type = "button";
+    adjust.addEventListener("click", () => openDeadlineEditor(item));
+    due.append(adjust);
+  }
   row.append(check, main, due);
   addSwipeCompletion(row, check, item);
   return row;
@@ -394,7 +494,7 @@ function renderInsights(metrics = {}, globalStats = {}, settings = {}) {
   const header = element("div", "section-intro");
   header.append(
     element("h1", "", "Your OTNow activity"),
-    element("p", "", "A private summary of how OTNow has helped on this Chrome profile."),
+    element("p", "", "Activity recorded by OTNow in this Chrome profile."),
   );
 
   const rows = element("div", "insight-list");
@@ -409,8 +509,8 @@ function renderInsights(metrics = {}, globalStats = {}, settings = {}) {
 
   const privacy = element("div", "insight-privacy");
   privacy.append(
-    element("strong", "", "Private by design"),
-    element("p", "", "These approximate totals stay in Chrome storage on this device. OTNow does not send them to the developer or any analytics service."),
+    element("strong", "", "Saved on this device"),
+    element("p", "", "This activity summary stays in this Chrome profile. If anonymous statistics are enabled, OTNow shares only the broad counters listed in Settings."),
   );
 
   const rating = renderRating(metrics, globalStats, settings);

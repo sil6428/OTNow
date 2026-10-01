@@ -12,6 +12,7 @@
 - [x] Public repository version check detects a newer semantic version.
 - [x] Update notice links to a separate step-by-step guide.
 - [x] Manual refresh succeeds.
+- [x] A local approved-extension date updates grouping and reminders and can be reset to the Canvas date.
 - [x] Anonymous statistics are off by default and require a separate permission from Settings.
 - [x] First-run consent screen presents explicit share and decline choices without a preselected option.
 - [x] Enabling statistics sends a strict numerical report; disabling deletes the server row and local anonymous ID.
@@ -29,6 +30,7 @@
 - [x] Visible focus uses Chrome's native button/link treatment.
 - [x] Light, dark, and system themes with a one-click panel toggle.
 - [x] Screen-reader labels on icon buttons and check-offs.
+- [x] Swipe-complete action remains hidden visually and from the accessibility tree until used.
 - [x] Test at a 360px-wide side panel.
 - [x] Test at 200% browser zoom with no horizontal overflow.
 - [x] Run a screen-reader accessibility-tree smoke test for navigation, controls, headings, links, status text, and check-offs.

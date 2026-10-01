@@ -135,12 +135,12 @@ test("public dashboard requires no token and explains the privacy boundary", asy
   const response = await worker.fetch(new Request("https://stats.example/dashboard"), aggregateEnvironment());
   const html = await response.text();
   assert.equal(response.status, 200);
-  assert.match(html, /Anonymous community totals/);
+  assert.match(html, /Anonymous usage totals/);
   assert.match(html, /<title>OTNow - Stats<\/title>/);
   assert.match(html, /reporting users/);
   assert.match(html, /community rating/);
   assert.doesNotMatch(html, /Community signal field/);
-  assert.match(html, /Broad numbers only—never coursework/);
+  assert.match(html, /Coursework and account information stay/);
   assert.doesNotMatch(html, /Dashboard access token/);
 });
 

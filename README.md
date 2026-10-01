@@ -33,6 +33,7 @@ If Chrome reports that it cannot read the manifest, the selected folder is one l
 - Provides a Courses directory with direct links to each course's home, modules, assignments, quizzes, discussions, files, and grades.
 - Detects assignments Canvas reports as submitted or graded.
 - Lets a student locally check off other items without changing Canvas.
+- Lets a student apply an approved extension date to one item, updates OTNow reminders and grouping around it, and restores the original Canvas date with one action.
 - Highlights a moved due date for seven days and can notify the student.
 - Supports per-type reminder timing for assignments, quizzes, discussions, events, and planner notes.
 - Allows reminder notifications to be muted for individual courses without hiding their deadlines.
@@ -52,7 +53,7 @@ If Chrome reports that it cannot read the manifest, the selected folder is one l
   - `GET /api/v1/courses`
   - `GET /api/v1/planner/items`
 - GitHub-installed copies read only OTNow's public `manifest.json` about every six hours and send no student or course information; the Chrome Web Store build disables this request because Chrome supplies automatic updates.
-- All course data, settings, manual check-offs, reminder history, and Insights totals live in `chrome.storage.local` on the student's computer.
+- All course data, settings, manual check-offs, local deadline adjustments, reminder history, and Insights totals live in `chrome.storage.local` on the student's computer.
 - There is no analytics SDK, ad code, behavioural tracker, or OTNow account. Optional anonymous numerical statistics use a narrow, separately granted host permission and can be deleted by opting out.
 - OTNow is not affiliated with or endorsed by Ontario Tech University or Instructure.
 
@@ -84,6 +85,7 @@ src/background.js        Sync, reminders, moved dates, badges, and messages
 src/canvas-client.js      Allowlisted Canvas reads and pagination
 src/content/              Same-origin Canvas session bridge
 src/canvas-model.js       Data normalization and due-date reconciliation
+src/deadline-adjustments.js  Local approved-extension dates and Canvas-date restoration
 src/metrics.js            Local activity counters and migrations
 src/global-stats.js       Strict opt-in anonymous-report payload and deletion
 stats-worker/             Private aggregate dashboard service and D1 schema

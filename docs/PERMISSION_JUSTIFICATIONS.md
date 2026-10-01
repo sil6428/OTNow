@@ -12,7 +12,7 @@ Required to keep the deadline list visible beside any browser tab without replac
 
 ## `storage`
 
-Required to save the last successful Canvas read for offline viewing, user reminder preferences, manual check-offs, due-date-change history, reminder deduplication records, counters displayed in the local Insights view, and the optional anonymous-statistics consent state and random installation identifier. Coursework remains in the local Chrome profile.
+Required to save the last successful Canvas read for offline viewing, user reminder preferences, manual check-offs, student-entered deadline adjustments, due-date-change history, reminder deduplication records, counters displayed in the local Insights view, and the optional anonymous-statistics consent state and random installation identifier. Coursework remains in the local Chrome profile.
 
 ## `alarms`
 

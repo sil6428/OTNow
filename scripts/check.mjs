@@ -30,6 +30,7 @@ const requiredFiles = [
   "icons/icon-128.png",
   "src/metrics.js",
   "src/global-stats.js",
+  "src/deadline-adjustments.js",
   "options/onboarding.html",
   "options/onboarding.js",
 ];
@@ -65,6 +66,7 @@ await Promise.all([
 
 const panelSource = await readFile(resolve(root, "panel/panel.js"), "utf8");
 assert.match(panelSource, /renderInsights/, "Side panel must expose the local Insights view");
+assert.match(panelSource, /panel:set-deadline/, "Side panel must expose local deadline adjustments");
 
 const onboarding = await readFile(resolve(root, "options/onboarding.html"), "utf8");
 assert.match(onboarding, /Nothing is shared unless you choose to enable it/i);

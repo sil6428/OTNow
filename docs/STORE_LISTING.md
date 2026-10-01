@@ -16,7 +16,7 @@ Productivity
 
 OTNow gives Ontario Tech students one reliable place to see what is due in Canvas.
 
-Open the Chrome side panel to see dated coursework grouped by item type or due-date range. Filter by course or type, open any item directly in Canvas, or locally check off work that Canvas does not automatically mark complete. The Courses tab also provides direct links to course homes, modules, assignments, quizzes, discussions, files, and grades without copying that content outside Canvas.
+Open the Chrome side panel to see dated coursework grouped by item type or due-date range. Filter by course or type, open any item directly in Canvas, or locally check off work that Canvas does not automatically mark complete. If an instructor approves an extension that is not reflected in Canvas yet, a student can set the approved date for that item so OTNow uses it for grouping and reminders, then restore the Canvas date at any time. The Courses tab also provides direct links to course homes, modules, assignments, quizzes, discussions, files, and grades without copying that content outside Canvas.
 
 OTNow refreshes Canvas every 30 minutes while Chrome is running. When a due date changes, the new date is highlighted while the previous date remains visible. Reminder timing can be adjusted by item type, and notifications can be muted for individual courses.
 

@@ -12,7 +12,7 @@ Reports from one installation are accepted no more than once every 15 minutes. N
 
 The read-only dashboard is available at `/dashboard`. Its JSON endpoint exposes only totals across consenting installations. It never returns installation hashes or individual rows.
 
-The dashboard fits into one viewport and shows four broad figures: reporting users, items organized, reminders delivered, and the optional rating average. It does not create profiles, comments, links, or individual markers. Aggregate responses are briefly cached at the edge and invalidated after reports or deletions to reduce D1 reads.
+The dashboard fits into one viewport and uses direct, descriptive copy. It shows four broad figures: reporting users, items organized, reminders delivered, and the optional rating average. It does not create profiles, comments, links, or individual markers. Aggregate responses are briefly cached at the edge and invalidated after reports or deletions to reduce D1 reads.
 
 The interface uses a small, dependency-free cursor-reactive particle field and count-up values. Motion is disabled when the visitor requests reduced motion.
 

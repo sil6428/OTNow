@@ -16,6 +16,11 @@ import {
 } from "./constants.js";
 import { sameDay } from "./dates.js";
 import { mergePlannerItems } from "./canvas-model.js";
+import {
+  applyDeadlineAdjustments,
+  reconcileDeadlineAdjustments,
+  restoreCanvasDeadlines,
+} from "./deadline-adjustments.js";
 import { readCanvas } from "./canvas-client.js";
 import { compareVersions, readPublishedVersion } from "./update-check.js";
 import {
@@ -32,10 +37,12 @@ import {
   setAnonymousRating,
 } from "./global-stats.js";
 import {
+  getDeadlineAdjustments,
   getManualDone,
   getSettings,
   getState,
   setManualDone,
+  setDeadlineAdjustments,
   setSettings,
   setState,
   updateState,
@@ -169,8 +176,12 @@ async function syncCanvas({ userInitiated = false } = {}) {
     });
     try {
       const manualDone = await getManualDone();
+      const deadlineAdjustments = await getDeadlineAdjustments();
       const fresh = await readCanvas(manualDone);
-      const { items, moved } = mergePlannerItems(before.items, fresh.items);
+      const { items: canvasItems, moved } = mergePlannerItems(restoreCanvasDeadlines(before.items), fresh.items);
+      const activeDeadlineAdjustments = reconcileDeadlineAdjustments(canvasItems, deadlineAdjustments);
+      const items = applyDeadlineAdjustments(canvasItems, activeDeadlineAdjustments);
+      await setDeadlineAdjustments(activeDeadlineAdjustments);
       const firstSync = !before.firstSyncComplete;
       const next = {
         ...before,
@@ -309,6 +320,33 @@ async function toggleManualDone(itemId) {
   return state;
 }
 
+async function setDeadlineAdjustment(itemId, dueAt) {
+  const before = await getState();
+  const item = before.items.find((entry) => entry.id === itemId);
+  if (!item) throw new Error("This Canvas item is no longer available.");
+
+  const adjustments = await getDeadlineAdjustments();
+  if (dueAt == null || dueAt === "") {
+    delete adjustments[itemId];
+  } else {
+    const parsed = Date.parse(dueAt);
+    if (!Number.isFinite(parsed)) throw new Error("Choose a valid extension date and time.");
+    const canvasDueAt = item.canvasDueAt || item.dueAt;
+    if (parsed <= Date.parse(canvasDueAt)) throw new Error("The extension date must be later than the Canvas due date.");
+    adjustments[itemId] = new Date(parsed).toISOString();
+  }
+
+  await setDeadlineAdjustments(adjustments);
+  const state = await updateState((draft) => {
+    draft.items = applyDeadlineAdjustments(restoreCanvasDeadlines(draft.items), adjustments);
+    pruneTracking(draft, draft.items);
+    return draft;
+  });
+  await refreshBadge(state);
+  await runReminders();
+  return state;
+}
+
 async function setup() {
   await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
   const settings = await getSettings();
@@ -381,6 +419,9 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         break;
       case "panel:toggle":
         sendResponse({ state: await toggleManualDone(String(message.itemId)) });
+        break;
+      case "panel:set-deadline":
+        sendResponse({ state: await setDeadlineAdjustment(String(message.itemId), message.dueAt) });
         break;
       case "panel:open-canvas":
         await chrome.tabs.create({ url: CANVAS_ORIGIN });

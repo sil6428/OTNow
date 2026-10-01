@@ -1,4 +1,5 @@
 import { DEFAULT_SETTINGS } from "./constants.js";
+import { normalizeDeadlineAdjustments } from "./deadline-adjustments.js";
 import { emptyMetrics, mergeMetrics } from "./metrics.js";
 
 export function emptyState() {
@@ -85,4 +86,15 @@ export async function getManualDone() {
 
 export async function setManualDone(manualDone) {
   await chrome.storage.local.set({ manualDone });
+}
+
+export async function getDeadlineAdjustments() {
+  const { deadlineAdjustments } = await chrome.storage.local.get("deadlineAdjustments");
+  return normalizeDeadlineAdjustments(deadlineAdjustments);
+}
+
+export async function setDeadlineAdjustments(deadlineAdjustments) {
+  const clean = normalizeDeadlineAdjustments(deadlineAdjustments);
+  await chrome.storage.local.set({ deadlineAdjustments: clean });
+  return clean;
 }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.0 — 2026-10-01
+
+- Added local deadline adjustments for students who receive an approved extension on a specific Canvas item; adjusted dates drive OTNow grouping, badges, and reminders without changing Canvas.
+- Added a clear reset action that restores the original Canvas due date at any time.
+- Fixed the swipe-to-complete layer appearing underneath untouched rows and corrected its screen-reader behavior.
+- Replaced the broken settings gear, centred the completion checkmark, and matched completion controls to OTNow blue.
+- Replaced oversized marketing-style statistics copy with a smaller, direct description of the public totals.
+
 ## 1.4.0 — 2026-10-01
 
 - Rebuilt the public statistics page as a single-screen, no-scroll snapshot with a cursor-reactive particle field and only four broad community totals.

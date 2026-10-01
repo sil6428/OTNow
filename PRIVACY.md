@@ -10,11 +10,11 @@ With the student's existing signed-in Canvas session, OTNow reads active course 
 
 ## How the information is used
 
-This information is used only to display deadlines, preserve an offline cache, detect changed due dates, update the toolbar badge, and schedule reminders requested by the student.
+This information is used only to display deadlines, preserve an offline cache, detect changed due dates, apply local deadline adjustments entered by the student, update the toolbar badge, and schedule reminders requested by the student.
 
 ## Local storage
 
-Course information, settings, manual check-offs, reminder history, and the totals shown in the personal Insights view are stored locally through Chrome extension storage. Insights records only local counters and opaque Canvas item identifiers needed to avoid counting the same deadline twice; it does not retain coursework titles for measurement. OTNow does not sell information or use it for advertising, profiling, or model training. OTNow does not collect passwords or authentication tokens.
+Course information, settings, manual check-offs, student-entered deadline adjustments, reminder history, and the totals shown in the personal Insights view are stored locally through Chrome extension storage. A deadline adjustment changes only OTNow's display and reminder schedule; it does not change Canvas. Insights records only local counters and opaque Canvas item identifiers needed to avoid counting the same deadline twice; it does not retain coursework titles for measurement. OTNow does not sell information or use it for advertising, profiling, or model training. OTNow does not collect passwords or authentication tokens.
 
 ## Optional, opt-in anonymous global statistics
 
