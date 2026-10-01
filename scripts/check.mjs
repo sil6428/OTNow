@@ -70,6 +70,7 @@ const onboarding = await readFile(resolve(root, "options/onboarding.html"), "utf
 assert.match(onboarding, /Nothing is shared unless you choose to enable it/i);
 assert.match(onboarding, /Share anonymous statistics/i);
 assert.match(onboarding, /Not now/i);
+assert.match(onboarding, /View OTNow - Stats/i);
 assert.doesNotMatch(onboarding, /checked/i, "First-run consent must not be preselected");
 
 console.log(`OTNow package check passed (${requiredFiles.length} required files).`);

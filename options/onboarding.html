@@ -24,11 +24,19 @@
 
       <p class="control">If enabled, OTNow reports about once a day. You can turn it off later in Settings, which deletes this installation's aggregate row.</p>
 
-      <div class="actions">
+      <div class="actions" id="actions">
         <button id="share" class="primary" type="button">Share anonymous statistics</button>
         <button id="decline" class="secondary" type="button">Not now</button>
       </div>
       <p id="status" class="status" role="status"></p>
+      <section id="success" class="success" hidden aria-live="polite">
+        <p class="signal-mark" aria-hidden="true"></p>
+        <div>
+          <h2 id="success-heading">Your anonymous signal is live.</h2>
+          <p id="success-copy">Thanks for helping measure how OTNow is used.</p>
+          <a id="stats-link" class="stats-link" target="_blank" rel="noreferrer">View OTNow - Stats</a>
+        </div>
+      </section>
       <a href="../PRIVACY.md" target="_blank" rel="noreferrer">Read the privacy policy</a>
     </main>
     <script type="module" src="onboarding.js"></script>

@@ -12,6 +12,8 @@ Reports from one installation are accepted no more than once every 15 minutes. N
 
 The read-only dashboard is available at `/dashboard`. Its JSON endpoint exposes only totals across consenting installations. It never returns installation hashes or individual rows.
 
+The dashboard draws one abstract community signal for each reporting installation. This provides the visual participation effect of a public guestbook without accepting names, comments, links, or other user-generated text. Aggregate responses are briefly cached at the edge and invalidated after reports or deletions to reduce D1 reads.
+
 Keeping the dashboard and API in the same Worker avoids a second deployment, cross-origin permissions, and duplicated configuration. Cloudflare Pages would be useful for a separate static marketing site, but this service depends on D1-backed server logic; Pages Functions would still execute on the Workers runtime.
 
 ## Deployment

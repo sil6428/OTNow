@@ -29,5 +29,11 @@ button { min-height: 42px; padding: 10px 16px; border-radius: 3px; font: inherit
 .secondary { border: 1px solid var(--line); background: var(--surface); color: var(--text); }
 button:disabled { cursor: wait; opacity: .6; }
 .status { min-height: 22px; color: var(--muted); }
+.success { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; margin: 12px 0 20px; padding: 16px; border: 1px solid color-mix(in srgb, var(--bright-blue) 35%, var(--line)); border-radius: 8px; background: color-mix(in srgb, var(--bright-blue) 7%, var(--surface)); }
+.success[hidden] { display: none; }
+.success h2 { margin: 1px 0 4px; }
+.success p { margin: 0 0 11px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.signal-mark { width: 13px; height: 13px; margin: 3px 2px 0 !important; border-radius: 3px; background: var(--orange); box-shadow: 0 0 0 6px color-mix(in srgb, var(--orange) 14%, transparent), 0 0 20px color-mix(in srgb, var(--orange) 55%, transparent); transform: rotate(45deg); }
+.stats-link { display: inline-block; padding: 8px 11px; border-radius: 4px; background: var(--blue); color: #fff; font-weight: 700; text-decoration: none; }
 a { color: var(--bright-blue); font-size: 13px; }
 @media (max-width: 520px) { main { margin: 0; padding: 28px 22px; border-width: 0; box-shadow: none; } .actions { flex-direction: column; } }

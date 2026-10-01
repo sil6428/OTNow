@@ -1,9 +1,12 @@
 # Changelog
 
-## Unreleased
+## 1.3.0 — 2026-10-01
 
 - Rebuilt the anonymous statistics dashboard as a polished, responsive public page with live aggregate activity, category totals, release distribution, growth, and prominent privacy boundaries.
 - Made aggregate statistics publicly readable while keeping installation hashes and individual report rows inaccessible.
+- Added an anonymous community signal field without collecting public messages, profiles, or additional personal data.
+- Added opt-in milestone numbers and a direct **View OTNow - Stats** link to the consent success state.
+- Added short-lived edge caching with immediate invalidation after accepted reports and deletions to reduce D1 reads while keeping totals current.
 
 ## 1.2.0 — 2026-10-01
 

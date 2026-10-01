@@ -41,6 +41,33 @@ function aggregateEnvironment() {
   };
 }
 
+function firstReportEnvironment(total = 17) {
+  return {
+    DB: {
+      prepare(sql) {
+        return {
+          bind() {
+            return {
+              async first() {
+                if (sql.includes("SELECT last_seen")) return null;
+                if (sql.includes("COUNT(*) AS total")) return { total };
+                return null;
+              },
+              async run() {
+                return { success: true };
+              },
+            };
+          },
+          async first() {
+            if (sql.includes("COUNT(*) AS total")) return { total };
+            return null;
+          },
+        };
+      },
+    },
+  };
+}
+
 test("accepts only the documented anonymous report shape", () => {
   assert.equal(validateReport(validReport), true);
   assert.equal(validateReport({ ...validReport, email: "student@example.com" }), false);
@@ -58,11 +85,23 @@ test("serves the aggregate statistics endpoint without a dashboard credential", 
   assert(!JSON.stringify(body).includes("id_hash"));
 });
 
+test("returns an aggregate opt-in position after a first accepted report", async () => {
+  const response = await worker.fetch(new Request("https://stats.example/api/report", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(validReport),
+  }), firstReportEnvironment());
+  assert.equal(response.status, 202);
+  assert.deepEqual(await response.json(), { ok: true, accepted: true, reportingPosition: 17 });
+});
+
 test("public dashboard requires no token and explains the privacy boundary", async () => {
   const response = await worker.fetch(new Request("https://stats.example/dashboard"), aggregateEnvironment());
   const html = await response.text();
   assert.equal(response.status, 200);
   assert.match(html, /Community pulse/);
+  assert.match(html, /<title>OTNow - Stats<\/title>/);
+  assert.match(html, /Community signal field/);
   assert.match(html, /Numbers, never coursework/);
   assert.doesNotMatch(html, /Dashboard access token/);
 });
