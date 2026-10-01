@@ -35,7 +35,7 @@ OTNow can be published on the Chrome Web Store. Its Manifest V3 package is alrea
 - **Remote code:** none. The store package contains all executable code locally and does not contact GitHub for updates.
 - **User data:** identifiable Canvas course and planner information is stored only in `chrome.storage.local`; it is not sent to the developer, advertisers, or the OTNow statistics service.
 - **Insights:** the Insights tab contains on-device counters. Only after explicit opt-in, a strict subset of anonymous numerical totals is sent once per day to the aggregate statistics service.
-- **Optional statistics:** the optional permission is requested from Settings, the disclosure lists every transmitted field and excluded category, identifiers are hashed at rest, opt-out deletes the row, and inactive rows expire after 180 days.
+- **Optional statistics:** a one-time first-run screen offers explicit share and decline choices without a default selection. The optional permission is requested only after the share button is clicked. The disclosure lists every transmitted field and excluded category, identifiers are hashed at rest, opt-out deletes the row, and inactive rows expire after 180 days.
 - **Permissions:** each required permission is tied to the visible deadline, reminder, local-storage, or side-panel features. The statistics host is an optional permission and is not granted at installation.
 - **Affiliation:** keep the unofficial-project disclaimer in the listing and privacy policy.
 

@@ -18,11 +18,12 @@ export const GLOBAL_STATS_ORIGIN = "https://otnow-stats.sil6428-archtech.workers
 export const GLOBAL_STATS_API_URL = `${GLOBAL_STATS_ORIGIN}/api/report`;
 
 export const DEFAULT_SETTINGS = {
-  schemaVersion: 3,
+  schemaVersion: 4,
   theme: "light",
   notificationsEnabled: true,
   notifyMovedDates: true,
   shareAnonymousStats: false,
+  statsOnboardingSeen: false,
   showCompleted: false,
   reminderLeads: {
     assignment: 24 * 60,

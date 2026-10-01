@@ -30,6 +30,8 @@ const requiredFiles = [
   "icons/icon-128.png",
   "src/metrics.js",
   "src/global-stats.js",
+  "options/onboarding.html",
+  "options/onboarding.js",
 ];
 await Promise.all(requiredFiles.map((file) => access(resolve(root, file), constants.R_OK)));
 
@@ -63,5 +65,11 @@ await Promise.all([
 
 const panelSource = await readFile(resolve(root, "panel/panel.js"), "utf8");
 assert.match(panelSource, /renderInsights/, "Side panel must expose the local Insights view");
+
+const onboarding = await readFile(resolve(root, "options/onboarding.html"), "utf8");
+assert.match(onboarding, /Nothing is shared unless you choose to enable it/i);
+assert.match(onboarding, /Share anonymous statistics/i);
+assert.match(onboarding, /Not now/i);
+assert.doesNotMatch(onboarding, /checked/i, "First-run consent must not be preselected");
 
 console.log(`OTNow package check passed (${requiredFiles.length} required files).`);

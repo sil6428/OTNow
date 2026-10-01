@@ -50,7 +50,28 @@ try {
   }
 
   if (errors.length) throw new Error(`Options page errors: ${errors.join("; ")}`);
-  console.log(JSON.stringify({ ok: true, extensionId, ...snapshot }));
+  await page.goto(`chrome-extension://${extensionId}/options/onboarding.html`);
+  const onboarding = await page.evaluate(() => ({
+    heading: document.querySelector("h1")?.textContent,
+    share: document.querySelector("#share")?.textContent,
+    decline: document.querySelector("#decline")?.textContent,
+    status: document.querySelector("#status")?.textContent,
+  }));
+  if (onboarding.heading !== "Help improve OTNow?" || !onboarding.share || !onboarding.decline || onboarding.status) {
+    throw new Error("First-run consent screen is incomplete or preselected.");
+  }
+  await page.locator("#decline").click();
+  await page.waitForFunction(() => document.querySelector("#status")?.textContent.includes("Nothing was shared"));
+  const declined = await page.evaluate(async () => ({
+    settings: (await chrome.runtime.sendMessage({ type: "options:get" })).settings,
+    permission: await chrome.permissions.contains({
+      origins: ["https://otnow-stats.sil6428-archtech.workers.dev/*"],
+    }),
+  }));
+  if (!declined.settings.statsOnboardingSeen || declined.settings.shareAnonymousStats || declined.permission) {
+    throw new Error("Declining first-run statistics did not preserve the privacy-first defaults.");
+  }
+  console.log(JSON.stringify({ ok: true, extensionId, ...snapshot, onboarding, declineVerified: true }));
 } finally {
   if (context) await context.close();
   const absoluteProfile = resolve(profile);

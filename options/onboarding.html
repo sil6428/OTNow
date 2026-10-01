@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Welcome to OTNow</title>
+    <link rel="stylesheet" href="onboarding.css">
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">Welcome to OTNow</p>
+      <h1>Help improve OTNow?</h1>
+      <p class="lead">You can optionally share anonymous numerical totals that help measure whether OTNow is useful. Nothing is shared unless you choose to enable it.</p>
+
+      <section aria-labelledby="sent-heading">
+        <h2 id="sent-heading">What would be shared</h2>
+        <p>A random installation ID, the OTNow version, and totals for broad item types, reminders, moved deadlines, manual check-offs, successful refreshes, and days used.</p>
+      </section>
+
+      <section aria-labelledby="never-heading">
+        <h2 id="never-heading">What is never shared</h2>
+        <p>Names, course names or codes, coursework titles, URLs, due dates, grades, emails, student numbers, Canvas IDs, passwords, or authentication information.</p>
+      </section>
+
+      <p class="control">If enabled, OTNow reports about once a day. You can turn it off later in Settings, which deletes this installation's aggregate row.</p>
+
+      <div class="actions">
+        <button id="share" class="primary" type="button">Share anonymous statistics</button>
+        <button id="decline" class="secondary" type="button">Not now</button>
+      </div>
+      <p id="status" class="status" role="status"></p>
+      <a href="../PRIVACY.md" target="_blank" rel="noreferrer">Read the privacy policy</a>
+    </main>
+    <script type="module" src="onboarding.js"></script>
+  </body>
+</html>

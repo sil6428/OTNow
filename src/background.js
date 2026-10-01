@@ -330,7 +330,18 @@ async function setup() {
   await refreshBadge();
 }
 
-chrome.runtime.onInstalled.addListener(() => setup().then(() => checkForUpdate({ force: true })));
+async function handleInstalled(details) {
+  await setup();
+  if (details.reason === "install" || details.reason === "update") {
+    const settings = await getSettings();
+    if (!settings.statsOnboardingSeen) {
+      await chrome.tabs.create({ url: chrome.runtime.getURL("options/onboarding.html") });
+    }
+  }
+  await checkForUpdate({ force: true });
+}
+
+chrome.runtime.onInstalled.addListener((details) => handleInstalled(details).catch(console.error));
 chrome.runtime.onStartup.addListener(() => setup().then(() => Promise.all([syncCanvas(), checkForUpdate()])));
 
 chrome.alarms.onAlarm.addListener((alarm) => {
@@ -398,13 +409,23 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         break;
       case "stats:enable": {
         if (!(await hasGlobalStatsPermission())) throw new Error("Permission was not granted.");
-        const settings = await setSettings({ shareAnonymousStats: true });
+        const settings = await setSettings({ shareAnonymousStats: true, statsOnboardingSeen: true });
         chrome.alarms.create(GLOBAL_STATS_ALARM, {
           delayInMinutes: 1,
           periodInMinutes: GLOBAL_STATS_INTERVAL_MINUTES,
         });
         const report = await runGlobalStats({ force: true });
         sendResponse({ ok: true, settings, report, globalStats: await getAnonymousStatsStatus() });
+        break;
+      }
+      case "stats:onboarding-decline": {
+        const settings = await setSettings({ statsOnboardingSeen: true, shareAnonymousStats: false });
+        sendResponse({ ok: true, settings });
+        break;
+      }
+      case "stats:onboarding-opened": {
+        const settings = await setSettings({ statsOnboardingSeen: true });
+        sendResponse({ ok: true, settings });
         break;
       }
       case "stats:disable": {

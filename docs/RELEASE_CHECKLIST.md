@@ -13,6 +13,7 @@
 - [x] Update notice links to a separate step-by-step guide.
 - [x] Manual refresh succeeds.
 - [x] Anonymous statistics are off by default and require a separate permission from Settings.
+- [x] First-run consent screen presents explicit share and decline choices without a preselected option.
 - [x] Enabling statistics sends a strict numerical report; disabling deletes the server row and local anonymous ID.
 - [ ] Confirm a naturally submitted assignment becomes **Submitted**.
 - [ ] Confirm a graded quiz becomes **Submitted**.

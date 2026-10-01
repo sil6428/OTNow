@@ -178,7 +178,7 @@ test("builds a strict anonymous report containing only numerical totals", () => 
   const report = buildAnonymousReport(
     metrics,
     "7787bed6-b0bf-4b20-95db-a3ef5c069b1b",
-    "1.1.0",
+    "1.2.0",
   );
   assert.deepEqual(Object.keys(report).sort(), ["counters", "installId", "schema", "version"]);
   assert.equal(report.counters.deadlinesDiscovered, 2);

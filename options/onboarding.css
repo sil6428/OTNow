@@ -1,0 +1,33 @@
+:root {
+  color-scheme: light dark;
+  --blue: #003c71;
+  --bright-blue: #0077ca;
+  --orange: #e75d2a;
+  --background: #f5f6f7;
+  --surface: #ffffff;
+  --text: #2d3b45;
+  --muted: #5b6770;
+  --line: #c7cdd1;
+  font-family: Lato, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --blue: #0b3b58; --bright-blue: #58b9f1; --orange: #ff875d; --background: #101820; --surface: #17232d; --text: #f5f7f8; --muted: #b7c1c9; --line: #40515e; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; border-top: 4px solid var(--orange); background: var(--background); color: var(--text); }
+main { width: min(660px, calc(100% - 32px)); margin: 8vh auto; padding: 36px 40px; border: 1px solid var(--line); background: var(--surface); box-shadow: 0 2px 8px rgb(0 40 60 / 12%); }
+.eyebrow { margin: 0 0 8px; color: var(--bright-blue); font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+h1 { margin: 0; font-size: 32px; letter-spacing: -.035em; }
+.lead { margin: 12px 0 28px; color: var(--muted); font-size: 16px; line-height: 1.55; }
+section { padding: 16px 0; border-top: 1px solid var(--line); }
+h2 { margin: 0 0 6px; font-size: 15px; }
+section p, .control { margin: 0; color: var(--muted); line-height: 1.55; }
+.control { padding: 16px 0; border-top: 1px solid var(--line); font-size: 13px; }
+.actions { display: flex; gap: 10px; margin-top: 18px; }
+button { min-height: 42px; padding: 10px 16px; border-radius: 3px; font: inherit; font-weight: 700; cursor: pointer; }
+.primary { border: 1px solid var(--bright-blue); background: var(--bright-blue); color: #fff; }
+.secondary { border: 1px solid var(--line); background: var(--surface); color: var(--text); }
+button:disabled { cursor: wait; opacity: .6; }
+.status { min-height: 22px; color: var(--muted); }
+a { color: var(--bright-blue); font-size: 13px; }
+@media (max-width: 520px) { main { margin: 0; padding: 28px 22px; border-width: 0; box-shadow: none; } .actions { flex-direction: column; } }

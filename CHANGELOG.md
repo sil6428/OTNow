@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0 — 2026-10-01
+
+- Added a one-time first-run consent screen that explains anonymous global statistics before requesting access.
+- Kept sharing off by default with no preselected choice; reports begin only after the student selects **Share anonymous statistics** and accepts Chrome's optional permission.
+- Added an equally available **Not now** path that sends nothing and leaves the feature available later in Settings.
+
 ## 1.1.0 — 2026-09-30
 
 - Added an optional, off-by-default anonymous global statistics program with a separate Chrome permission and a precise in-product disclosure.
