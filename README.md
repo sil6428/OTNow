@@ -68,7 +68,7 @@ GitHub issues are public. Remove student names, student numbers, grades, private
 
 If Canvas was already open before installing OTNow, reload that Canvas tab once. Future versions can be installed without removing OTNow; follow [UPDATE_GUIDE.md](UPDATE_GUIDE.md) so local settings remain attached to the same unpacked extension folder.
 
-Overall reach is measured with Chrome Web Store reports. A private OTNow dashboard separately shows aggregate totals from consenting reporting installations. See [Measuring OTNow responsibly](docs/METRICS.md) for the reporting workflow and accurate resume wording.
+Overall reach is measured with Chrome Web Store reports. A [public OTNow statistics dashboard](https://otnow-stats.sil6428-archtech.workers.dev/dashboard) separately shows aggregate totals from consenting reporting installations. See [Measuring OTNow responsibly](docs/METRICS.md) for the reporting workflow and accurate resume wording.
 
 ## Chrome Web Store status
 

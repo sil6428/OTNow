@@ -1,10 +1,10 @@
 # Measuring OTNow responsibly
 
-OTNow uses two distinct measurement sources. Chrome Web Store reports remain authoritative for total installations and weekly users. A separate private dashboard summarizes only the students who explicitly opt in to anonymous numerical statistics.
+OTNow uses two distinct measurement sources. Chrome Web Store reports remain authoritative for total installations and weekly users. A separate public dashboard summarizes only the students who explicitly opt in to anonymous numerical statistics.
 
-## Private OTNow dashboard
+## Public OTNow dashboard
 
-Open `https://otnow-stats.sil6428-archtech.workers.dev/dashboard` and enter the private dashboard token. The token is never stored in the repository or extension. The dashboard reports:
+Open `https://otnow-stats.sil6428-archtech.workers.dev/dashboard`. The read-only dashboard reports:
 
 - reporting installations and active reporting installations over 1, 7, and 30 days;
 - total Canvas items organized, broken down by general item type;
@@ -51,4 +51,4 @@ Use only a number visible in an exported report or dated screenshot. Accurate pa
 - Maintained **X releases** with automated tests, packaged artifacts, checksums, and update documentation.
 - Resolved **X user-reported issues** and shipped **Y feature releases** while keeping identifiable Canvas data local.
 
-Do not present private-dashboard totals as all users, do not estimate time saved, and do not combine unlike reporting windows. The in-extension **Insights** page describes only the current Chrome profile; the private global dashboard includes only installations that opted in.
+Do not present public-dashboard totals as all users, do not estimate time saved, and do not combine unlike reporting windows. The in-extension **Insights** page describes only the current Chrome profile; the public global dashboard includes only installations that opted in.

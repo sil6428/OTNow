@@ -13,10 +13,5 @@
       "database_name": "otnow-stats",
       "database_id": "41ab313a-9f26-4677-93df-a0785933a853"
     }
-  ],
-  "secrets": {
-    "required": [
-      "DASHBOARD_TOKEN"
-    ]
-  }
+  ]
 }

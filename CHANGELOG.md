@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Rebuilt the anonymous statistics dashboard as a polished, responsive public page with live aggregate activity, category totals, release distribution, growth, and prominent privacy boundaries.
+- Made aggregate statistics publicly readable while keeping installation hashes and individual report rows inaccessible.
+
 ## 1.2.0 — 2026-10-01
 
 - Added a one-time first-run consent screen that explains anonymous global statistics before requesting access.
