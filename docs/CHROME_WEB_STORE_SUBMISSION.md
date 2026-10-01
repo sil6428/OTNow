@@ -10,8 +10,7 @@ OTNow can be published on the Chrome Web Store. Its Manifest V3 package is alrea
 - Permission explanations in `docs/PERMISSION_JUSTIFICATIONS.md`
 - Public privacy policy at `https://github.com/sil6428/OTNow/blob/main/PRIVACY.md`
 - Private feedback and support form at `https://docs.google.com/forms/d/e/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw/viewform`
-- Sanitized 1280×800 light, dark, and course-directory screenshots
-- A sanitized real-session image with fictional course and coursework data
+- Sanitized 1280×800 real-session screenshots for Deadlines, Courses, Insights, and forced dark mode
 - 440×280 promotional tile in `docs/media/otnow-promo-440x280.png`
 - 1400×560 marquee promotional tile in `docs/media/otnow-marquee-1400x560.png`
 
