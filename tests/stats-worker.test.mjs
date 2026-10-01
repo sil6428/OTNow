@@ -66,3 +66,10 @@ test("public dashboard requires no token and explains the privacy boundary", asy
   assert.match(html, /Numbers, never coursework/);
   assert.doesNotMatch(html, /Dashboard access token/);
 });
+
+test("serves the OTNow browser icon", async () => {
+  const response = await worker.fetch(new Request("https://stats.example/favicon.svg"), aggregateEnvironment());
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type"), /image\/svg\+xml/);
+  assert.match(await response.text(), /#ff6b35/);
+});
