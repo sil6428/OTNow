@@ -59,7 +59,9 @@
 - [x] Automated tests, validation, and both release packages run on pushes and pull requests.
 - [x] Version-matched tags automatically publish both release packages and SHA-256 checksums.
 - [x] Validated build artifacts are retained for review.
-- [ ] Require the automated quality check before merging to `main`.
+- [x] Third-party GitHub Actions are pinned to immutable commit SHAs and checked during package validation.
+- [x] Dependabot checks pinned GitHub Actions weekly for upstream updates.
+- [ ] Activate a `main` branch ruleset that blocks deletion and force pushes, requires a pull request, and requires the `Test and package` status check.
 
 ## Store submission
 
