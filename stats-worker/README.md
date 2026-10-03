@@ -12,7 +12,7 @@ Reports from one installation are accepted no more than once every 15 minutes. N
 
 The read-only dashboard is available at `/dashboard`. Its JSON endpoint exposes only totals across consenting installations. It never returns installation hashes or individual rows.
 
-The dashboard fits into one viewport and uses direct, descriptive copy. It shows four broad figures: reporting users, items organized, reminders delivered, and the optional community rating average. Visitors can submit a one-to-five-star rating directly from the page. The rating table stores only the selected number and submission time; browser storage discourages accidental repeat ratings.
+The dashboard fits into one viewport and uses direct, descriptive copy. It shows three broad figures: reporting installations, privacy-rounded items organized, and the optional community rating average. Exact activity windows, version distribution, per-type totals, and installation history are not exposed by the public API. Counts below five are suppressed, item totals are rounded down in broad buckets, rating averages require at least five ratings, and public responses are cached for one hour without write-triggered invalidation. Visitors can submit a one-to-five-star rating directly from the page. The rating table stores only the selected number and submission time; browser storage discourages accidental repeat ratings.
 
 Written feedback uses a separate Google Form linked from the header and footer. The form does not collect email addresses, makes the name field optional, and writes responses to a private Google Sheet for review.
 

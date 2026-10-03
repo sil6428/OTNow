@@ -3,6 +3,9 @@ import { DASHBOARD_PAGE, DASHBOARD_SCRIPT } from "./dashboard-assets.js";
 const MAX_BODY_BYTES = 4096;
 const MAX_RATING_BYTES = 256;
 const MAX_COUNTER = 10_000_000;
+const PUBLIC_STATS_CACHE_SECONDS = 60 * 60;
+const PUBLIC_STATS_CACHE_VERSION = "3";
+const MIN_PUBLIC_COUNT = 5;
 const VERSION_PATTERN = /^\d+\.\d+\.\d+$/;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -180,8 +183,9 @@ async function removeReport(request, env) {
     return json({ ok: false, error: "Invalid deletion request." }, 400);
   }
   const idHash = await hashIdentifier(body.installId);
-  await env.DB.prepare("DELETE FROM installations WHERE id_hash = ?").bind(idHash).run();
-  return json({ ok: true });
+  const result = await env.DB.prepare("DELETE FROM installations WHERE id_hash = ?").bind(idHash).run();
+  const deleted = Number(result?.meta?.changes || 0) > 0;
+  return json({ ok: true, deleted });
 }
 
 async function submitSiteRating(request, env) {
@@ -207,56 +211,44 @@ async function submitSiteRating(request, env) {
   if (Number(limit?.recent) > 0 || Number(limit?.today) >= 500) return json({ ok: false, error: "Ratings are busy. Please wait a moment and try again." }, 429);
 
   await env.DB.prepare("INSERT INTO site_ratings (rating, created_at) VALUES (?, ?)").bind(payload.rating, sqliteTimestamp()).run();
-  return json({ ok: true, ratingAccepted: true }, 202);
+  return json({ ok: true, ratingAccepted: true, ratingStored: true }, 202);
 }
 
 async function globalStats(env) {
-  const [summaryResult, activityResult, versionsResult, growthResult, siteRatingResult] = await env.DB.batch([
+  const [summaryResult, siteRatingResult] = await env.DB.batch([
     env.DB.prepare(`
       SELECT
         COUNT(*) AS reportingInstallations,
         COALESCE(SUM(total_items), 0) AS totalItems,
-        COALESCE(SUM(assignments), 0) AS assignments,
-        COALESCE(SUM(quizzes), 0) AS quizzes,
-        COALESCE(SUM(discussions), 0) AS discussions,
-        COALESCE(SUM(events), 0) AS events,
-        COALESCE(SUM(notes), 0) AS notes,
-        COALESCE(SUM(other_items), 0) AS otherItems,
-        COALESCE(SUM(reminders_sent), 0) AS remindersSent,
-        COALESCE(SUM(moved_deadlines), 0) AS movedDeadlines,
-        COALESCE(SUM(manual_completions), 0) AS manualCompletions,
-        COALESCE(SUM(successful_syncs), 0) AS successfulSyncs,
-        COALESCE(SUM(active_days), 0) AS activeDays,
         COALESCE(SUM(rating), 0) AS ratingSum,
         COUNT(rating) AS ratingCount
       FROM installations
     `),
-    env.DB.prepare(`
-      SELECT
-        SUM(CASE WHEN last_seen >= datetime('now', '-1 day') THEN 1 ELSE 0 END) AS active24h,
-        SUM(CASE WHEN last_seen >= datetime('now', '-7 days') THEN 1 ELSE 0 END) AS active7d,
-        SUM(CASE WHEN last_seen >= datetime('now', '-30 days') THEN 1 ELSE 0 END) AS active30d
-      FROM installations
-    `),
-    env.DB.prepare("SELECT version, COUNT(*) AS installations FROM installations GROUP BY version ORDER BY installations DESC, version DESC LIMIT 10"),
-    env.DB.prepare("SELECT substr(first_seen, 1, 10) AS day, COUNT(*) AS installs FROM installations WHERE first_seen >= datetime('now', '-30 days') GROUP BY day ORDER BY day"),
     env.DB.prepare("SELECT COALESCE(SUM(rating), 0) AS ratingSum, COUNT(rating) AS ratingCount FROM site_ratings"),
   ]);
 
   const summary = summaryResult.results?.[0] || {};
+  const exactInstallations = Math.max(0, Number(summary.reportingInstallations) || 0);
   const siteRatings = siteRatingResult?.results?.[0] || {};
   const ratingSum = Number(summary.ratingSum || 0) + Number(siteRatings.ratingSum || 0);
-  const ratingCount = Number(summary.ratingCount || 0) + Number(siteRatings.ratingCount || 0);
-  summary.ratingCount = ratingCount;
-  summary.averageRating = ratingCount ? Math.round((ratingSum / ratingCount) * 10) / 10 : null;
+  const exactRatingCount = Number(summary.ratingCount || 0) + Number(siteRatings.ratingCount || 0);
+  summary.reportingInstallations = exactInstallations < MIN_PUBLIC_COUNT ? null : Math.floor(exactInstallations / 5) * 5;
+  summary.reportingInstallationsDisplay = exactInstallations === 0 ? "0" : exactInstallations < MIN_PUBLIC_COUNT ? "<5" : null;
+  summary.reportingInstallationsIsRounded = exactInstallations > 0;
+  summary.ratingCount = exactRatingCount < MIN_PUBLIC_COUNT ? null : Math.floor(exactRatingCount / 5) * 5;
+  summary.ratingCountDisplay = exactRatingCount === 0 ? "0" : exactRatingCount < MIN_PUBLIC_COUNT ? "<5" : null;
+  summary.averageRating = exactRatingCount < MIN_PUBLIC_COUNT ? null : Math.round((ratingSum / exactRatingCount) * 2) / 2;
   delete summary.ratingSum;
 
+  const exactItems = Math.max(0, Number(summary.totalItems) || 0);
+  const bucketSize = exactItems < 100_000 ? 100 : 10_000;
+  summary.totalItems = exactItems < bucketSize ? null : Math.floor(exactItems / bucketSize) * bucketSize;
+  summary.totalItemsDisplay = exactItems === 0 ? "0" : exactItems < bucketSize ? `<${bucketSize}` : null;
+  summary.totalItemsIsRounded = exactItems > 0;
+
   return {
-    generatedAt: new Date().toISOString(),
+    generatedAt: new Date(Math.floor(Date.now() / 3_600_000) * 3_600_000).toISOString(),
     summary,
-    activity: activityResult.results?.[0] || {},
-    versions: versionsResult.results || [],
-    newInstallations: growthResult.results || [],
   };
 }
 
@@ -265,7 +257,9 @@ function statsCache() {
 }
 
 function statsCacheKey(request) {
-  return new Request(new URL("/api/stats", request.url), { method: "GET" });
+  const url = new URL("/api/stats", request.url);
+  url.searchParams.set("public-schema", PUBLIC_STATS_CACHE_VERSION);
+  return new Request(url, { method: "GET" });
 }
 
 async function publicStats(request, env, context) {
@@ -273,14 +267,11 @@ async function publicStats(request, env, context) {
   const key = statsCacheKey(request);
   const cached = cache ? await cache.match(key) : null;
   if (cached) return cached;
-  const response = json(await globalStats(env), 200, { "cache-control": "public, max-age=60, s-maxage=300" });
+  const response = json(await globalStats(env), 200, {
+    "cache-control": `public, max-age=300, s-maxage=${PUBLIC_STATS_CACHE_SECONDS}`,
+  });
   if (cache && context?.waitUntil) context.waitUntil(cache.put(key, response.clone()));
   return response;
-}
-
-function clearStatsCache(request, context) {
-  const cache = statsCache();
-  if (cache && context?.waitUntil) context.waitUntil(cache.delete(statsCacheKey(request)));
 }
 
 const DASHBOARD_HTML = `<!doctype html>
@@ -639,20 +630,14 @@ export default {
       });
     }
     if (url.pathname === "/api/report" && request.method === "POST") {
-      const response = await report(request, env);
-      clearStatsCache(request, context);
-      return response;
+      return report(request, env);
     }
     if (url.pathname === "/api/report" && request.method === "DELETE") {
-      const response = await removeReport(request, env);
-      clearStatsCache(request, context);
-      return response;
+      return removeReport(request, env);
     }
     if (url.pathname === "/api/stats" && request.method === "GET") return publicStats(request, env, context);
     if (url.pathname === "/api/rating" && request.method === "POST") {
-      const response = await submitSiteRating(request, env);
-      if (response.ok) clearStatsCache(request, context);
-      return response;
+      return submitSiteRating(request, env);
     }
     if ((url.pathname === "/" || url.pathname === "/dashboard") && request.method === "GET") return htmlResponse(DASHBOARD_PAGE);
     if (url.pathname === "/dashboard.js" && request.method === "GET") return htmlResponse(DASHBOARD_SCRIPT, "text/javascript; charset=utf-8");

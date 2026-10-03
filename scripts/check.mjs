@@ -64,6 +64,14 @@ await Promise.all([
   "stats-worker/wrangler.jsonc",
 ].map((file) => access(resolve(root, file), constants.R_OK)));
 
+for (const workflow of ["quality-checks.yml", "release.yml"]) {
+  const source = await readFile(resolve(root, ".github", "workflows", workflow), "utf8");
+  assert.doesNotMatch(source, /uses:\s*[^\s]+@v\d+/i, `${workflow} must not trust a movable action tag`);
+  for (const line of source.split(/\r?\n/).filter((value) => value.includes("uses:"))) {
+    assert.match(line, /@[0-9a-f]{40}\b/i, `${workflow} action dependencies must be pinned to a commit SHA`);
+  }
+}
+
 const panelSource = await readFile(resolve(root, "panel/panel.js"), "utf8");
 assert.match(panelSource, /renderInsights/, "Side panel must expose the local Insights view");
 assert.match(panelSource, /panel:set-deadline/, "Side panel must expose local deadline adjustments");

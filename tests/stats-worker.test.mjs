@@ -31,10 +31,7 @@ function aggregateEnvironment() {
       },
       async batch() {
         return [
-          { results: [{ reportingInstallations: 3, totalItems: 48 }] },
-          { results: [{ active24h: 1, active7d: 2, active30d: 3 }] },
-          { results: [{ version: "1.2.0", installations: 3 }] },
-          { results: [{ day: "2026-10-01", installs: 2 }] },
+          { results: [{ reportingInstallations: 3, totalItems: 48, ratingSum: 5, ratingCount: 1 }] },
           { results: [{ ratingSum: 9, ratingCount: 2 }] },
         ];
       },
@@ -138,9 +135,17 @@ test("serves the aggregate statistics endpoint without a dashboard credential", 
   assert.equal(response.status, 200);
   assert.match(response.headers.get("cache-control"), /public/);
   const body = await response.json();
-  assert.equal(body.summary.reportingInstallations, 3);
-  assert.equal(body.activity.active30d, 3);
-  assert.deepEqual(body.versions, [{ version: "1.2.0", installations: 3 }]);
+  assert.equal(body.summary.reportingInstallations, null);
+  assert.equal(body.summary.reportingInstallationsDisplay, "<5");
+  assert.equal(body.summary.totalItems, null);
+  assert.equal(body.summary.totalItemsDisplay, "<100");
+  assert.equal(body.summary.totalItemsIsRounded, true);
+  assert.equal(body.summary.averageRating, null);
+  assert.equal(body.summary.ratingCount, null);
+  assert.equal(body.summary.ratingCountDisplay, "<5");
+  assert.equal("activity" in body, false);
+  assert.equal("versions" in body, false);
+  assert.equal("newInstallations" in body, false);
   assert(!JSON.stringify(body).includes("id_hash"));
 });
 
@@ -152,6 +157,24 @@ test("returns an aggregate opt-in position after a first accepted report", async
   }), firstReportEnvironment());
   assert.equal(response.status, 202);
   assert.deepEqual(await response.json(), { ok: true, accepted: true, reportingPosition: 17 });
+});
+
+test("accepted writes cannot invalidate the public statistics cache", async () => {
+  const originalCaches = globalThis.caches;
+  let deletes = 0;
+  globalThis.caches = { default: { delete() { deletes += 1; } } };
+  try {
+    const response = await worker.fetch(new Request("https://stats.example/api/report", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(validReport),
+    }), firstReportEnvironment());
+    assert.equal(response.status, 202);
+    assert.equal(deletes, 0);
+  } finally {
+    if (originalCaches === undefined) delete globalThis.caches;
+    else globalThis.caches = originalCaches;
+  }
 });
 
 test("accepts a changed rating even inside the report rate limit", async () => {
@@ -172,7 +195,7 @@ test("records a site rating without collecting an account identifier", async () 
     body: JSON.stringify({ rating: 5, website: "" }),
   }), env);
   assert.equal(response.status, 202);
-  assert.deepEqual(await response.json(), { ok: true, ratingAccepted: true });
+  assert.deepEqual(await response.json(), { ok: true, ratingAccepted: true, ratingStored: true });
   assert.equal(env.state.inserted[0], 5);
 });
 

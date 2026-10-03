@@ -6,12 +6,11 @@ OTNow uses two distinct measurement sources. Chrome Web Store reports remain aut
 
 Open `https://otnow-stats.sil6428-archtech.workers.dev/dashboard`. The read-only dashboard reports:
 
-- reporting installations and active reporting installations over 1, 7, and 30 days;
-- total Canvas items organized, broken down by general item type;
-- reminders delivered, changed dates caught, manual check-offs, successful refreshes, and combined days used;
-- extension-version distribution and new reporting installations over 30 days.
+- reporting installations;
+- a privacy-rounded total of Canvas items organized;
+- the optional community-rating average and response count.
 
-These are opt-in product totals, not student records. Always use the label **reporting installations** rather than **users** unless the Chrome Web Store report supplies the user number. Do not attempt to join these totals to Chrome Web Store, GitHub, school, account, or identity data.
+These are opt-in product totals, not student records. Counts below five are suppressed, item totals are rounded down in broad buckets, rating averages are withheld until five ratings exist, and the public response is cached for one hour. Writes never invalidate that cache. These controls make a small cohort much harder to monitor through counter changes. The public API does not expose recent-activity windows, version distribution, per-type coursework totals, or installation history. Always use the label **reporting installations** rather than **users** unless the Chrome Web Store report supplies the user number. Do not attempt to join these totals to Chrome Web Store, GitHub, school, account, or identity data.
 
 ## Chrome Web Store dashboard
 
@@ -36,7 +35,7 @@ Use the repository's **Insights** pages to record stars, forks, unique visitors,
 Store one dated row with these fields:
 
 ```text
-Month | CWS weekly users | New installs | Uninstalls | Listing views | Install conversion | Rating | Reviews | Reporting installations | Items organized | Reminders delivered | GitHub stars | Release downloads
+Month | CWS weekly users | New installs | Uninstalls | Listing views | Install conversion | Rating | Reviews | Reporting installations | Rounded items organized | GitHub stars | Release downloads
 ```
 
 Do not copy names, email addresses, course details, screenshots, or student-level information into the record.
@@ -46,7 +45,7 @@ Do not copy names, email addresses, course details, screenshots, or student-leve
 Use only a number visible in an exported report or dated screenshot. Accurate patterns include:
 
 - Built and published a privacy-first Chrome extension adopted by **X Chrome Web Store weekly users**, with **Y installs** and a **Z/5 rating**.
-- Organized **X dated Canvas items** across **Y consenting reporting installations**; explicitly state that the statistic is opt-in.
+- Organized **more than X dated Canvas items** across **Y consenting reporting installations**; explicitly state that the statistic is opt-in and privacy-rounded.
 - Improved the Chrome Web Store listing to convert **X% of Y listing visits** into installs over a stated period.
 - Maintained **X releases** with automated tests, packaged artifacts, checksums, and update documentation.
 - Resolved **X user-reported issues** and shipped **Y feature releases** while keeping identifiable Canvas data local.
