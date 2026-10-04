@@ -135,14 +135,15 @@ test("serves the aggregate statistics endpoint without a dashboard credential", 
   assert.equal(response.status, 200);
   assert.match(response.headers.get("cache-control"), /public/);
   const body = await response.json();
-  assert.equal(body.summary.reportingInstallations, null);
-  assert.equal(body.summary.reportingInstallationsDisplay, "<5");
-  assert.equal(body.summary.totalItems, null);
-  assert.equal(body.summary.totalItemsDisplay, "<100");
-  assert.equal(body.summary.totalItemsIsRounded, true);
-  assert.equal(body.summary.averageRating, null);
-  assert.equal(body.summary.ratingCount, null);
-  assert.equal(body.summary.ratingCountDisplay, "<5");
+  assert.equal(body.summary.reportingInstallations, 3);
+  assert.equal(body.summary.reportingInstallationsDisplay, null);
+  assert.equal(body.summary.reportingInstallationsIsRounded, false);
+  assert.equal(body.summary.totalItems, 48);
+  assert.equal(body.summary.totalItemsDisplay, null);
+  assert.equal(body.summary.totalItemsIsRounded, false);
+  assert.equal(body.summary.averageRating, 4.7);
+  assert.equal(body.summary.ratingCount, 3);
+  assert.equal(body.summary.ratingCountDisplay, null);
   assert.equal("activity" in body, false);
   assert.equal("versions" in body, false);
   assert.equal("newInstallations" in body, false);
@@ -205,14 +206,27 @@ test("public dashboard requires no token and explains the privacy boundary", asy
   assert.equal(response.status, 200);
   assert.match(html, /Anonymous usage totals/);
   assert.match(html, /<title>OTNow - Stats<\/title>/);
-  assert.match(html, /reporting users/);
+  assert.match(html, /reporting installations/);
   assert.match(html, /community rating/);
   assert.match(html, /data-rating="5"/);
   assert.match(html, /forms\/d\/e\/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw\/viewform/);
   assert.match(html, /Written feedback uses a separate Google Form/);
   assert.doesNotMatch(html, /Community signal field/);
   assert.match(html, /Coursework and account information stay/);
+  assert.match(html, /href="\/privacy"/);
+  assert.match(html, /ekaachncjiajgiikgikhpafcnepompkn/);
   assert.doesNotMatch(html, /Dashboard access token/);
+});
+
+test("serves a themed privacy policy page", async () => {
+  const response = await worker.fetch(new Request("https://stats.example/privacy"), aggregateEnvironment());
+  const html = await response.text();
+  assert.equal(response.status, 200);
+  assert.match(html, /<title>OTNow - Privacy Policy<\/title>/);
+  assert.match(html, /Optional, opt-in anonymous statistics/);
+  assert.match(html, /Last updated · October 4, 2026/);
+  assert.match(html, /ekaachncjiajgiikgikhpafcnepompkn/);
+  assert.match(html, /Public totals may use compact display labels/);
 });
 
 test("serves the OTNow browser icon", async () => {

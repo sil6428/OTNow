@@ -8,11 +8,11 @@ The project name is **OTNow**.
 
 ## Install OTNow
 
-The Chrome Web Store will be the preferred installation method after Google's review is complete. Store installation provides one-click setup, automatic background updates, no Developer mode or permanent unpacked folder, and Chrome-managed package delivery. The Store build also removes OTNow's manual GitHub update checker and its related GitHub host permission because Chrome handles updates directly.
+The Chrome Web Store is the preferred installation method. It provides one-click setup, automatic background updates, no Developer mode or permanent unpacked folder, and Chrome-managed package delivery. The Store build also removes OTNow's manual GitHub update checker and its related GitHub host permission because Chrome handles updates directly.
 
-**Status:** OTNow v1.5.0 has been submitted to the Chrome Web Store for review. The store link will be added here when Google publishes the listing.
+**[Install OTNow from the Chrome Web Store](https://chromewebstore.google.com/detail/otnow/ekaachncjiajgiikgikhpafcnepompkn)**
 
-Until then, install the packaged GitHub release using the manual steps below. The GitHub release remains available afterward for development and manual installation, but most students should use the Chrome Web Store version.
+The packaged GitHub release remains available for development and manual installation, but most students should use the Chrome Web Store version.
 
 **[Download the latest packaged release](https://github.com/sil6428/OTNow/releases/latest)** · [Open the full beginner installation guide](INSTALL.md)
 
@@ -61,7 +61,7 @@ If Chrome reports that it cannot read the manifest, the selected folder is one l
 - There is no analytics SDK, ad code, behavioural tracker, or OTNow account. Optional anonymous numerical statistics use a narrow, separately granted host permission and can be deleted by opting out.
 - OTNow is not affiliated with or endorsed by Ontario Tech University or Instructure.
 
-See [PRIVACY.md](PRIVACY.md) for a publishable privacy policy.
+Read the [themed public privacy policy](https://otnow-stats.sil6428-archtech.workers.dev/privacy) or review its source in [PRIVACY.md](PRIVACY.md).
 
 ## Feedback and security
 
@@ -74,9 +74,9 @@ If Canvas was already open before installing OTNow, reload that Canvas tab once.
 
 Overall reach is measured with Chrome Web Store reports. A [public OTNow statistics dashboard](https://otnow-stats.sil6428-archtech.workers.dev/dashboard) separately shows aggregate totals from consenting reporting installations. See [Measuring OTNow responsibly](docs/METRICS.md) for the reporting workflow and accurate resume wording.
 
-## Chrome Web Store status
+## Chrome Web Store
 
-OTNow v1.5.0 has been submitted to the Chrome Web Store for Google review. After approval, the published listing will become the recommended installation path and its link will be added above. The packaged GitHub release will remain available as a transparent manual-installation and development option. See [the store submission guide](docs/CHROME_WEB_STORE_SUBMISSION.md) for the release process.
+OTNow v1.5.0 is [available on the Chrome Web Store](https://chromewebstore.google.com/detail/otnow/ekaachncjiajgiikgikhpafcnepompkn). The packaged GitHub release remains available as a transparent manual-installation and development option. See [the store submission guide](docs/CHROME_WEB_STORE_SUBMISSION.md) for the release process.
 
 ## Development
 

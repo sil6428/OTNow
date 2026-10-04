@@ -1,11 +1,11 @@
 import { DASHBOARD_PAGE, DASHBOARD_SCRIPT } from "./dashboard-assets.js";
+import { PRIVACY_PAGE } from "./privacy-assets.js";
 
 const MAX_BODY_BYTES = 4096;
 const MAX_RATING_BYTES = 256;
 const MAX_COUNTER = 10_000_000;
 const PUBLIC_STATS_CACHE_SECONDS = 60 * 60;
-const PUBLIC_STATS_CACHE_VERSION = "3";
-const MIN_PUBLIC_COUNT = 5;
+const PUBLIC_STATS_CACHE_VERSION = "4";
 const VERSION_PATTERN = /^\d+\.\d+\.\d+$/;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -232,19 +232,18 @@ async function globalStats(env) {
   const siteRatings = siteRatingResult?.results?.[0] || {};
   const ratingSum = Number(summary.ratingSum || 0) + Number(siteRatings.ratingSum || 0);
   const exactRatingCount = Number(summary.ratingCount || 0) + Number(siteRatings.ratingCount || 0);
-  summary.reportingInstallations = exactInstallations < MIN_PUBLIC_COUNT ? null : Math.floor(exactInstallations / 5) * 5;
-  summary.reportingInstallationsDisplay = exactInstallations === 0 ? "0" : exactInstallations < MIN_PUBLIC_COUNT ? "<5" : null;
-  summary.reportingInstallationsIsRounded = exactInstallations > 0;
-  summary.ratingCount = exactRatingCount < MIN_PUBLIC_COUNT ? null : Math.floor(exactRatingCount / 5) * 5;
-  summary.ratingCountDisplay = exactRatingCount === 0 ? "0" : exactRatingCount < MIN_PUBLIC_COUNT ? "<5" : null;
-  summary.averageRating = exactRatingCount < MIN_PUBLIC_COUNT ? null : Math.round((ratingSum / exactRatingCount) * 2) / 2;
+  summary.reportingInstallations = exactInstallations;
+  summary.reportingInstallationsDisplay = null;
+  summary.reportingInstallationsIsRounded = false;
+  summary.ratingCount = exactRatingCount;
+  summary.ratingCountDisplay = null;
+  summary.averageRating = exactRatingCount === 0 ? null : Math.round((ratingSum / exactRatingCount) * 10) / 10;
   delete summary.ratingSum;
 
   const exactItems = Math.max(0, Number(summary.totalItems) || 0);
-  const bucketSize = exactItems < 100_000 ? 100 : 10_000;
-  summary.totalItems = exactItems < bucketSize ? null : Math.floor(exactItems / bucketSize) * bucketSize;
-  summary.totalItemsDisplay = exactItems === 0 ? "0" : exactItems < bucketSize ? `<${bucketSize}` : null;
-  summary.totalItemsIsRounded = exactItems > 0;
+  summary.totalItems = exactItems;
+  summary.totalItemsDisplay = null;
+  summary.totalItemsIsRounded = false;
 
   return {
     generatedAt: new Date(Math.floor(Date.now() / 3_600_000) * 3_600_000).toISOString(),
@@ -640,6 +639,7 @@ export default {
       return submitSiteRating(request, env);
     }
     if ((url.pathname === "/" || url.pathname === "/dashboard") && request.method === "GET") return htmlResponse(DASHBOARD_PAGE);
+    if ((url.pathname === "/privacy" || url.pathname === "/privacy/") && request.method === "GET") return htmlResponse(PRIVACY_PAGE);
     if (url.pathname === "/dashboard.js" && request.method === "GET") return htmlResponse(DASHBOARD_SCRIPT, "text/javascript; charset=utf-8");
     if (url.pathname === "/favicon.svg" && request.method === "GET") return htmlResponse(FAVICON_SVG, "image/svg+xml; charset=utf-8");
     return json({ ok: false, error: "Not found" }, 404);

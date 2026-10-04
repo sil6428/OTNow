@@ -1,4 +1,5 @@
 const FEEDBACK_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw/viewform";
+const STORE_URL = "https://chromewebstore.google.com/detail/otnow/ekaachncjiajgiikgikhpafcnepompkn";
 
 export const DASHBOARD_PAGE = String.raw`<!doctype html>
 <html lang="en">
@@ -18,18 +19,18 @@ export const DASHBOARD_PAGE = String.raw`<!doctype html>
 <body>
   <canvas id="field" aria-hidden="true"></canvas><div class="wash" aria-hidden="true"></div>
   <div class="stage">
-    <header class="top"><a class="brand" href="/"><span class="mark"></span><span>OTNow · Stats</span></a><nav class="links"><span class="live">live totals</span><a href="${FEEDBACK_FORM_URL}" target="_blank" rel="noopener">leave feedback ↗</a><a class="optional" href="https://github.com/sil6428/OTNow/blob/main/PRIVACY.md">privacy</a><a href="https://github.com/sil6428/OTNow">github ↗</a></nav></header>
+    <header class="top"><a class="brand" href="/"><span class="mark"></span><span>OTNow · Stats</span></a><nav class="links"><span class="live">live totals</span><a href="/privacy">privacy</a><a class="optional" href="${FEEDBACK_FORM_URL}" target="_blank" rel="noopener">feedback ↗</a><a href="${STORE_URL}">web store ↗</a></nav></header>
     <main>
       <p class="eyebrow enter" style="--delay:.04s">OTNow statistics</p>
       <h1 class="enter" style="--delay:.11s">Anonymous usage totals</h1>
       <p class="lede enter" style="--delay:.18s">Aggregate numbers from installations that opted in. Coursework and account information stay on each student's device.</p>
       <section class="stats enter" style="--delay:.28s" aria-label="OTNow global statistics">
-        <div class="stat"><strong class="value" data-stat="reportingInstallations">0</strong><span class="label">reporting users</span></div>
+        <div class="stat"><strong class="value" data-stat="reportingInstallations">0</strong><span class="label">reporting installations</span></div>
         <div class="stat"><strong class="value" data-stat="totalItems">0</strong><span class="label">items organized</span></div>
         <div class="stat"><strong class="value" data-stat="averageRating">—</strong><span class="label">community rating <span class="rating-note" id="rating-count"></span></span><div class="stars" id="quick-rating" role="radiogroup" aria-label="Rate OTNow"><button class="star" type="button" data-rating="1" aria-label="1 star">★</button><button class="star" type="button" data-rating="2" aria-label="2 stars">★</button><button class="star" type="button" data-rating="3" aria-label="3 stars">★</button><button class="star" type="button" data-rating="4" aria-label="4 stars">★</button><button class="star" type="button" data-rating="5" aria-label="5 stars">★</button></div><span class="rating-hint" id="rating-hint">rate it</span></div>
       </section>
     </main>
-    <footer class="meta enter" style="--delay:.36s"><span class="privacy">Usage reports and site ratings contain no names, emails, coursework, grades, URLs, Canvas IDs, or IP addresses. Written feedback uses a separate Google Form.</span><span class="meta-left"><span id="status">loading totals…</span><a href="${FEEDBACK_FORM_URL}" target="_blank" rel="noopener">feedback form</a><a href="https://reactbits.dev">motion inspiration</a></span></footer>
+    <footer class="meta enter" style="--delay:.36s"><span class="privacy">Usage reports and site ratings contain no names, emails, coursework, grades, URLs, Canvas IDs, or IP addresses. Written feedback uses a separate Google Form.</span><span class="meta-left"><span id="status">loading totals…</span><a href="/privacy">privacy policy</a><a href="${FEEDBACK_FORM_URL}" target="_blank" rel="noopener">feedback form</a></span></footer>
   </div>
   <script src="/dashboard.js"></script>
 </body></html>`;
@@ -77,15 +78,21 @@ function draw(time) {
   if (!reducedMotion) requestAnimationFrame(draw);
 }
 
-function animateNumber(element, value, approximate) {
+function displayNumber(value) {
+  return value >= 100000 ? compact.format(value) : number.format(value);
+}
+
+function animateNumber(element, value) {
   const target = Math.max(0, Number(value) || 0);
-  const display = function (numberValue) { return compact.format(numberValue) + (approximate && target ? '+' : ''); };
-  element.title = approximate ? 'Rounded to protect activity privacy' : number.format(target);
-  if (reducedMotion || target === 0) { element.textContent = display(target); return; }
+  const exact = number.format(target);
+  element.title = exact;
+  element.tabIndex = 0;
+  element.setAttribute('aria-label', exact);
+  if (reducedMotion || target === 0) { element.textContent = displayNumber(target); return; }
   const start = performance.now();
   function frame(now) {
     const progress = Math.min(1, (now - start) / 820);
-    element.textContent = display(Math.round(target * (1 - Math.pow(1 - progress, 4))));
+    element.textContent = displayNumber(Math.round(target * (1 - Math.pow(1 - progress, 4))));
     if (progress < 1) requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
@@ -100,13 +107,15 @@ async function load() {
     const summary = data.summary || {};
     for (const element of document.querySelectorAll('[data-stat]')) {
       const key = element.dataset.stat;
-      if (key === 'averageRating') element.textContent = summary.ratingCount ? Number(summary.averageRating).toFixed(1) + ' ★' : '—';
-      else if (summary[key + 'Display']) { element.textContent = summary[key + 'Display']; element.title = 'Exact small totals are hidden for privacy'; }
-      else animateNumber(element, summary[key], Boolean(summary[key + 'IsRounded']));
+      if (key === 'averageRating') {
+        const count = Number(summary.ratingCount) || 0;
+        element.textContent = count ? Number(summary.averageRating).toFixed(1) + ' ★' : '—';
+        element.title = count ? Number(summary.averageRating).toFixed(1) + ' out of 5 from ' + number.format(count) + ' ratings' : 'No ratings yet';
+        element.tabIndex = 0;
+      } else animateNumber(element, summary[key]);
     }
     const count = Number(summary.ratingCount) || 0;
-    const countDisplay = summary.ratingCountDisplay;
-    document.querySelector('#rating-count').textContent = count ? '(' + number.format(count) + '+)' : countDisplay === '<5' ? '(fewer than 5 ratings)' : '(not yet rated)';
+    document.querySelector('#rating-count').textContent = count ? '(' + number.format(count) + ')' : '(not yet rated)';
     status.textContent = 'updated ' + new Date(data.generatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   } catch (error) { status.classList.add('error'); status.textContent = error.message; }
 }

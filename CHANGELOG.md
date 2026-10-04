@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-04
+
+- Published OTNow v1.5.0 on the Chrome Web Store.
+- Added a themed, responsive privacy-policy page beside the public statistics dashboard.
+- Changed public statistics to return exact aggregate totals; compact labels are now used only when needed for layout, with exact values available on hover or keyboard focus.
+
 ## 1.5.0 — 2026-10-01
 
 - Added local deadline adjustments for students who receive an approved extension on a specific Canvas item; adjusted dates drive OTNow grouping, badges, and reminders without changing Canvas.

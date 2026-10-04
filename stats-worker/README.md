@@ -10,9 +10,9 @@ Reports from one installation are accepted no more than once every 15 minutes. N
 
 ## Public dashboard
 
-The read-only dashboard is available at `/dashboard`. Its JSON endpoint exposes only totals across consenting installations. It never returns installation hashes or individual rows.
+The read-only dashboard is available at `/dashboard`, and the matching themed privacy policy is available at `/privacy`. The JSON endpoint exposes only totals across consenting installations. It never returns installation hashes or individual rows.
 
-The dashboard fits into one viewport and uses direct, descriptive copy. It shows three broad figures: reporting installations, privacy-rounded items organized, and the optional community rating average. Exact activity windows, version distribution, per-type totals, and installation history are not exposed by the public API. Counts below five are suppressed, item totals are rounded down in broad buckets, rating averages require at least five ratings, and public responses are cached for one hour without write-triggered invalidation. Visitors can submit a one-to-five-star rating directly from the page. The rating table stores only the selected number and submission time; browser storage discourages accidental repeat ratings.
+The dashboard fits into one viewport and uses direct, descriptive copy. It shows reporting installations, items organized, and the optional community rating average. Exact activity windows, version distribution, per-type totals, and installation history are not exposed by the public API. Aggregate totals are exact. The interface switches to compact notation only when a value becomes too wide, and the exact count remains available through the value's title and accessible label. Public responses are cached for one hour without write-triggered invalidation. Visitors can submit a one-to-five-star rating directly from the page. The rating table stores only the selected number and submission time; browser storage discourages accidental repeat ratings.
 
 Written feedback uses a separate Google Form linked from the header and footer. The form does not collect email addresses, makes the name field optional, and writes responses to a private Google Sheet for review.
 

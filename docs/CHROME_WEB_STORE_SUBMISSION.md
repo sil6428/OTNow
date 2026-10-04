@@ -1,6 +1,6 @@
 # Chrome Web Store submission guide
 
-OTNow can be published on the Chrome Web Store. Its Manifest V3 package is already structured correctly: `manifest.json` is at the root of the release ZIP, all executable code is included locally, and the extension does not download or execute remote code.
+OTNow is published on the Chrome Web Store at https://chromewebstore.google.com/detail/otnow/ekaachncjiajgiikgikhpafcnepompkn. Its Manifest V3 package keeps `manifest.json` at the root of the release ZIP, includes all executable code locally, and does not download or execute remote code.
 
 ## What is already prepared
 
@@ -8,7 +8,7 @@ OTNow can be published on the Chrome Web Store. Its Manifest V3 package is alrea
 - 128×128 icon in `icons/icon-128.png`
 - Listing copy in `docs/STORE_LISTING.md`
 - Permission explanations in `docs/PERMISSION_JUSTIFICATIONS.md`
-- Public privacy policy at `https://github.com/sil6428/OTNow/blob/main/PRIVACY.md`
+- Public privacy policy at `https://otnow-stats.sil6428-archtech.workers.dev/privacy`
 - Private feedback and support form at `https://docs.google.com/forms/d/e/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw/viewform`
 - Sanitized 1280×800 real-session screenshots for Deadlines, Courses, Insights, and forced dark mode
 - 440×280 promotional tile in `docs/media/otnow-promo-440x280.png`
@@ -39,6 +39,6 @@ OTNow can be published on the Chrome Web Store. Its Manifest V3 package is alrea
 - **Permissions:** each required permission is tied to the visible deadline, reminder, local-storage, or side-panel features. The statistics host is an optional permission and is not granted at installation.
 - **Affiliation:** keep the unofficial-project disclaimer in the listing and privacy policy.
 
-## After store approval
+## Published-store update path
 
-Chrome automatically updates store-installed extensions. The GitHub release keeps its manual updater for unpacked installations, while the store build disables that code path and removes the GitHub host permission. Make the Chrome Web Store listing the primary installation path in the README after approval.
+Chrome automatically updates store-installed extensions. The GitHub release keeps its manual updater for unpacked installations, while the store build disables that code path and removes the GitHub host permission. The Chrome Web Store listing is the primary installation path in the README.

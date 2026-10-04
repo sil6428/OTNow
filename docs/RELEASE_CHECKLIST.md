@@ -79,8 +79,9 @@
 - [x] Local Insights screenshot without real student information.
 - [x] Real-session screenshot sanitized with fictional course and coursework data.
 - [x] Required 440×280 promotional tile.
-- [ ] Enable 2-Step Verification on the publishing Google account.
-- [ ] Create the Chrome Web Store developer account and pay Google's one-time registration fee.
-- [ ] Upload the clean release ZIP.
-- [ ] Complete data-use disclosures using `PERMISSION_JUSTIFICATIONS.md`.
+- [x] Enable 2-Step Verification on the publishing Google account.
+- [x] Create the Chrome Web Store developer account and pay Google's one-time registration fee.
+- [x] Upload the clean release ZIP.
+- [x] Complete data-use disclosures using `PERMISSION_JUSTIFICATIONS.md`.
+- [x] Publish OTNow at `https://chromewebstore.google.com/detail/otnow/ekaachncjiajgiikgikhpafcnepompkn`.
 - [ ] Opt in to the Chrome Web Store's managed listing analytics after publication; do not add an analytics SDK to the extension.
