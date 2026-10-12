@@ -106,17 +106,18 @@ try {
     throw new Error("Declining optional statistics did not preserve the privacy-first defaults.");
   }
   const releasePrompt = await page.locator(".release-note-prompt").innerText();
-  if (!releasePrompt.includes("New in OTNow 1.6.0") || !releasePrompt.includes("See changes")) {
+  if (!releasePrompt.includes("Thanks for supporting OTNow") || !releasePrompt.includes("781 Canvas items") || !releasePrompt.includes("See changes")) {
     throw new Error("The one-time release announcement is missing or unclear.");
   }
   await page.getByRole("button", { name: "See changes", exact: true }).click();
   await page.waitForURL(`chrome-extension://${extensionId}/options/changelog.html?source=panel`);
   const changelogPage = await page.evaluate(() => ({
     heading: document.querySelector("h1")?.textContent,
+    community: document.querySelector("#community-message")?.textContent,
     summary: document.querySelector("#release-summary")?.textContent,
     changes: document.querySelectorAll("#change-list li").length,
   }));
-  if (!changelogPage.heading?.includes("OTNow 1.6") || !changelogPage.summary || changelogPage.changes < 4) {
+  if (!changelogPage.heading?.includes("supporting OTNow") || !changelogPage.community?.includes("keep spreading the word") || !changelogPage.summary || changelogPage.changes < 4) {
     throw new Error("The detailed release announcement page is incomplete.");
   }
   await page.locator("a.back").click();

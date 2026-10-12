@@ -23,9 +23,12 @@ main { display: grid; width: min(720px, calc(100% - 32px)); min-height: calc(100
 .release { width: 100%; padding: 30px; border: 1px solid var(--line); border-radius: 12px; background: rgba(11, 14, 19, .88); box-shadow: 0 24px 70px rgba(0, 0, 0, .26); backdrop-filter: blur(14px); animation: release-enter .58s cubic-bezier(.2, .8, .2, 1) both; }
 .eyebrow { margin: 0 0 8px; color: #9bd7ff; font-size: 10px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
 h1 { margin: 0; font-size: clamp(28px, 5vw, 38px); line-height: 1.08; letter-spacing: -.04em; }
-.summary { max-width: 610px; margin: 12px 0 8px; color: var(--muted); font-size: 14px; line-height: 1.55; }
-.meta { display: flex; gap: 7px; margin: 0; color: #747b85; font-size: 11px; }
-.change-list { margin: 25px 0 0; padding: 0; border-top: 1px solid var(--line); list-style: none; counter-reset: changes; }
+.community-message { max-width: 620px; margin: 16px 0 0; color: var(--text); font-size: 16px; line-height: 1.58; }
+.summary { max-width: 610px; margin: 12px 0 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+.community-note { max-width: 610px; margin: 8px 0 0; color: #747b85; font-size: 10px; line-height: 1.5; }
+.meta { display: flex; gap: 7px; margin: 12px 0 0; color: #747b85; font-size: 11px; }
+.changes-heading { margin: 28px 0 11px; color: var(--text); font-size: 13px; font-weight: 800; letter-spacing: -.01em; }
+.change-list { margin: 0; padding: 0; border-top: 1px solid var(--line); list-style: none; counter-reset: changes; }
 .change-list li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 11px; padding: 15px 0; border-bottom: 1px solid var(--line); counter-increment: changes; }
 .change-list li::before { display: grid; width: 25px; height: 25px; border: 1px solid rgba(88, 186, 255, .24); border-radius: 7px; background: rgba(88, 186, 255, .055); color: var(--blue); content: counter(changes, decimal-leading-zero); font-size: 9px; font-weight: 900; place-items: center; }
 .change-list strong, .change-list span { display: block; }

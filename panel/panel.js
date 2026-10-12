@@ -17,7 +17,7 @@ import {
   plannerItemsForView,
   TYPE_GROUPS,
 } from "../src/view-model.js";
-import { CURRENT_RELEASE_NOTE } from "../src/release-notes.js";
+import { CURRENT_RELEASE_NOTE, releasePromptMessage } from "../src/release-notes.js";
 
 const app = document.querySelector("#app");
 const refreshButton = document.querySelector("#refresh");
@@ -193,8 +193,8 @@ function renderReleaseNotePrompt(settings) {
   prompt.setAttribute("aria-label", `What changed in OTNow ${CURRENT_RELEASE_NOTE.version}`);
   const copy = element("div", "release-note-prompt-copy");
   copy.append(
-    element("strong", "", `New in OTNow ${CURRENT_RELEASE_NOTE.version}`),
-    element("span", "", CURRENT_RELEASE_NOTE.summary),
+    element("strong", "", CURRENT_RELEASE_NOTE.title),
+    element("span", "", releasePromptMessage()),
   );
   const actions = element("div", "release-note-prompt-actions");
   const details = element("button", "release-note-prompt-button primary", "See changes");

@@ -6,13 +6,17 @@ import { resolve } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 const manifest = JSON.parse(await readFile(resolve(root, "manifest.json"), "utf8"));
 const packageMetadata = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
-const { CURRENT_RELEASE_NOTE } = await import("../src/release-notes.js");
+const { CURRENT_RELEASE_NOTE, releaseMilestoneMessage, releasePromptMessage } = await import("../src/release-notes.js");
 
 assert.equal(manifest.manifest_version, 3);
 assert.equal(manifest.background.type, "module");
 assert.equal(packageMetadata.version, manifest.version, "package.json and manifest.json versions must match");
 assert.equal(CURRENT_RELEASE_NOTE.version, manifest.version, "The current release announcement must match the packaged version");
 assert.match(CURRENT_RELEASE_NOTE.id, new RegExp(`^${manifest.version.replaceAll(".", "\\.")}(?:-|$)`), "The release announcement ID must be tied to the packaged version");
+assert(CURRENT_RELEASE_NOTE.community.reportingInstallations > 0, "Release milestones must use a dated positive installation snapshot");
+assert(CURRENT_RELEASE_NOTE.community.totalItems > 0, "Release milestones must use a dated positive item snapshot");
+assert.match(releaseMilestoneMessage(), /installs are sharing anonymous stats/i, "Release milestones must not present opt-in installations as every user");
+assert.match(releasePromptMessage(), /Canvas items organized/i, "The compact release prompt must state the measured outcome");
 assert.deepEqual(manifest.host_permissions, [
   "https://learn.ontariotechu.ca/*",
   "https://raw.githubusercontent.com/*",
