@@ -79,6 +79,13 @@ Make announcement-like Canvas planner entries understandable and dismissible wit
 - Seed the first value from a manually verified public listing. Every later refresh must validate bounds, retain the last known good value on failure, expose the check date, and fail without breaking the dashboard.
 - If no verified Store value is configured, hide the row or mark it unavailable; never invent, round up, or silently reuse an undated rating.
 
+### 9. Remove low-value personal Insights statistics
+
+- Remove **Successful refreshes** and **Days used** from the extension's personal Insights page. They measure app activity rather than a useful student outcome and currently take attention away from meaningful signals.
+- Keep **Deadlines organized**, **Changed dates caught**, **Reminders delivered**, and **Manual check-offs** because each explains a concrete benefit OTNow provided.
+- Do not delete existing local counters during the 1.6 upgrade. Stop presenting the low-value counters in the interface so older installations upgrade without a risky storage migration.
+- Keep the public statistics dashboard unchanged apart from the separately sourced Chrome Web Store rating; this cleanup applies to the personal extension Insights view.
+
 ## Reading-week research spike: match the active page theme
 
 The requested behaviour is to sample the page beside OTNow and select light or dark mode to match it, especially when Brave displays two tabs in Split View and OTNow opens on the right.
@@ -189,6 +196,7 @@ announcementRead = {
 - Enabling requests only the existing optional statistics origin and still shows the exact disclosure.
 - Feedback opens the established Google Form without requiring statistics consent.
 - Security-reporting guidance points to the private vulnerability route instead of the feedback form.
+- Personal Insights no longer shows successful-refresh or days-used vanity counters, while the four outcome-oriented counters remain accurate.
 
 ### Public rating source
 
@@ -230,6 +238,7 @@ announcementRead = {
 - Enable the support link only if its canonical URL is known.
 - Add the persistent feedback link and the Insights feedback action.
 - Implement the redesigned anonymous-statistics decision page from the approved layout.
+- Remove the two low-value personal Insights cards without deleting their stored counters.
 - Add the separately sourced Chrome Web Store rating row to the existing statistics dashboard without changing its overall design.
 
 ### Week 4 — freeze and release
@@ -255,6 +264,7 @@ announcementRead = {
 11. The redesigned statistics decision remains neutral, accurate, responsive, and accessible.
 12. Active-page theme matching ships only if the bounded prototype passes the permission and Brave Split View review; otherwise the existing manual and system choices remain.
 13. The public dashboard identifies the Chrome Web Store rating, count, link, and check date separately from OTNow's own anonymous rating.
+14. Personal Insights shows only outcome-oriented statistics and no longer spends space on successful refreshes or days used.
 
 ## Open blockers
 
