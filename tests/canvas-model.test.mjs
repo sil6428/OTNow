@@ -275,9 +275,11 @@ test("separates active deadlines from completed work without changing completion
     { id: "assignment:2", status: "submitted", submitted: true },
     { id: "quiz:3", status: "done", canvasComplete: true },
     { id: "note:4", status: "done", manuallyComplete: true },
+    { id: "announcement:5", type: "announcement", status: "open" },
   ];
-  assert.deepEqual(plannerItemsForView(items, "deadlines").map((item) => item.id), ["assignment:1"]);
-  assert.deepEqual(plannerItemsForView(items, "completed").map((item) => item.id), ["assignment:2", "quiz:3", "note:4"]);
+  const announcementRead = { "announcement:5": "2026-10-12T12:00:00.000Z" };
+  assert.deepEqual(plannerItemsForView(items, "deadlines", announcementRead).map((item) => item.id), ["assignment:1"]);
+  assert.deepEqual(plannerItemsForView(items, "completed", announcementRead).map((item) => item.id), ["assignment:2", "quiz:3", "note:4", "announcement:5"]);
   assert.equal(completionSource(items[1]), "canvas");
   assert.equal(completionSource(items[2]), "canvas");
   assert.equal(completionSource(items[3]), "otnow");

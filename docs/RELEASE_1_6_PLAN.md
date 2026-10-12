@@ -26,10 +26,10 @@ Make announcement-like Canvas planner entries understandable and dismissible wit
 - Add **Mark announcements read** only when at least one visible unread announcement exists.
 - Respect the current course filter: **All courses** affects all currently loaded announcements; a selected course affects only that course.
 - Treat “read” as an OTNow display preference stored locally. It does not delete content or change Canvas.
-- Hide locally read announcements from the normal deadline list while leaving assignments, quizzes, discussions, events, and notes untouched.
+- Move locally read announcements out of Deadlines and into Completed while leaving assignments, quizzes, discussions, events, and notes untouched.
 - Offer one brief **Undo** action after a bulk change. Undo must restore the exact prior set, not simply mark every announcement unread.
 - Remove the confirmation and Undo notice automatically after six seconds so read actions do not accumulate permanent status rows.
-- Provide a discoverable way to show previously read announcements again so the action is reversible after the brief Undo period.
+- Remove the full announcement action box when no unread announcement remains in the current scope. Completed provides the durable recovery path through **Mark unread**.
 
 ### 3. Support and uninstall route
 
@@ -61,6 +61,7 @@ Make announcement-like Canvas planner entries understandable and dismissible wit
 - Allow only OTNow manual check-offs to be restored to Deadlines. Canvas-reported completion is read-only because OTNow must not pretend it can reverse a Canvas submission or grade state.
 - Preserve course filtering and provide a useful empty state when no completed items are available.
 - Give Completed its own type filter plus **By due date** and **By type** grouping, while retaining the course filter.
+- Include read announcements as a distinct Completed type without describing them as submitted coursework or allowing Canvas completion to be reversed.
 - Keep the existing `manualDone` record and toggle path; migrate the interface without deleting prior manual check-offs.
 - Remove the redundant **Show completed items** control from Settings after upgrade behavior is verified. A stored legacy value may remain harmlessly during migration.
 
@@ -90,6 +91,14 @@ Make announcement-like Canvas planner entries understandable and dismissible wit
 - Keep **Deadlines organized**, **Changed dates caught**, **Reminders delivered**, and **Manual check-offs** because each explains a concrete benefit OTNow provided.
 - Do not delete existing local counters during the 1.6 upgrade. Stop presenting the low-value counters in the interface so older installations upgrade without a risky storage migration.
 - Keep the public statistics dashboard unchanged apart from the separately sourced Chrome Web Store rating; this cleanup applies to the personal extension Insights view.
+
+### 10. Add a one-time release announcement
+
+- Show a compact, non-blocking **New in OTNow** notice once after an upgrade, never on a genuinely fresh installation.
+- Keep the panel copy short and plain. **See changes** opens a dedicated themed OTNow page with the current detailed list; **Got it** dismisses the notice.
+- Store only the last acknowledged announcement ID locally. Opening the detailed page also acknowledges that exact ID.
+- During local development, bump the preview announcement ID for every meaningful build so each change can be tested once. Consolidate those notes under the final version ID before Store submission.
+- Link the themed page to the repository changelog for older releases without loading remote code or requesting another permission.
 
 ## Reading-week research spike: match the active page theme
 
@@ -124,6 +133,7 @@ This is a prototype and release decision, not yet frozen 1.6 scope:
 - `src/view-model.js` owns type groups and counts.
 - `panel/panel.js` renders filters, groups, items, and the prepared support link.
 - `panel/panel.js` owns the non-blocking first-open statistics notification. `options/onboarding.html`, `options/onboarding.css`, `options/onboarding.js`, and `options/reactive-background.js` own the optional full disclosure and its restrained visual effects.
+- `src/release-notes.js` owns the current announcement ID and plain-language changes; `options/changelog.html`, `options/changelog.css`, and `options/changelog.js` own the themed detailed view.
 - `options/options.html` and `options/options.js` currently own the legacy **Show completed items** control.
 - `stats-worker/src/dashboard-assets.js` owns the public dashboard presentation; `stats-worker/src/worker.js` and the D1 migration own the isolated daily Store-rating refresh and last-known-good value.
 - `src/storage.js` owns local settings and user state.
@@ -151,8 +161,8 @@ announcementRead = {
 1. The type selector shows **Announcements (N)** when announcement items exist.
 2. Selecting a course immediately scopes both the list and bulk action.
 3. The bulk action states its scope, for example **Mark 4 announcements read** or **Mark 2 CSCN1234 announcements read**.
-4. After activation, an inline status says what changed and offers **Undo**.
-5. A small **Show read announcements** control lets the user recover older dismissed items later.
+4. After activation, a floating status says what changed and offers **Undo** for six seconds without consuming list space.
+5. When no unread announcement remains, the Announcements action box disappears. Read announcements are available under Completed and offer **Mark unread**.
 6. Empty states distinguish “no announcements returned,” “all announcements marked read,” and “no matches for this course.”
 7. Keyboard focus moves to the status/Undo control after a bulk change and returns predictably after Undo.
 8. **Completed** appears beside Deadlines, Courses, and Insights with its own count.
@@ -188,7 +198,7 @@ announcementRead = {
 - All-courses scope changes the exact set shown in the confirmation.
 - Undo restores the exact previous read map.
 - The announcement confirmation and Undo notice disappear after six seconds without changing saved read state.
-- Read state survives panel close, browser restart, sync, and offline-cache use.
+- Read state survives panel close, browser restart, sync, and offline-cache use; read announcements appear only in Completed.
 - Removed/stale announcements are pruned without deleting unrelated local data.
 
 ### Completed view
@@ -198,6 +208,7 @@ announcementRead = {
 - Canvas-reported completion cannot be reversed by the interface.
 - Course filtering and empty states work independently in the Completed view.
 - Completed type filtering and both due-date and type grouping preserve the correct completion source and restore action.
+- Read announcements show **Read in OTNow** and **Mark unread**, not a false Canvas or OTNow coursework-completion label.
 
 ### Consent and feedback
 
@@ -246,7 +257,8 @@ announcementRead = {
 
 ### Week 3 — panel and routes
 
-- Add the filter, course-aware bulk action, Undo, show-read control, and accessible status handling.
+- Add the filter, course-aware bulk action, floating Undo, Completed recovery path, and accessible status handling.
+- Add the one-time release notice and themed detailed changelog page, then consolidate the local preview ID before packaging.
 - Publish and verify the uninstall/support page.
 - Enable the support link only if its canonical URL is known.
 - Add the persistent feedback link and the Insights feedback action.
@@ -280,6 +292,7 @@ announcementRead = {
 14. Personal Insights shows only outcome-oriented statistics and no longer spends space on successful refreshes or days used.
 15. Canvas-declared discussion assignments appear as discussions without title guessing or changes to ordinary assignments.
 16. Deadline organization can collapse, new installations default to date grouping, and Completed supports course, type, and due-date/type organization.
+17. Upgrades show one dismissible plain-language release notice, fresh installs do not, and the detailed themed page matches the current packaged announcement ID.
 
 ## Open blockers after local implementation
 

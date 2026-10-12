@@ -73,9 +73,11 @@ export function countPlannerTypes(items) {
   return counts;
 }
 
-export function plannerItemsForView(items = [], view = "deadlines") {
-  if (view === "completed") return items.filter((item) => item.status !== "open");
-  return items.filter((item) => item.status === "open");
+export function plannerItemsForView(items = [], view = "deadlines", announcementRead = {}) {
+  if (view === "completed") {
+    return items.filter((item) => item.status !== "open" || (item.type === "announcement" && announcementRead[item.id]));
+  }
+  return items.filter((item) => item.status === "open" && !(item.type === "announcement" && announcementRead[item.id]));
 }
 
 export function completionSource(item = {}) {

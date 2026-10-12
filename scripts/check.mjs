@@ -6,10 +6,13 @@ import { resolve } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 const manifest = JSON.parse(await readFile(resolve(root, "manifest.json"), "utf8"));
 const packageMetadata = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
+const { CURRENT_RELEASE_NOTE } = await import("../src/release-notes.js");
 
 assert.equal(manifest.manifest_version, 3);
 assert.equal(manifest.background.type, "module");
 assert.equal(packageMetadata.version, manifest.version, "package.json and manifest.json versions must match");
+assert.equal(CURRENT_RELEASE_NOTE.version, manifest.version, "The current release announcement must match the packaged version");
+assert.match(CURRENT_RELEASE_NOTE.id, new RegExp(`^${manifest.version.replaceAll(".", "\\.")}(?:-|$)`), "The release announcement ID must be tied to the packaged version");
 assert.deepEqual(manifest.host_permissions, [
   "https://learn.ontariotechu.ca/*",
   "https://raw.githubusercontent.com/*",
@@ -32,9 +35,13 @@ const requiredFiles = [
   "src/global-stats.js",
   "src/deadline-adjustments.js",
   "src/announcement-read.js",
+  "src/release-notes.js",
   "options/onboarding.html",
   "options/onboarding.js",
   "options/reactive-background.js",
+  "options/changelog.html",
+  "options/changelog.css",
+  "options/changelog.js",
   "stats-worker/src/support-assets.js",
 ];
 await Promise.all(requiredFiles.map((file) => access(resolve(root, file), constants.R_OK)));
@@ -85,6 +92,7 @@ assert.doesNotMatch(panelSource, /insightRow\("Days used"/, "Personal Insights m
 assert.match(panelSource, /Review anonymous statistics/, "Insights must keep anonymous statistics available after a decline");
 assert.match(panelSource, /statistics-prompt/, "The first panel open must use a non-blocking statistics notification");
 assert.match(panelSource, /statsOnboardingSeen/, "The statistics notification must stop after the user chooses or dismisses it");
+assert.match(panelSource, /release-note-prompt/, "Version changes must use a one-time release announcement");
 
 const backgroundSource = await readFile(resolve(root, "src/background.js"), "utf8");
 assert.doesNotMatch(backgroundSource, /tabs\.create\(\{\s*url:\s*chrome\.runtime\.getURL\("options\/onboarding\.html"\)/, "Installation must not open the statistics choice before OTNow is used");
@@ -108,5 +116,9 @@ assert.match(onboarding, /class="wash"/i, "Statistics disclosure must include th
 assert.match(onboarding, /id="field"/i, "Statistics disclosure must include the reactive background field");
 assert.match(onboarding, /reactive-background\.js/i, "Statistics disclosure must load the reactive background");
 assert.doesNotMatch(onboarding, /checked/i, "Statistics disclosure must not be preselected");
+
+const changelogPage = await readFile(resolve(root, "options/changelog.html"), "utf8");
+assert.match(changelogPage, /id="change-list"/i, "The detailed release announcement must list its changes");
+assert.match(changelogPage, /Full project changelog/i, "The release announcement must link to older detailed notes");
 
 console.log(`OTNow package check passed (${requiredFiles.length} required files).`);

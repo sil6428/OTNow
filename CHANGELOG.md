@@ -3,10 +3,12 @@
 ## 1.6.0 — Local development candidate (2026-10-12)
 
 - Recognizes Canvas-declared announcement planner items without guessing from titles, and keeps ambiguous items under **Course item**.
-- Adds course-aware **Mark announcements read**, exact one-step Undo, and a persistent **Show read announcements** recovery control. Read state stays local and never changes Canvas.
-- Adds a dedicated **Completed** view that separates Canvas-reported completion from OTNow manual check-offs and restores only local check-offs.
+- Adds course-aware **Mark announcements read** with a six-second floating Undo. Read announcements leave Deadlines, appear in Completed, and can be marked unread without changing Canvas.
+- Adds a dedicated **Completed** view with course and type filters plus due-date or type grouping. It separates Canvas completion, OTNow check-offs, and read announcements while exposing only valid recovery actions.
+- Makes Deadline organization collapsible, remembers the choice locally, and defaults new installations to date grouping.
 - Makes the established feedback form available from the panel footer and Insights, with security reports directed to GitHub's private vulnerability route.
-- Rebuilds the anonymous-statistics decision page with clearer local/shared boundaries and equal, unselected choices.
+- Replaces the mandatory first-open statistics screen with a compact, non-blocking notification that links to the full opt-in disclosure.
+- Adds a one-time plain-language release announcement and a themed **What’s new** page. Local previews use a revision ID so each meaningful build can be tested once before release notes are consolidated.
 - Removes refresh and days-used vanity cards from personal Insights without deleting their saved counters.
 - Adds themed `/support` and `/uninstall` routes to the statistics Worker. Chrome uninstall registration remains deferred until the route is deployed and verified.
 - Keeps the Ko-fi link hidden until the canonical URL is confirmed and adds no new permissions.

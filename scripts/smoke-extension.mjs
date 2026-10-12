@@ -54,6 +54,7 @@ try {
   await page.evaluate(async () => {
     const response = await chrome.runtime.sendMessage({ type: "options:get" });
     await chrome.storage.local.set({
+      releaseNoteSeen: "",
       state: {
         ...response.state,
         status: "ready",
@@ -104,6 +105,23 @@ try {
   if (!declined.settings.statsOnboardingSeen || declined.settings.shareAnonymousStats || declined.permission) {
     throw new Error("Declining optional statistics did not preserve the privacy-first defaults.");
   }
+  const releasePrompt = await page.locator(".release-note-prompt").innerText();
+  if (!releasePrompt.includes("New in OTNow 1.6.0") || !releasePrompt.includes("See changes")) {
+    throw new Error("The one-time release announcement is missing or unclear.");
+  }
+  await page.getByRole("button", { name: "See changes", exact: true }).click();
+  await page.waitForURL(`chrome-extension://${extensionId}/options/changelog.html?source=panel`);
+  const changelogPage = await page.evaluate(() => ({
+    heading: document.querySelector("h1")?.textContent,
+    summary: document.querySelector("#release-summary")?.textContent,
+    changes: document.querySelectorAll("#change-list li").length,
+  }));
+  if (!changelogPage.heading?.includes("OTNow 1.6") || !changelogPage.summary || changelogPage.changes < 4) {
+    throw new Error("The detailed release announcement page is incomplete.");
+  }
+  await page.locator("a.back").click();
+  await page.waitForURL(`chrome-extension://${extensionId}/panel/panel.html`);
+  if (await page.locator(".release-note-prompt").count()) throw new Error("The acknowledged release announcement appeared again.");
 
   await page.evaluate(async () => {
     const dueAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
@@ -171,10 +189,8 @@ try {
   await page.getByRole("button", { name: "Mark Sanitized notice read" }).click();
   await page.waitForSelector("[data-announcement-status]");
   await page.waitForSelector("[data-announcement-status]", { state: "detached", timeout: 8_000 });
-  await page.getByRole("button", { name: "Show 1 read announcement" }).click();
-  await page.waitForFunction(() => document.querySelector("#app")?.innerText.includes("Read in OTNow"));
-  await page.getByRole("button", { name: "Mark Sanitized notice unread" }).click();
-  await page.waitForFunction(async () => !((await chrome.storage.local.get("announcementRead")).announcementRead?.["announcement:1"]));
+  if (await page.locator(".announcement-actions").count()) throw new Error("The announcement panel remained after every announcement was read.");
+  if ((await page.locator("#app").innerText()).includes("Sanitized notice")) throw new Error("A read announcement remained in Deadlines.");
 
   await page.getByRole("button", { name: /Completed/ }).click();
   const completedOrganizer = page.locator("details.organizer");
@@ -191,12 +207,18 @@ try {
   await completedOrganizer.locator(".control").nth(1).locator("select").selectOption("all");
   await completedOrganizer.locator(".control").nth(2).locator("select").selectOption("type");
   const completedPanel = await page.locator("#app").innerText();
+  if (!completedPanel.includes("Sanitized notice") || !completedPanel.includes("Read in OTNow") || !completedPanel.includes("Mark unread")) {
+    throw new Error("Read announcements are not recoverable from Completed.");
+  }
   if (!completedPanel.includes("Completed in Canvas") || !completedPanel.includes("Checked off in OTNow")) {
     throw new Error("Completed view does not distinguish Canvas and local completion.");
   }
   if ((completedPanel.match(/Move back to Deadlines/g) || []).length !== 1) {
     throw new Error("Only OTNow manual check-offs should be restorable.");
   }
+  await page.getByRole("button", { name: "Mark unread", exact: true }).click();
+  await page.waitForFunction(async () => !((await chrome.storage.local.get("announcementRead")).announcementRead?.["announcement:1"]));
+  if ((await page.locator("#app").innerText()).includes("Sanitized notice")) throw new Error("Mark unread did not remove the announcement from Completed.");
 
   await page.getByRole("button", { name: "Insights" }).click();
   const insightsPanel = await page.locator("#app").innerText();

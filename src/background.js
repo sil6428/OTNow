@@ -30,6 +30,7 @@ import {
 } from "./deadline-adjustments.js";
 import { readCanvas } from "./canvas-client.js";
 import { compareVersions, readPublishedVersion } from "./update-check.js";
+import { CURRENT_RELEASE_NOTE } from "./release-notes.js";
 import {
   recordFailedSync,
   recordManualCompletion,
@@ -47,10 +48,12 @@ import {
   getAnnouncementRead,
   getDeadlineAdjustments,
   getManualDone,
+  getReleaseNoteSeen,
   getSettings,
   getState,
   setAnnouncementRead,
   setManualDone,
+  setReleaseNoteSeen,
   setDeadlineAdjustments,
   setSettings,
   setState,
@@ -408,6 +411,7 @@ async function setup() {
 
 async function handleInstalled(details) {
   await setup();
+  if (details.reason === "install") await setReleaseNoteSeen(CURRENT_RELEASE_NOTE.id);
   if (details.reason === "install" || details.reason === "update") await checkForUpdate({ force: true });
 }
 
@@ -437,6 +441,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
           state: await getState(),
           settings: await getSettings(),
           announcementRead: await getAnnouncementRead(),
+          releaseNoteSeen: await getReleaseNoteSeen(),
           globalStats: await getAnonymousStatsStatus(),
         });
         checkForUpdate().catch(() => {});
@@ -508,6 +513,11 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       case "stats:onboarding-decline": {
         const settings = await setSettings({ statsOnboardingSeen: true, shareAnonymousStats: false });
         sendResponse({ ok: true, settings });
+        break;
+      }
+      case "release-note:dismiss": {
+        if (message.id !== CURRENT_RELEASE_NOTE.id) throw new Error("The release announcement is no longer current.");
+        sendResponse({ ok: true, releaseNoteSeen: await setReleaseNoteSeen(CURRENT_RELEASE_NOTE.id) });
         break;
       }
       case "stats:disable": {

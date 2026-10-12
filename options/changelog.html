@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>What’s new in OTNow</title>
+    <link rel="stylesheet" href="changelog.css">
+  </head>
+  <body>
+    <canvas id="field" aria-hidden="true"></canvas>
+    <div class="wash" aria-hidden="true"></div>
+    <header class="topbar">
+      <a class="brand" href="../panel/panel.html" aria-label="Back to OTNow"><span class="brand-mark" aria-hidden="true"></span>OTNow</a>
+      <span>What’s new</span>
+    </header>
+
+    <main>
+      <article class="release" aria-labelledby="release-title">
+        <header class="release-intro">
+          <p class="eyebrow" id="release-label">Local preview</p>
+          <h1 id="release-title">What changed in OTNow</h1>
+          <p class="summary" id="release-summary"></p>
+          <p class="meta"><span id="release-version"></span><span aria-hidden="true">·</span><span id="release-date"></span></p>
+        </header>
+
+        <ol class="change-list" id="change-list"></ol>
+
+        <footer>
+          <a class="back" href="../panel/panel.html">Back to OTNow</a>
+          <a id="full-changelog" target="_blank" rel="noopener noreferrer">Full project changelog</a>
+        </footer>
+      </article>
+    </main>
+
+    <script src="reactive-background.js" defer></script>
+    <script type="module" src="changelog.js"></script>
+  </body>
+</html>

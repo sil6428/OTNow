@@ -100,6 +100,17 @@ export async function setAnnouncementRead(announcementRead) {
   return clean;
 }
 
+export async function getReleaseNoteSeen() {
+  const { releaseNoteSeen } = await chrome.storage.local.get("releaseNoteSeen");
+  return typeof releaseNoteSeen === "string" ? releaseNoteSeen : "";
+}
+
+export async function setReleaseNoteSeen(releaseNoteSeen) {
+  const value = typeof releaseNoteSeen === "string" ? releaseNoteSeen : "";
+  await chrome.storage.local.set({ releaseNoteSeen: value });
+  return value;
+}
+
 export async function getDeadlineAdjustments() {
   const { deadlineAdjustments } = await chrome.storage.local.get("deadlineAdjustments");
   return normalizeDeadlineAdjustments(deadlineAdjustments);

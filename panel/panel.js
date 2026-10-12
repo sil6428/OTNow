@@ -1,7 +1,6 @@
 import { bucketFor, formatDate, formatTime, relativeDue } from "../src/dates.js";
 import {
   announcementIdsInScope,
-  filterReadAnnouncements,
 } from "../src/announcement-read.js";
 import {
   CANVAS_ORIGIN,
@@ -18,6 +17,7 @@ import {
   plannerItemsForView,
   TYPE_GROUPS,
 } from "../src/view-model.js";
+import { CURRENT_RELEASE_NOTE } from "../src/release-notes.js";
 
 const app = document.querySelector("#app");
 const refreshButton = document.querySelector("#refresh");
@@ -29,7 +29,7 @@ const appVersion = document.querySelector("#app-version");
 const supportLink = document.querySelector("#support-link");
 const feedbackLink = document.querySelector("#feedback-link");
 
-let current = { state: null, settings: null, announcementRead: {}, globalStats: null };
+let current = { state: null, settings: null, announcementRead: {}, releaseNoteSeen: "", globalStats: null };
 const savedView = localStorage.getItem("otnow:view");
 let activeView = ["completed", "courses", "insights"].includes(savedView) ? savedView : "deadlines";
 let courseFilter = localStorage.getItem("otnow:course") || "all";
@@ -37,7 +37,6 @@ let typeFilter = localStorage.getItem("otnow:type") || "all";
 let groupMode = localStorage.getItem("otnow:group") === "type" ? "type" : "date";
 let completedTypeFilter = localStorage.getItem("otnow:completed-type") || "all";
 let completedGroupMode = localStorage.getItem("otnow:completed-group") === "type" ? "type" : "date";
-let showReadAnnouncements = localStorage.getItem("otnow:show-read-announcements") === "true";
 let announcementUndo = null;
 let announcementUndoTimer = null;
 let pendingFocus = null;
@@ -105,11 +104,8 @@ function showState(title, message, { openCanvas = false, retry = false } = {}) {
 function renderViewTabs(state) {
   const tabs = element("nav", "view-tabs");
   tabs.setAttribute("aria-label", "OTNow sections");
-  const openCount = filterReadAnnouncements(
-    plannerItemsForView(state.items, "deadlines"),
-    current.announcementRead,
-  ).length;
-  const completedCount = plannerItemsForView(state.items, "completed").length;
+  const openCount = plannerItemsForView(state.items, "deadlines", current.announcementRead).length;
+  const completedCount = plannerItemsForView(state.items, "completed", current.announcementRead).length;
   const choices = [
     ["deadlines", "Deadlines", openCount],
     ["completed", "Completed", completedCount],
@@ -177,6 +173,53 @@ function renderStatisticsPrompt(settings) {
     render();
   });
   actions.append(review, dismiss);
+  prompt.append(copy, actions);
+  return prompt;
+}
+
+async function dismissReleaseNote() {
+  const response = await chrome.runtime.sendMessage({
+    type: "release-note:dismiss",
+    id: CURRENT_RELEASE_NOTE.id,
+  });
+  if (!response?.ok) return false;
+  current.releaseNoteSeen = response.releaseNoteSeen;
+  return true;
+}
+
+function renderReleaseNotePrompt(settings) {
+  if (!settings.statsOnboardingSeen || current.releaseNoteSeen === CURRENT_RELEASE_NOTE.id) return null;
+  const prompt = element("section", "release-note-prompt");
+  prompt.setAttribute("aria-label", `What changed in OTNow ${CURRENT_RELEASE_NOTE.version}`);
+  const copy = element("div", "release-note-prompt-copy");
+  copy.append(
+    element("strong", "", `New in OTNow ${CURRENT_RELEASE_NOTE.version}`),
+    element("span", "", CURRENT_RELEASE_NOTE.summary),
+  );
+  const actions = element("div", "release-note-prompt-actions");
+  const details = element("button", "release-note-prompt-button primary", "See changes");
+  details.type = "button";
+  details.addEventListener("click", async () => {
+    details.disabled = true;
+    dismiss.disabled = true;
+    if (await dismissReleaseNote()) location.href = "../options/changelog.html?source=panel";
+    else {
+      details.disabled = false;
+      dismiss.disabled = false;
+    }
+  });
+  const dismiss = element("button", "release-note-prompt-button", "Got it");
+  dismiss.type = "button";
+  dismiss.addEventListener("click", async () => {
+    details.disabled = true;
+    dismiss.disabled = true;
+    if (await dismissReleaseNote()) render();
+    else {
+      details.disabled = false;
+      dismiss.disabled = false;
+    }
+  });
+  actions.append(details, dismiss);
   prompt.append(copy, actions);
   return prompt;
 }
@@ -306,7 +349,7 @@ function scheduleAnnouncementUndo(value) {
     announcementUndo = null;
     announcementUndoTimer = null;
     render();
-    if (restoreFocus) focusAfterRender(".announcement-action");
+    if (restoreFocus) focusAfterRender(".view-tab.active");
   }, ANNOUNCEMENT_UNDO_MS);
 }
 
@@ -317,10 +360,8 @@ function clearAnnouncementUndo() {
 }
 
 function renderAnnouncementActions(openItems) {
-  const allIds = announcementIdsInScope(openItems, courseFilter, current.announcementRead);
-  if (!allIds.length) return null;
   const unreadIds = announcementIdsInScope(openItems, courseFilter, current.announcementRead, { unreadOnly: true });
-  const readCount = allIds.length - unreadIds.length;
+  if (!unreadIds.length) return null;
   const scope = scopedCourseLabel();
   const section = element("section", "announcement-actions");
   const copy = element("div", "announcement-action-copy");
@@ -330,82 +371,66 @@ function renderAnnouncementActions(openItems) {
   );
   const actions = element("div", "announcement-action-buttons");
 
-  if (unreadIds.length) {
-    const mark = element(
-      "button",
-      "announcement-action primary",
-      `Mark ${unreadIds.length} ${scope ? `${scope} ` : ""}announcement${unreadIds.length === 1 ? "" : "s"} read`,
-    );
-    mark.type = "button";
-    mark.addEventListener("click", async () => {
-      mark.disabled = true;
-      const response = await chrome.runtime.sendMessage({ type: "panel:mark-announcements-read", itemIds: unreadIds });
-      if (!response?.announcementRead) {
-        mark.disabled = false;
-        notice.hidden = false;
-        notice.textContent = response?.error || "Announcements could not be marked read.";
-        return;
-      }
-      current.announcementRead = response.announcementRead;
-      scheduleAnnouncementUndo({ previous: response.previous, count: response.count, scope, action: "read" });
-      render();
-      focusAfterRender("[data-announcement-status]");
-    });
-    actions.append(mark);
-  }
-
-  if (readCount) {
-    const toggle = element(
-      "button",
-      "announcement-action",
-      showReadAnnouncements ? "Hide read announcements" : `Show ${readCount} read announcement${readCount === 1 ? "" : "s"}`,
-    );
-    toggle.type = "button";
-    toggle.setAttribute("aria-pressed", String(showReadAnnouncements));
-    toggle.addEventListener("click", () => {
-      showReadAnnouncements = !showReadAnnouncements;
-      localStorage.setItem("otnow:show-read-announcements", String(showReadAnnouncements));
-      render();
-    });
-    actions.append(toggle);
-  }
+  const mark = element(
+    "button",
+    "announcement-action primary",
+    `Mark ${unreadIds.length} ${scope ? `${scope} ` : ""}announcement${unreadIds.length === 1 ? "" : "s"} read`,
+  );
+  mark.type = "button";
+  mark.addEventListener("click", async () => {
+    mark.disabled = true;
+    const response = await chrome.runtime.sendMessage({ type: "panel:mark-announcements-read", itemIds: unreadIds });
+    if (!response?.announcementRead) {
+      mark.disabled = false;
+      notice.hidden = false;
+      notice.textContent = response?.error || "Announcements could not be marked read.";
+      return;
+    }
+    current.announcementRead = response.announcementRead;
+    scheduleAnnouncementUndo({ previous: response.previous, count: response.count, scope, action: "read" });
+    render();
+    focusAfterRender("[data-announcement-status]");
+  });
+  actions.append(mark);
 
   section.append(copy, actions);
-  if (announcementUndo) {
-    const status = element(
-      "div",
-      "announcement-status",
-      `Marked ${announcementUndo.count} ${announcementUndo.scope ? `${announcementUndo.scope} ` : ""}announcement${announcementUndo.count === 1 ? "" : "s"} ${announcementUndo.action}.`,
-    );
-    status.tabIndex = -1;
-    status.dataset.announcementStatus = "true";
-    status.setAttribute("role", "status");
-    const undo = element("button", "announcement-undo", "Undo");
-    undo.type = "button";
-    undo.addEventListener("click", async () => {
-      undo.disabled = true;
-      const undoState = announcementUndo;
-      if (!undoState) return;
-      if (announcementUndoTimer) clearTimeout(announcementUndoTimer);
-      announcementUndoTimer = null;
-      const response = await chrome.runtime.sendMessage({
-        type: "panel:restore-announcements-read",
-        previous: undoState.previous,
-      });
-      if (!response?.announcementRead) {
-        undo.disabled = false;
-        scheduleAnnouncementUndo(undoState);
-        return;
-      }
-      current.announcementRead = response.announcementRead;
-      clearAnnouncementUndo();
-      render();
-      focusAfterRender(".announcement-action");
-    });
-    status.append(" ", undo);
-    section.append(status);
-  }
   return section;
+}
+
+function renderAnnouncementUndoNotice() {
+  if (!announcementUndo) return null;
+  const status = element(
+    "div",
+    "announcement-toast",
+    `Marked ${announcementUndo.count} ${announcementUndo.scope ? `${announcementUndo.scope} ` : ""}announcement${announcementUndo.count === 1 ? "" : "s"} ${announcementUndo.action}.`,
+  );
+  status.tabIndex = -1;
+  status.dataset.announcementStatus = "true";
+  status.setAttribute("role", "status");
+  const undo = element("button", "announcement-undo", "Undo");
+  undo.type = "button";
+  undo.addEventListener("click", async () => {
+    undo.disabled = true;
+    const undoState = announcementUndo;
+    if (!undoState) return;
+    if (announcementUndoTimer) clearTimeout(announcementUndoTimer);
+    announcementUndoTimer = null;
+    const response = await chrome.runtime.sendMessage({
+      type: "panel:restore-announcements-read",
+      previous: undoState.previous,
+    });
+    if (!response?.announcementRead) {
+      undo.disabled = false;
+      scheduleAnnouncementUndo(undoState);
+      return;
+    }
+    current.announcementRead = response.announcementRead;
+    clearAnnouncementUndo();
+    render();
+    focusAfterRender(".announcement-action");
+  });
+  status.append(" ", undo);
+  return status;
 }
 
 function renderCompletedControls(courses, items) {
@@ -592,18 +617,18 @@ function openDeadlineEditor(item) {
 
 function renderItem(item, now, { completedView = false } = {}) {
   const itemBucket = bucketFor(item, now);
-  const readAnnouncement = !completedView && item.type === "announcement" && Boolean(current.announcementRead[item.id]);
+  const readAnnouncement = item.type === "announcement" && Boolean(current.announcementRead[item.id]);
   const row = element("article", `item${itemBucket === "overdue" ? " is-overdue" : ""}${item.status !== "open" ? " is-complete" : ""}${readAnnouncement ? " is-read-announcement" : ""}`);
   row.style.setProperty("--course-color", item.color || "#0077ca");
 
   const check = element("button", `check${item.status !== "open" || readAnnouncement ? " checked" : ""}`);
   check.type = "button";
-  check.setAttribute("aria-label", item.type === "announcement" && !completedView
+  check.setAttribute("aria-label", item.type === "announcement"
     ? `Mark ${item.title} ${readAnnouncement ? "unread" : "read"}`
     : (item.status === "open" ? `Mark ${item.title} complete` : `Move ${item.title} back to Deadlines`));
   check.disabled = item.submitted || item.canvasComplete;
   check.addEventListener("click", async () => {
-    if (item.type !== "announcement" || completedView) {
+    if (item.type !== "announcement") {
       await toggleWithMotion(row, check, item);
       return;
     }
@@ -636,7 +661,7 @@ function renderItem(item, now, { completedView = false } = {}) {
   title.rel = "noreferrer";
   main.append(meta, title);
   if (readAnnouncement) main.append(element("div", "announcement-read-state", "Read in OTNow"));
-  if (completedView) {
+  if (completedView && !readAnnouncement) {
     const source = completionSource(item);
     main.append(element(
       "div",
@@ -654,9 +679,16 @@ function renderItem(item, now, { completedView = false } = {}) {
   }
 
   const due = element("div", "due");
-  const primary = item.status === "submitted" ? "Submitted" : item.status === "done" ? "Done" : relativeDue(item.dueAt);
+  const primary = readAnnouncement && completedView
+    ? "Read"
+    : item.status === "submitted" ? "Submitted" : item.status === "done" ? "Done" : relativeDue(item.dueAt);
   due.append(element("strong", "", primary), element("span", "", `${formatDate(item.dueAt)} · ${formatTime(item.dueAt)}`));
-  if (completedView && completionSource(item) === "otnow") {
+  if (completedView && readAnnouncement) {
+    const restore = element("button", "restore-deadline", "Mark unread");
+    restore.type = "button";
+    restore.addEventListener("click", () => check.click());
+    due.append(restore);
+  } else if (completedView && completionSource(item) === "otnow") {
     const restore = element("button", "restore-deadline", "Move back to Deadlines");
     restore.type = "button";
     restore.addEventListener("click", () => toggleWithMotion(row, check, item));
@@ -878,6 +910,10 @@ function renderReady(state, settings) {
   if (updateNotice) app.append(updateNotice);
   const statisticsPrompt = renderStatisticsPrompt(settings);
   if (statisticsPrompt) app.append(statisticsPrompt);
+  const releaseNotePrompt = renderReleaseNotePrompt(settings);
+  if (releaseNotePrompt) app.append(releaseNotePrompt);
+  const announcementUndoNotice = renderAnnouncementUndoNotice();
+  if (announcementUndoNotice) app.append(announcementUndoNotice);
 
   if (activeView === "courses") {
     app.append(renderCourseDirectory(state.courses, state.items));
@@ -889,20 +925,19 @@ function renderReady(state, settings) {
   }
 
   if (activeView === "completed") {
-    const completedItems = plannerItemsForView(state.items, "completed");
+    const completedItems = plannerItemsForView(state.items, "completed", current.announcementRead);
     app.append(renderCompleted(completedItems));
     return;
   }
 
-  const statusItems = plannerItemsForView(state.items, "deadlines");
+  const allOpenItems = state.items.filter((item) => item.status === "open");
+  const statusItems = plannerItemsForView(state.items, "deadlines", current.announcementRead);
   const courseItems = statusItems.filter((item) => courseFilter === "all" || item.courseId === courseFilter);
-  const displayItems = filterReadAnnouncements(courseItems, current.announcementRead, showReadAnnouncements);
-  const visibleItems = displayItems
+  const visibleItems = courseItems
     .filter((item) => typeFilter === "all" || item.type === typeFilter);
-  const activeItems = filterReadAnnouncements(statusItems, current.announcementRead);
-  const scopeAnnouncementIds = announcementIdsInScope(statusItems, courseFilter, current.announcementRead);
+  const scopeAnnouncementIds = announcementIdsInScope(allOpenItems, courseFilter, current.announcementRead);
   const unreadAnnouncementIds = announcementIdsInScope(
-    statusItems,
+    allOpenItems,
     courseFilter,
     current.announcementRead,
     { unreadOnly: true },
@@ -912,11 +947,11 @@ function renderReady(state, settings) {
     emptyMessage = courseFilter === "all"
       ? "Canvas returned no dated announcements."
       : "Canvas returned no dated announcements for this course.";
-  } else if (typeFilter === "announcement" && !unreadAnnouncementIds.length && !showReadAnnouncements) {
-    emptyMessage = "All announcements in this scope are marked read. Use Show read announcements to bring them back.";
+  } else if (typeFilter === "announcement" && !unreadAnnouncementIds.length) {
+    emptyMessage = "All announcements in this scope are read. Find them in Completed.";
   }
 
-  app.append(renderOverview(activeItems), renderControls(state.courses, filterReadAnnouncements(statusItems, current.announcementRead, showReadAnnouncements)));
+  app.append(renderOverview(statusItems), renderControls(state.courses, statusItems));
   const announcementActions = renderAnnouncementActions(statusItems);
   if (announcementActions) app.append(announcementActions);
   const sourceNote = element("p", "source-note", "Announcements, assignments, quizzes, discussions, events, planner notes, and other dated Canvas items are included when Canvas returns them.");
@@ -990,6 +1025,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (changes.state) current.state = changes.state.newValue;
   if (changes.settings) current.settings = changes.settings.newValue;
   if (changes.announcementRead) current.announcementRead = changes.announcementRead.newValue || {};
+  if (changes.releaseNoteSeen) current.releaseNoteSeen = changes.releaseNoteSeen.newValue || "";
   render();
 });
 
