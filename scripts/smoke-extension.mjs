@@ -109,6 +109,14 @@ try {
   if (!releasePrompt.includes("Thanks for supporting OTNow") || !releasePrompt.includes("781 Canvas items") || !releasePrompt.includes("See changes")) {
     throw new Error("The one-time release announcement is missing or unclear.");
   }
+  const releasePromptLayout = await page.locator(".release-note-prompt").evaluate((prompt) => ({
+    direction: getComputedStyle(prompt).flexDirection,
+    titleSize: Number.parseFloat(getComputedStyle(prompt.querySelector("strong")).fontSize),
+    bodySize: Number.parseFloat(getComputedStyle(prompt.querySelector("span")).fontSize),
+  }));
+  if (releasePromptLayout.direction !== "column" || releasePromptLayout.titleSize < 13 || releasePromptLayout.bodySize < 11) {
+    throw new Error(`The release announcement is too cramped or small: ${JSON.stringify(releasePromptLayout)}`);
+  }
   await page.getByRole("button", { name: "See changes", exact: true }).click();
   await page.waitForURL(`chrome-extension://${extensionId}/options/changelog.html?source=panel`);
   const changelogPage = await page.evaluate(() => ({
