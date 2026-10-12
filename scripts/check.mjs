@@ -82,6 +82,12 @@ assert.match(panelSource, /panel:mark-announcements-read/, "Side panel must expo
 assert.match(panelSource, /panel:set-deadline/, "Side panel must expose local deadline adjustments");
 assert.doesNotMatch(panelSource, /insightRow\("Successful refreshes"/, "Personal Insights must not display refresh vanity metrics");
 assert.doesNotMatch(panelSource, /insightRow\("Days used"/, "Personal Insights must not display active-day vanity metrics");
+assert.match(panelSource, /Review anonymous statistics/, "Insights must keep anonymous statistics available after a decline");
+assert.match(panelSource, /statsOnboardingSeen/, "The first panel open must defer the statistics choice until OTNow is opened");
+
+const backgroundSource = await readFile(resolve(root, "src/background.js"), "utf8");
+assert.doesNotMatch(backgroundSource, /tabs\.create\(\{\s*url:\s*chrome\.runtime\.getURL\("options\/onboarding\.html"\)/, "Installation must not open the statistics choice before OTNow is used");
+assert.doesNotMatch(backgroundSource, /stats:onboarding-opened/, "Viewing the consent screen alone must not record a choice");
 
 const panelHtml = await readFile(resolve(root, "panel/panel.html"), "utf8");
 assert.match(panelHtml, /id="feedback-link"/, "Side panel must expose the feedback form");
@@ -98,6 +104,7 @@ assert.match(onboarding, /Share anonymous statistics/i);
 assert.match(onboarding, /Not now/i);
 assert.match(onboarding, /View OTNow Stats/i);
 assert.match(onboarding, /class="wash"/i, "First-run consent must include the reactive background wash");
+assert.match(onboarding, /id="field"/i, "First-run consent must include the reactive background field");
 assert.match(onboarding, /reactive-background\.js/i, "First-run consent must load the reactive background");
 assert.doesNotMatch(onboarding, /checked/i, "First-run consent must not be preselected");
 

@@ -48,9 +48,26 @@ try {
   for (const expected of ["randomly generated installation ID", "Never sent", "course names", "student numbers"]) {
     if (!snapshot.disclosure.includes(expected)) throw new Error(`Settings disclosure is missing: ${expected}`);
   }
+  if (context.pages().some((candidate) => candidate !== page && candidate.url().includes("/options/onboarding.html"))) {
+    throw new Error("Installation opened the anonymous statistics choice before OTNow was used.");
+  }
+  await page.evaluate(async () => {
+    const response = await chrome.runtime.sendMessage({ type: "options:get" });
+    await chrome.storage.local.set({
+      state: {
+        ...response.state,
+        status: "ready",
+        items: [],
+        courses: [],
+        lastSyncAt: new Date().toISOString(),
+        firstSyncComplete: true,
+      },
+    });
+  });
 
   if (errors.length) throw new Error(`Options page errors: ${errors.join("; ")}`);
-  await page.goto(`chrome-extension://${extensionId}/options/onboarding.html`);
+  await page.goto(`chrome-extension://${extensionId}/panel/panel.html`);
+  await page.waitForURL(`chrome-extension://${extensionId}/options/onboarding.html?source=panel`);
   const onboarding = await page.evaluate(() => ({
     heading: document.querySelector("h1")?.textContent,
     share: document.querySelector("#share")?.textContent,
@@ -70,7 +87,7 @@ try {
     throw new Error("First-run consent background is not reacting to the pointer.");
   }
   await page.locator("#decline").click();
-  await page.waitForFunction(() => document.querySelector("#status")?.textContent.includes("Nothing was shared"));
+  await page.waitForURL(`chrome-extension://${extensionId}/panel/panel.html`);
   const declined = await page.evaluate(async () => ({
     settings: (await chrome.runtime.sendMessage({ type: "options:get" })).settings,
     permission: await chrome.permissions.contains({
@@ -151,6 +168,9 @@ try {
   const insightsPanel = await page.locator("#app").innerText();
   if (insightsPanel.includes("Successful refreshes") || insightsPanel.includes("Days used")) {
     throw new Error("Low-value personal Insights metrics are still visible.");
+  }
+  if (!insightsPanel.includes("Review anonymous statistics")) {
+    throw new Error("Insights does not preserve the anonymous statistics opt-in after a decline.");
   }
   const feedbackHref = await page.locator("#feedback-link").getAttribute("href");
   if (!feedbackHref?.startsWith("https://docs.google.com/forms/")) throw new Error("Panel feedback link is not configured.");

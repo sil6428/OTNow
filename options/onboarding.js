@@ -8,10 +8,14 @@ const success = document.querySelector("#success");
 const successHeading = document.querySelector("#success-heading");
 const successCopy = document.querySelector("#success-copy");
 const statsLink = document.querySelector("#stats-link");
+const returnToPanel = new URLSearchParams(location.search).get("source") === "panel";
 
 statsLink.href = `${GLOBAL_STATS_ORIGIN}/dashboard`;
 
-chrome.runtime.sendMessage({ type: "stats:onboarding-opened" }).catch(() => {});
+function continueToPanel() {
+  if (!returnToPanel) return;
+  setTimeout(() => location.replace("../panel/panel.html"), 550);
+}
 
 function busy(value) {
   share.disabled = value;
@@ -34,8 +38,14 @@ share.addEventListener("click", async () => {
   try {
     const granted = await chrome.permissions.request({ origins: [`${GLOBAL_STATS_ORIGIN}/*`] });
     if (!granted) {
-      status.textContent = "Permission was not granted. Nothing was shared; you can enable it later in Settings.";
-      busy(false);
+      await chrome.runtime.sendMessage({ type: "stats:onboarding-decline" });
+      status.textContent = "Permission was not granted. Nothing was shared; you can enable it later in Insights.";
+      actions.hidden = true;
+      successHeading.textContent = "Nothing was shared";
+      successCopy.textContent = "OTNow remains fully available. You can enable anonymous statistics later in Insights.";
+      statsLink.hidden = true;
+      success.hidden = false;
+      continueToPanel();
       return;
     }
     status.textContent = "Permission granted. Adding your anonymous signal…";
@@ -48,7 +58,10 @@ share.addEventListener("click", async () => {
     }
     actions.hidden = true;
     success.hidden = false;
-    status.textContent = "Your choice is saved. You can view the public totals or close this tab.";
+    status.textContent = returnToPanel
+      ? "Your choice is saved. Returning to OTNow…"
+      : "Your choice is saved. You can view the public totals or close this tab.";
+    continueToPanel();
   } catch (error) {
     status.textContent = String(error?.message || error);
     busy(false);
@@ -63,10 +76,13 @@ decline.addEventListener("click", async () => {
     busy(false);
     return;
   }
-  status.textContent = "Nothing was shared. You can close this tab or enable it later in Settings.";
+  status.textContent = returnToPanel
+    ? "Nothing was shared. Returning to OTNow…"
+    : "Nothing was shared. You can close this tab or enable it later in Insights.";
   actions.hidden = true;
   successHeading.textContent = "Nothing was shared";
-  successCopy.textContent = "OTNow remains fully available. You can enable anonymous statistics later in Settings.";
+  successCopy.textContent = "OTNow remains fully available. You can enable anonymous statistics later in Insights.";
   statsLink.hidden = true;
   success.hidden = false;
+  continueToPanel();
 });

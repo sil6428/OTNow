@@ -408,13 +408,7 @@ async function setup() {
 
 async function handleInstalled(details) {
   await setup();
-  if (details.reason === "install" || details.reason === "update") {
-    const settings = await getSettings();
-    if (!settings.statsOnboardingSeen) {
-      await chrome.tabs.create({ url: chrome.runtime.getURL("options/onboarding.html") });
-    }
-  }
-  await checkForUpdate({ force: true });
+  if (details.reason === "install" || details.reason === "update") await checkForUpdate({ force: true });
 }
 
 chrome.runtime.onInstalled.addListener((details) => handleInstalled(details).catch(console.error));
@@ -513,11 +507,6 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       }
       case "stats:onboarding-decline": {
         const settings = await setSettings({ statsOnboardingSeen: true, shareAnonymousStats: false });
-        sendResponse({ ok: true, settings });
-        break;
-      }
-      case "stats:onboarding-opened": {
-        const settings = await setSettings({ statsOnboardingSeen: true });
         sendResponse({ ok: true, settings });
         break;
       }

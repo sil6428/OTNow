@@ -7,6 +7,7 @@ import {
   mergePlannerItems,
   normalizePlannerItem,
   normalizeType,
+  plannerTypeFor,
   parseNextLink,
   submissionComplete,
 } from "../src/canvas-model.js";
@@ -48,6 +49,27 @@ test("normalizes common Canvas planner types", () => {
   assert.equal(normalizeType("quiz"), "quiz");
   assert.equal(normalizeType("calendar_event"), "event");
   assert.equal(normalizeType("unknown"), "other");
+});
+
+test("classifies Canvas-declared discussion assignments as discussions", () => {
+  assert.equal(plannerTypeFor({
+    plannable_type: "assignment",
+    plannable: { submission_types: ["discussion_topic"] },
+  }), "discussion");
+  assert.equal(plannerTypeFor({
+    plannable_type: "assignment",
+    plannable: { discussion_topic_id: 701 },
+  }), "discussion");
+  assert.equal(plannerTypeFor({
+    plannable_type: "assignment",
+    html_url: "/courses/42/discussion_topics/701",
+    plannable: {},
+  }), "discussion");
+  assert.equal(plannerTypeFor({
+    plannable_type: "assignment",
+    html_url: "/courses/42/assignments/701",
+    plannable: { submission_types: ["online_text_entry"] },
+  }), "assignment");
 });
 
 test("classifies only Canvas-declared announcements without title guessing", () => {

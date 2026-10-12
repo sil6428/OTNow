@@ -6,7 +6,7 @@ Target: November 2026, with school work taking priority. Reading week can be use
 
 ## Release goal
 
-Make announcement-like Canvas planner entries understandable and dismissible without weakening OTNow's local-first privacy model, make completed work easier to review and restore, and improve the consent, feedback, support, and removal experience.
+Make announcement-like Canvas planner entries understandable and dismissible without weakening OTNow's local-first privacy model, correctly separate Canvas-declared discussion work from ordinary assignments, make completed work easier to review and restore, and improve the consent, feedback, support, and removal experience.
 
 ## Frozen 1.6 scope
 
@@ -18,6 +18,7 @@ Make announcement-like Canvas planner entries understandable and dismissible wit
 - Normalize verified announcement shapes to `type: "announcement"` and add the label **Announcement**.
 - Preserve the current fallback to **Course item** when the evidence is ambiguous.
 - Never reclassify an assignment or quiz solely because its title contains words such as “exam,” “quiz,” or “announcement.”
+- When Canvas declares an assignment as a discussion submission through structured fields or its Canvas discussion URL, present it as a **Discussion**. Do not inspect assignment prose or guess from its title.
 
 ### 2. Filter and locally mark announcements read
 
@@ -63,13 +64,14 @@ Make announcement-like Canvas planner entries understandable and dismissible wit
 
 ### 7. Redesign the anonymous-statistics decision page
 
-- Replace the current dense centered disclosure card with a clearer, responsive OTNow-branded layout.
-- Borrow the Ontario Tech CS Club site's strong hierarchy, generous spacing, numbered sections, and approachable transitions without copying its code, assets, video treatment, or visual identity.
-- Lead with **Optional and off by default**, followed by two scannable sections: **What stays local** and **What would be shared**.
-- Show one compact example of the numerical report rather than relying only on prose.
+- Do not open a separate statistics tab during installation. Show the choice inside the side panel the first time the student actually opens OTNow, after the browser's own permission prompts are finished.
+- Use a compact consent form rather than a product showcase: a clear **Optional and off by default** label, short disclosure, privacy-policy link, and the two decisions.
+- Match the dark statistics and uninstall pages, with the same restrained particle field and cursor-reactive wash for a cohesive first impression. Keep the text surface calm and readable, and disable decorative motion when reduced motion is requested.
 - Keep **Share anonymous statistics** and **Not now** equally understandable and immediately available. Do not use countdowns, preselection, guilt, deceptive colour contrast, or repeated prompts.
-- Preserve the privacy-policy link and provide a clear success state after either choice.
-- Meet keyboard, screen-reader, reduced-motion, high-contrast, 200% zoom, narrow-window, light, and dark-mode requirements.
+- Record a decision only after the student selects it. **Not now** sends nothing, returns directly to the OTNow panel, and does not interrupt later opens.
+- When sharing is off, keep a persistent **Review anonymous statistics** action in Insights so the student can reconsider without being prompted again.
+- Preserve the privacy-policy link and provide a clear status before returning to OTNow after either choice.
+- Meet keyboard, screen-reader, reduced-motion, high-contrast, 200% zoom, and narrow-window requirements.
 
 ### 8. Show the Chrome Web Store rating on the public statistics dashboard
 
@@ -118,7 +120,7 @@ This is a prototype and release decision, not yet frozen 1.6 scope:
 - `src/constants.js` owns labels, reminder defaults, and the currently blank Ko-fi URL.
 - `src/view-model.js` owns type groups and counts.
 - `panel/panel.js` renders filters, groups, items, and the prepared support link.
-- `options/onboarding.html`, `options/onboarding.css`, and `options/onboarding.js` own the first-run anonymous-statistics choice.
+- `options/onboarding.html`, `options/onboarding.css`, `options/onboarding.js`, and `options/reactive-background.js` own the dark first-open anonymous-statistics choice and its restrained visual effects.
 - `options/options.html` and `options/options.js` currently own the legacy **Show completed items** control.
 - `stats-worker/src/dashboard-assets.js` owns the public dashboard presentation; `stats-worker/src/worker.js` and the D1 migration own the isolated daily Store-rating refresh and last-known-good value.
 - `src/storage.js` owns local settings and user state.
@@ -158,6 +160,7 @@ announcementRead = {
 
 - Canvas's official Planner API documents `announcement` as an explicit `plannable_type`, and the signed-in Ontario Tech dashboard confirmed that the current dated notices render through Canvas discussion-topic links. The implementation classifies only that explicit type and never guesses from a title.
 - Sanitized fixtures cover two Canvas-declared announcements, a normal discussion whose title contains “announcement,” and an ambiguous wiki-page item that must remain **Course item**.
+- Canvas's official Assignment API documents `discussion_topic` as a submission type. The implementation also accepts a structured `discussion_topic_id` or an Ontario Tech Canvas `/discussion_topics/` link, while ordinary assignments remain assignments and title or description text is never used as evidence.
 - The existing model continues to accept only dated planner entries. The live Ontario Tech examples were present in the dated To Do feed; undated announcements remain outside OTNow's current planner scope.
 - The local key reuses Canvas's documented `plannable_type` plus `plannable_id`, producing stable IDs such as `announcement:<id>` without storing announcement text in the read-state record.
 - Canonical Ko-fi URL.
@@ -170,6 +173,7 @@ announcementRead = {
 
 - Known announcement shapes normalize to `announcement`.
 - Assignment, quiz, discussion, event, note, and ambiguous fixtures retain their existing types.
+- Canvas-declared discussion assignments normalize to `discussion`; ordinary assignments and title-only lookalikes remain `assignment`.
 - Missing or malformed IDs, dates, links, or context fail safely.
 - Links remain restricted to the Ontario Tech Canvas origin.
 
@@ -191,8 +195,10 @@ announcementRead = {
 
 ### Consent and feedback
 
-- Both first-run choices remain visible without scrolling at common desktop sizes and remain usable at 200% zoom.
-- Declining sends nothing and does not trigger repeated prompts.
+- Installation does not open an OTNow statistics tab; the decision appears only on the first side-panel open.
+- Both first-open choices remain visible without scrolling at common desktop sizes and remain usable at 200% zoom.
+- Declining sends nothing, returns to the panel, and does not trigger repeated prompts.
+- When sharing is off, Insights continues to expose **Review anonymous statistics**.
 - Enabling requests only the existing optional statistics origin and still shows the exact disclosure.
 - Feedback opens the established Google Form without requiring statistics consent.
 - Security-reporting guidance points to the private vulnerability route instead of the feedback form.
@@ -220,7 +226,7 @@ announcementRead = {
 - Write failing classification tests from those fixtures.
 - Confirm local read-state semantics and copy.
 - Confirm the uninstall page and Ko-fi URLs, or explicitly move either blocked item out of 1.6.
-- Create a low-fidelity consent-page layout from the agreed content hierarchy before styling it.
+- Confirm the compact first-open consent hierarchy before styling it; avoid a multi-section product showcase.
 - Prototype active-page theme sampling in the development build only and record a ship/defer decision; do not let it block the release.
 - Record the current Chrome Web Store average and rating count from the public listing as the dated initial snapshot, then verify the daily refresh parser against the real response.
 
@@ -237,7 +243,7 @@ announcementRead = {
 - Publish and verify the uninstall/support page.
 - Enable the support link only if its canonical URL is known.
 - Add the persistent feedback link and the Insights feedback action.
-- Implement the redesigned anonymous-statistics decision page from the approved layout.
+- Implement the compact dark first-open statistics decision and its persistent Insights recovery action.
 - Remove the two low-value personal Insights cards without deleting their stored counters.
 - Add the separately sourced Chrome Web Store rating row to the existing statistics dashboard without changing its overall design.
 
@@ -265,6 +271,7 @@ announcementRead = {
 12. Active-page theme matching ships only if the bounded prototype passes the permission and Brave Split View review; otherwise the existing manual and system choices remain.
 13. The public dashboard identifies the Chrome Web Store rating, count, link, and check date separately from OTNow's own anonymous rating.
 14. Personal Insights shows only outcome-oriented statistics and no longer spends space on successful refreshes or days used.
+15. Canvas-declared discussion assignments appear as discussions without title guessing or changes to ordinary assignments.
 
 ## Open blockers after local implementation
 

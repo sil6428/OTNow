@@ -432,6 +432,21 @@ main { padding: 0 14px 58px; }
 .insight-copy strong { font-size: 13px; }
 .insight-copy span { margin-top: 3px; color: var(--muted); font-size: 11px; line-height: 1.35; }
 .insight-value { flex: 0 0 auto; color: var(--blue); font-size: 21px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.statistics-choice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 2px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.statistics-choice-copy { min-width: 0; }
+.statistics-choice-copy strong,
+.statistics-choice-copy span { display: block; }
+.statistics-choice-copy strong { font-size: 12px; }
+.statistics-choice-copy span { max-width: 255px; margin-top: 3px; color: var(--muted); font-size: 10px; line-height: 1.4; }
+.statistics-choice .insight-action { flex: 0 0 auto; background: var(--surface); cursor: pointer; }
 .rating-peek {
   display: flex;
   align-items: center;

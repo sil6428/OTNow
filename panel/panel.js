@@ -709,10 +709,26 @@ function renderInsights(metrics = {}, globalStats = {}, settings = {}) {
     insightRow("Manual check-offs", metrics.manualCompletions, "Items marked complete inside OTNow"),
   );
 
+  let statisticsChoice = null;
+  if (!settings.shareAnonymousStats) {
+    statisticsChoice = element("section", "statistics-choice");
+    const statisticsCopy = element("div", "statistics-choice-copy");
+    statisticsCopy.append(
+      element("strong", "", "Help measure OTNow"),
+      element("span", "", "Review the optional anonymous totals. OTNow works fully without sharing them."),
+    );
+    const statisticsButton = element("button", "insight-action", "Review anonymous statistics");
+    statisticsButton.type = "button";
+    statisticsButton.addEventListener("click", () => {
+      location.href = "../options/onboarding.html?source=panel&from=insights";
+    });
+    statisticsChoice.append(statisticsCopy, statisticsButton);
+  }
+
   const privacy = element("div", "insight-privacy");
   privacy.append(
     element("strong", "", "Saved on this device"),
-    element("p", "", "This activity summary stays in this Chrome profile. If anonymous statistics are enabled, OTNow shares only the broad counters listed in Settings."),
+    element("p", "", "This activity summary stays in this Chrome profile. If anonymous statistics are enabled, OTNow shares only the broad counters described in Insights and Settings."),
   );
   const feedback = element("div", "insight-actions");
   const feedbackAction = element("a", "insight-action primary", "Send feedback");
@@ -728,6 +744,7 @@ function renderInsights(metrics = {}, globalStats = {}, settings = {}) {
 
   const rating = renderRating(metrics, globalStats, settings);
   section.append(header, rows);
+  if (statisticsChoice) section.append(statisticsChoice);
   if (rating) section.append(rating);
   section.append(privacy);
   return section;
@@ -813,6 +830,10 @@ function render() {
 async function load({ recordOpen = false } = {}) {
   appVersion.textContent = `v${chrome.runtime.getManifest().version}`;
   current = await chrome.runtime.sendMessage({ type: "panel:get" });
+  if (!current.settings.statsOnboardingSeen) {
+    location.replace("../options/onboarding.html?source=panel");
+    return;
+  }
   if (recordOpen) {
     const response = await chrome.runtime.sendMessage({ type: "panel:opened" });
     if (response?.state) current.state = response.state;

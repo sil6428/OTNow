@@ -13,6 +13,22 @@ export function normalizeType(value = "") {
   return "other";
 }
 
+export function plannerTypeFor(raw = {}) {
+  const type = normalizeType(raw.plannable_type);
+  if (type !== "assignment") return type;
+  const plannable = raw.plannable || {};
+  const submissionTypes = Array.isArray(plannable.submission_types)
+    ? plannable.submission_types.map((value) => String(value).toLowerCase())
+    : [];
+  const canvasUrl = String(raw.html_url || plannable.html_url || "");
+  if (
+    submissionTypes.includes("discussion_topic")
+    || plannable.discussion_topic_id != null
+    || /\/discussion_topics\//i.test(canvasUrl)
+  ) return "discussion";
+  return type;
+}
+
 export function dueAtFor(raw) {
   const value = raw?.plannable || {};
   return value.due_at
@@ -65,7 +81,7 @@ export function normalizePlannerItem(raw, coursesById = {}, manualDone = {}) {
   if (raw?.plannable_id == null || raw.plannable_id === "" || !dueAt || Number.isNaN(Date.parse(dueAt))) return null;
 
   const courseId = raw.course_id == null ? "personal" : String(raw.course_id);
-  const type = normalizeType(raw.plannable_type);
+  const type = plannerTypeFor(raw);
   const id = `${raw.plannable_type || "item"}:${raw.plannable_id}`;
   const submitted = submissionComplete(raw.submissions);
   const canvasComplete = Boolean(raw.planner_override?.marked_complete);
