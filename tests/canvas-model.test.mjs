@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  absoluteCanvasUrl,
   dueAtFor,
   mergePlannerItems,
   normalizePlannerItem,
@@ -9,9 +10,22 @@ import {
   parseNextLink,
   submissionComplete,
 } from "../src/canvas-model.js";
+import {
+  announcementIdsInScope,
+  filterReadAnnouncements,
+  markAnnouncementsRead,
+  markAnnouncementsUnread,
+  normalizeAnnouncementRead,
+  pruneAnnouncementRead,
+} from "../src/announcement-read.js";
 import { bucketFor } from "../src/dates.js";
 import { mergeSettings } from "../src/storage.js";
-import { countPlannerTypes, groupPlannerItems } from "../src/view-model.js";
+import {
+  completionSource,
+  countPlannerTypes,
+  groupPlannerItems,
+  plannerItemsForView,
+} from "../src/view-model.js";
 import { compareVersions, readPublishedVersion, versionParts } from "../src/update-check.js";
 import {
   emptyMetrics,
@@ -29,10 +43,97 @@ const courses = {
 };
 
 test("normalizes common Canvas planner types", () => {
+  assert.equal(normalizeType("announcement"), "announcement");
   assert.equal(normalizeType("discussion_topic"), "discussion");
   assert.equal(normalizeType("quiz"), "quiz");
   assert.equal(normalizeType("calendar_event"), "event");
   assert.equal(normalizeType("unknown"), "other");
+});
+
+test("classifies only Canvas-declared announcements without title guessing", () => {
+  const announcementOne = normalizePlannerItem({
+    course_id: 42,
+    plannable_id: 701,
+    plannable_type: "announcement",
+    plannable_date: "2026-10-01T14:00:00Z",
+    plannable: { title: "Sanitized announcement" },
+    html_url: "/courses/42/discussion_topics/701",
+    submissions: false,
+  }, courses, {});
+  const announcementTwo = normalizePlannerItem({
+    course_id: 84,
+    plannable_id: 702,
+    plannable_type: "announcement",
+    plannable_date: "2026-10-02T14:00:00Z",
+    plannable: { title: "Sanitized course notice" },
+    html_url: "/courses/84/discussion_topics/702",
+    submissions: false,
+  }, courses, {});
+  const discussionWithAnnouncementTitle = normalizePlannerItem({
+    course_id: 42,
+    plannable_id: 703,
+    plannable_type: "discussion_topic",
+    plannable_date: "2026-10-03T14:00:00Z",
+    plannable: { title: "Announcement discussion" },
+    html_url: "/courses/42/discussion_topics/703",
+    submissions: false,
+  }, courses, {});
+  const ambiguousCourseItem = normalizePlannerItem({
+    course_id: 42,
+    plannable_id: 704,
+    plannable_type: "wiki_page",
+    plannable_date: "2026-10-04T14:00:00Z",
+    plannable: { title: "Sanitized page" },
+    html_url: "/courses/42/pages/sanitized-page",
+    submissions: false,
+  }, courses, {});
+
+  assert.equal(announcementOne.type, "announcement");
+  assert.equal(announcementTwo.type, "announcement");
+  assert.equal(announcementOne.id, "announcement:701");
+  assert.equal(discussionWithAnnouncementTitle.type, "discussion");
+  assert.equal(ambiguousCourseItem.type, "other");
+});
+
+test("rejects malformed planner IDs and foreign item links", () => {
+  assert.equal(normalizePlannerItem({
+    plannable_type: "announcement",
+    plannable_date: "2026-10-01T14:00:00Z",
+  }, courses, {}), null);
+  assert.equal(absoluteCanvasUrl("https://evil.example/courses/42/assignments/1"), "https://learn.ontariotechu.ca");
+  assert.equal(absoluteCanvasUrl("/courses/42/assignments/1"), "https://learn.ontariotechu.ca/courses/42/assignments/1");
+});
+
+test("marks announcements read by course and restores an exact prior map", () => {
+  const items = [
+    { id: "announcement:1", type: "announcement", courseId: "42" },
+    { id: "announcement:2", type: "announcement", courseId: "42" },
+    { id: "announcement:3", type: "announcement", courseId: "84" },
+    { id: "assignment:4", type: "assignment", courseId: "42" },
+  ];
+  const previous = { "announcement:1": "2026-10-01T12:00:00.000Z" };
+  const scoped = announcementIdsInScope(items, "42", previous, { unreadOnly: true });
+  assert.deepEqual(scoped, ["announcement:2"]);
+  const next = markAnnouncementsRead(previous, scoped, new Date("2026-10-12T12:00:00Z"));
+  assert.deepEqual(Object.keys(next).sort(), ["announcement:1", "announcement:2"]);
+  assert.deepEqual(filterReadAnnouncements(items, next).map((item) => item.id), ["announcement:3", "assignment:4"]);
+  assert.deepEqual(normalizeAnnouncementRead(previous), previous);
+  assert.deepEqual(markAnnouncementsUnread(next, ["announcement:2"]), previous);
+});
+
+test("prunes only stale announcement read markers", () => {
+  const read = {
+    "announcement:current": "2026-01-01T00:00:00.000Z",
+    "announcement:recent": "2026-10-01T00:00:00.000Z",
+    "announcement:stale": "2025-01-01T00:00:00.000Z",
+    "assignment:wrong-type": "2026-10-01T00:00:00.000Z",
+  };
+  const pruned = pruneAnnouncementRead(
+    read,
+    [{ id: "announcement:current", type: "announcement" }],
+    new Date("2026-10-12T00:00:00Z"),
+  );
+  assert.deepEqual(Object.keys(pruned).sort(), ["announcement:current", "announcement:recent"]);
 });
 
 test("selects a valid due date from Canvas response shapes", () => {
@@ -106,6 +207,7 @@ test("migrates the old default theme to the Canvas-matching light theme", () => 
 
 test("groups planner items by type without hiding supported Canvas types", () => {
   const items = [
+    { id: "m", type: "announcement", dueAt: "2026-09-25T12:00:00Z", status: "open" },
     { id: "a", type: "assignment", dueAt: "2026-09-28T12:00:00Z", status: "open" },
     { id: "q", type: "quiz", dueAt: "2026-09-27T12:00:00Z", status: "open" },
     { id: "d", type: "discussion", dueAt: "2026-09-26T12:00:00Z", status: "open" },
@@ -114,8 +216,9 @@ test("groups planner items by type without hiding supported Canvas types", () =>
     { id: "o", type: "other", dueAt: "2026-10-01T12:00:00Z", status: "open" },
   ];
   const groups = groupPlannerItems(items, "type");
-  assert.deepEqual(groups.map((group) => group.id), ["assignment", "quiz", "discussion", "event", "note", "other"]);
+  assert.deepEqual(groups.map((group) => group.id), ["announcement", "assignment", "quiz", "discussion", "event", "note", "other"]);
   assert.deepEqual(countPlannerTypes(items), {
+    announcement: 1,
     assignment: 1,
     quiz: 1,
     discussion: 1,
@@ -123,6 +226,21 @@ test("groups planner items by type without hiding supported Canvas types", () =>
     note: 1,
     other: 1,
   });
+});
+
+test("separates active deadlines from completed work without changing completion sources", () => {
+  const items = [
+    { id: "assignment:1", status: "open" },
+    { id: "assignment:2", status: "submitted", submitted: true },
+    { id: "quiz:3", status: "done", canvasComplete: true },
+    { id: "note:4", status: "done", manuallyComplete: true },
+  ];
+  assert.deepEqual(plannerItemsForView(items, "deadlines").map((item) => item.id), ["assignment:1"]);
+  assert.deepEqual(plannerItemsForView(items, "completed").map((item) => item.id), ["assignment:2", "quiz:3", "note:4"]);
+  assert.equal(completionSource(items[1]), "canvas");
+  assert.equal(completionSource(items[2]), "canvas");
+  assert.equal(completionSource(items[3]), "otnow");
+  assert.equal(completionSource(items[0]), null);
 });
 
 test("compares strict three-part OTNow versions", () => {

@@ -4,6 +4,7 @@ const COMPLETED_WORKFLOW_STATES = new Set(["submitted", "graded", "pending_revie
 
 export function normalizeType(value = "") {
   const type = String(value).toLowerCase();
+  if (type === "announcement") return "announcement";
   if (type.includes("quiz")) return "quiz";
   if (type.includes("discussion")) return "discussion";
   if (type.includes("assignment")) return "assignment";
@@ -27,10 +28,11 @@ function titleFor(raw) {
   return value.title || value.name || value.message || value.description || "Untitled Canvas item";
 }
 
-function absoluteCanvasUrl(value) {
+export function absoluteCanvasUrl(value) {
   if (!value) return CANVAS_ORIGIN;
   try {
-    return new URL(value, CANVAS_ORIGIN).href;
+    const url = new URL(value, CANVAS_ORIGIN);
+    return url.origin === CANVAS_ORIGIN ? url.href : CANVAS_ORIGIN;
   } catch {
     return CANVAS_ORIGIN;
   }
@@ -60,7 +62,7 @@ export function normalizeCourse(raw, index = 0) {
 
 export function normalizePlannerItem(raw, coursesById = {}, manualDone = {}) {
   const dueAt = dueAtFor(raw);
-  if (!dueAt || Number.isNaN(Date.parse(dueAt))) return null;
+  if (raw?.plannable_id == null || raw.plannable_id === "" || !dueAt || Number.isNaN(Date.parse(dueAt))) return null;
 
   const courseId = raw.course_id == null ? "personal" : String(raw.course_id);
   const type = normalizeType(raw.plannable_type);

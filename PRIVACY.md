@@ -1,6 +1,6 @@
 # OTNow Privacy Policy
 
-Last updated: October 4, 2026
+Last updated: October 12, 2026
 
 OTNow is an unofficial browser extension for Ontario Tech students. Coursework remains on the student's device. OTNow also offers a separate, optional anonymous statistics feature that is off by default.
 
@@ -10,11 +10,11 @@ With the student's existing signed-in Canvas session, OTNow reads active course 
 
 ## How the information is used
 
-This information is used only to display deadlines, preserve an offline cache, detect changed due dates, apply local deadline adjustments entered by the student, update the toolbar badge, and schedule reminders requested by the student.
+This information is used only to display deadlines and dated announcements, preserve an offline cache, detect changed due dates, apply local deadline adjustments entered by the student, remember announcements the student marked read, update the toolbar badge, and schedule reminders requested by the student.
 
 ## Local storage
 
-Course information, settings, manual check-offs, student-entered deadline adjustments, reminder history, and the totals shown in the personal Insights view are stored locally through Chrome extension storage. A deadline adjustment changes only OTNow's display and reminder schedule; it does not change Canvas. Insights records only local counters and opaque Canvas item identifiers needed to avoid counting the same deadline twice; it does not retain coursework titles for measurement. OTNow does not sell information or use it for advertising, profiling, or model training. OTNow does not collect passwords or authentication tokens.
+Course information, settings, manual check-offs, locally read announcement markers, student-entered deadline adjustments, reminder history, and the totals shown in the personal Insights view are stored locally through Chrome extension storage. Marking an announcement read affects only OTNow's display, and a deadline adjustment changes only OTNow's display and reminder schedule; neither action changes Canvas. Insights records only local counters and opaque Canvas item identifiers needed to avoid counting the same deadline twice; it does not retain coursework titles for measurement. OTNow does not sell information or use it for advertising, profiling, or model training. OTNow does not collect passwords or authentication tokens.
 
 ## Optional, opt-in anonymous global statistics
 

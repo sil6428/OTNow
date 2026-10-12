@@ -1,6 +1,7 @@
 import { DEFAULT_SETTINGS } from "./constants.js";
 import { normalizeDeadlineAdjustments } from "./deadline-adjustments.js";
 import { emptyMetrics, mergeMetrics } from "./metrics.js";
+import { normalizeAnnouncementRead } from "./announcement-read.js";
 
 export function emptyState() {
   return {
@@ -86,6 +87,17 @@ export async function getManualDone() {
 
 export async function setManualDone(manualDone) {
   await chrome.storage.local.set({ manualDone });
+}
+
+export async function getAnnouncementRead() {
+  const { announcementRead } = await chrome.storage.local.get("announcementRead");
+  return normalizeAnnouncementRead(announcementRead);
+}
+
+export async function setAnnouncementRead(announcementRead) {
+  const clean = normalizeAnnouncementRead(announcementRead);
+  await chrome.storage.local.set({ announcementRead: clean });
+  return clean;
 }
 
 export async function getDeadlineAdjustments() {

@@ -17,6 +17,13 @@ import {
 import { sameDay } from "./dates.js";
 import { mergePlannerItems } from "./canvas-model.js";
 import {
+  isAnnouncementRead,
+  markAnnouncementsRead,
+  markAnnouncementsUnread,
+  normalizeAnnouncementRead,
+  pruneAnnouncementRead,
+} from "./announcement-read.js";
+import {
   applyDeadlineAdjustments,
   reconcileDeadlineAdjustments,
   restoreCanvasDeadlines,
@@ -37,10 +44,12 @@ import {
   setAnonymousRating,
 } from "./global-stats.js";
 import {
+  getAnnouncementRead,
   getDeadlineAdjustments,
   getManualDone,
   getSettings,
   getState,
+  setAnnouncementRead,
   setManualDone,
   setDeadlineAdjustments,
   setSettings,
@@ -85,8 +94,9 @@ function pruneTracking(state, items) {
 
 async function refreshBadge(state) {
   state ||= await getState();
+  const announcementRead = await getAnnouncementRead();
   const now = new Date();
-  const open = state.items.filter((item) => item.status === "open");
+  const open = state.items.filter((item) => item.status === "open" && !isAnnouncementRead(item, announcementRead));
   const overdue = open.filter((item) => Date.parse(item.dueAt) < now.getTime()).length;
   const today = open.filter((item) => Date.parse(item.dueAt) >= now.getTime() && sameDay(item.dueAt, now)).length;
   await chrome.action.setBadgeBackgroundColor({ color: overdue ? "#b91c1c" : "#1d4ed8" });
@@ -182,6 +192,7 @@ async function syncCanvas({ userInitiated = false } = {}) {
       const activeDeadlineAdjustments = reconcileDeadlineAdjustments(canvasItems, deadlineAdjustments);
       const items = applyDeadlineAdjustments(canvasItems, activeDeadlineAdjustments);
       await setDeadlineAdjustments(activeDeadlineAdjustments);
+      await setAnnouncementRead(pruneAnnouncementRead(await getAnnouncementRead(), items));
       const firstSync = !before.firstSyncComplete;
       const next = {
         ...before,
@@ -320,6 +331,32 @@ async function toggleManualDone(itemId) {
   return state;
 }
 
+async function markAnnouncementItemsRead(itemIds = []) {
+  const state = await getState();
+  const allowed = new Set(state.items.filter((item) => item.type === "announcement").map((item) => item.id));
+  const selected = [...new Set(itemIds.map(String))].filter((id) => allowed.has(id));
+  const previous = await getAnnouncementRead();
+  const announcementRead = await setAnnouncementRead(markAnnouncementsRead(previous, selected));
+  await refreshBadge(state);
+  return { announcementRead, previous, count: selected.length };
+}
+
+async function markAnnouncementItemsUnread(itemIds = []) {
+  const state = await getState();
+  const allowed = new Set(state.items.filter((item) => item.type === "announcement").map((item) => item.id));
+  const selected = [...new Set(itemIds.map(String))].filter((id) => allowed.has(id));
+  const previous = await getAnnouncementRead();
+  const announcementRead = await setAnnouncementRead(markAnnouncementsUnread(previous, selected));
+  await refreshBadge(state);
+  return { announcementRead, previous, count: selected.length };
+}
+
+async function restoreAnnouncementItemsRead(snapshot) {
+  const announcementRead = await setAnnouncementRead(normalizeAnnouncementRead(snapshot));
+  await refreshBadge();
+  return announcementRead;
+}
+
 async function setDeadlineAdjustment(itemId, dueAt) {
   const before = await getState();
   const item = before.items.find((entry) => entry.id === itemId);
@@ -402,7 +439,12 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   (async () => {
     switch (message.type) {
       case "panel:get":
-        sendResponse({ state: await getState(), settings: await getSettings(), globalStats: await getAnonymousStatsStatus() });
+        sendResponse({
+          state: await getState(),
+          settings: await getSettings(),
+          announcementRead: await getAnnouncementRead(),
+          globalStats: await getAnonymousStatsStatus(),
+        });
         checkForUpdate().catch(() => {});
         break;
       case "panel:opened":
@@ -419,6 +461,15 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         break;
       case "panel:toggle":
         sendResponse({ state: await toggleManualDone(String(message.itemId)) });
+        break;
+      case "panel:mark-announcements-read":
+        sendResponse(await markAnnouncementItemsRead(Array.isArray(message.itemIds) ? message.itemIds : []));
+        break;
+      case "panel:mark-announcements-unread":
+        sendResponse(await markAnnouncementItemsUnread(Array.isArray(message.itemIds) ? message.itemIds : []));
+        break;
+      case "panel:restore-announcements-read":
+        sendResponse({ announcementRead: await restoreAnnouncementItemsRead(message.previous) });
         break;
       case "panel:set-deadline":
         sendResponse({ state: await setDeadlineAdjustment(String(message.itemId), message.dueAt) });

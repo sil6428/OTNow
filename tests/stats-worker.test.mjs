@@ -245,6 +245,20 @@ test("serves a themed privacy policy page", async () => {
   assert.match(html, /Public totals may use compact display labels/);
 });
 
+test("serves a neutral themed support and uninstall page", async () => {
+  for (const path of ["/support", "/uninstall"]) {
+    const response = await worker.fetch(new Request(`https://stats.example${path}`), aggregateEnvironment());
+    const html = await response.text();
+    assert.equal(response.status, 200);
+    assert.match(html, /<title>OTNow - Feedback and Support<\/title>/);
+    assert.match(html, /Uninstalling OTNow removes its local extension data through Chrome/);
+    assert.match(html, /Open feedback form/);
+    assert.match(html, /Chrome Web Store/);
+    assert.match(html, /Report a vulnerability privately/);
+    assert.match(html, /security\/advisories\/new/);
+  }
+});
+
 test("serves the OTNow browser icon", async () => {
   const response = await worker.fetch(new Request("https://stats.example/favicon.svg"), aggregateEnvironment());
   assert.equal(response.status, 200);

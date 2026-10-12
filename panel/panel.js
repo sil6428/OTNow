@@ -1,6 +1,22 @@
 import { bucketFor, formatDate, formatTime, relativeDue } from "../src/dates.js";
-import { CANVAS_ORIGIN, SUPPORT_URL, TYPE_LABELS } from "../src/constants.js";
-import { countPlannerTypes, groupPlannerItems, TYPE_GROUPS } from "../src/view-model.js";
+import {
+  announcementIdsInScope,
+  filterReadAnnouncements,
+} from "../src/announcement-read.js";
+import {
+  CANVAS_ORIGIN,
+  FEEDBACK_URL,
+  SECURITY_REPORT_URL,
+  SUPPORT_URL,
+  TYPE_LABELS,
+} from "../src/constants.js";
+import {
+  completionSource,
+  countPlannerTypes,
+  groupPlannerItems,
+  plannerItemsForView,
+  TYPE_GROUPS,
+} from "../src/view-model.js";
 
 const app = document.querySelector("#app");
 const refreshButton = document.querySelector("#refresh");
@@ -9,15 +25,18 @@ const settingsButton = document.querySelector("#settings");
 const notice = document.querySelector("#notice");
 const syncStatus = document.querySelector("#sync-status");
 const appVersion = document.querySelector("#app-version");
-const support = document.querySelector("#support");
 const supportLink = document.querySelector("#support-link");
+const feedbackLink = document.querySelector("#feedback-link");
 
-let current = { state: null, settings: null, globalStats: null };
+let current = { state: null, settings: null, announcementRead: {}, globalStats: null };
 const savedView = localStorage.getItem("otnow:view");
-let activeView = ["courses", "insights"].includes(savedView) ? savedView : "deadlines";
+let activeView = ["completed", "courses", "insights"].includes(savedView) ? savedView : "deadlines";
 let courseFilter = localStorage.getItem("otnow:course") || "all";
 let typeFilter = localStorage.getItem("otnow:type") || "all";
 let groupMode = localStorage.getItem("otnow:group") === "date" ? "date" : "type";
+let showReadAnnouncements = localStorage.getItem("otnow:show-read-announcements") === "true";
+let announcementUndo = null;
+let pendingFocus = null;
 
 function element(tag, className, text) {
   const node = document.createElement(tag);
@@ -27,12 +46,13 @@ function element(tag, className, text) {
 }
 
 function configureSupportLink() {
+  feedbackLink.href = FEEDBACK_URL;
   if (!SUPPORT_URL) return;
   try {
     const url = new URL(SUPPORT_URL);
     if (url.protocol !== "https:" || url.hostname !== "ko-fi.com") return;
     supportLink.href = url.href;
-    support.hidden = false;
+    supportLink.hidden = false;
   } catch {
     // Keep the optional support section hidden if its URL is invalid.
   }
@@ -79,9 +99,14 @@ function showState(title, message, { openCanvas = false, retry = false } = {}) {
 function renderViewTabs(state) {
   const tabs = element("nav", "view-tabs");
   tabs.setAttribute("aria-label", "OTNow sections");
-  const openCount = state.items.filter((item) => item.status === "open").length;
+  const openCount = filterReadAnnouncements(
+    plannerItemsForView(state.items, "deadlines"),
+    current.announcementRead,
+  ).length;
+  const completedCount = plannerItemsForView(state.items, "completed").length;
   const choices = [
     ["deadlines", "Deadlines", openCount],
+    ["completed", "Completed", completedCount],
     ["courses", "Courses", state.courses.length],
     ["insights", "Insights", null],
   ];
@@ -191,6 +216,118 @@ function renderControls(courses, items) {
   return controls;
 }
 
+function scopedCourseLabel() {
+  if (courseFilter === "all") return "";
+  return current.state.courses.find((course) => course.id === courseFilter)?.code || "this course";
+}
+
+function focusAfterRender(selector) {
+  pendingFocus = selector;
+  requestAnimationFrame(() => {
+    if (!pendingFocus) return;
+    document.querySelector(pendingFocus)?.focus();
+    pendingFocus = null;
+  });
+}
+
+function renderAnnouncementActions(openItems) {
+  const allIds = announcementIdsInScope(openItems, courseFilter, current.announcementRead);
+  if (!allIds.length) return null;
+  const unreadIds = announcementIdsInScope(openItems, courseFilter, current.announcementRead, { unreadOnly: true });
+  const readCount = allIds.length - unreadIds.length;
+  const scope = scopedCourseLabel();
+  const section = element("section", "announcement-actions");
+  const copy = element("div", "announcement-action-copy");
+  copy.append(
+    element("strong", "", "Announcements"),
+    element("span", "", "Read status is saved only in OTNow and never changes Canvas."),
+  );
+  const actions = element("div", "announcement-action-buttons");
+
+  if (unreadIds.length) {
+    const mark = element(
+      "button",
+      "announcement-action primary",
+      `Mark ${unreadIds.length} ${scope ? `${scope} ` : ""}announcement${unreadIds.length === 1 ? "" : "s"} read`,
+    );
+    mark.type = "button";
+    mark.addEventListener("click", async () => {
+      mark.disabled = true;
+      const response = await chrome.runtime.sendMessage({ type: "panel:mark-announcements-read", itemIds: unreadIds });
+      if (!response?.announcementRead) {
+        mark.disabled = false;
+        notice.hidden = false;
+        notice.textContent = response?.error || "Announcements could not be marked read.";
+        return;
+      }
+      current.announcementRead = response.announcementRead;
+      announcementUndo = { previous: response.previous, count: response.count, scope, action: "read" };
+      render();
+      focusAfterRender("[data-announcement-status]");
+    });
+    actions.append(mark);
+  }
+
+  if (readCount) {
+    const toggle = element(
+      "button",
+      "announcement-action",
+      showReadAnnouncements ? "Hide read announcements" : `Show ${readCount} read announcement${readCount === 1 ? "" : "s"}`,
+    );
+    toggle.type = "button";
+    toggle.setAttribute("aria-pressed", String(showReadAnnouncements));
+    toggle.addEventListener("click", () => {
+      showReadAnnouncements = !showReadAnnouncements;
+      localStorage.setItem("otnow:show-read-announcements", String(showReadAnnouncements));
+      render();
+    });
+    actions.append(toggle);
+  }
+
+  section.append(copy, actions);
+  if (announcementUndo) {
+    const status = element(
+      "div",
+      "announcement-status",
+      `Marked ${announcementUndo.count} ${announcementUndo.scope ? `${announcementUndo.scope} ` : ""}announcement${announcementUndo.count === 1 ? "" : "s"} ${announcementUndo.action}.`,
+    );
+    status.tabIndex = -1;
+    status.dataset.announcementStatus = "true";
+    status.setAttribute("role", "status");
+    const undo = element("button", "announcement-undo", "Undo");
+    undo.type = "button";
+    undo.addEventListener("click", async () => {
+      undo.disabled = true;
+      const response = await chrome.runtime.sendMessage({
+        type: "panel:restore-announcements-read",
+        previous: announcementUndo.previous,
+      });
+      if (!response?.announcementRead) return;
+      current.announcementRead = response.announcementRead;
+      announcementUndo = null;
+      render();
+      focusAfterRender(".announcement-action");
+    });
+    status.append(" ", undo);
+    section.append(status);
+  }
+  return section;
+}
+
+function renderCompletedControls(courses) {
+  const controls = element("section", "controls completed-controls");
+  const courseOptions = [
+    { value: "all", label: "All courses" },
+    ...courses.map((course) => ({ value: course.id, label: course.code })),
+  ];
+  controls.append(selectControl("Course", courseFilter, courseOptions, (value) => {
+    courseFilter = value;
+    localStorage.setItem("otnow:course", value);
+    render();
+  }));
+  return controls;
+}
+
 function pause(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
@@ -205,7 +342,7 @@ async function toggleWithMotion(row, check, item) {
 }
 
 function addSwipeCompletion(row, check, item) {
-  if (item.status !== "open" || check.disabled) return;
+  if (item.type === "announcement" || item.status !== "open" || check.disabled) return;
   let startX = 0;
   let startY = 0;
   let dragging = false;
@@ -334,16 +471,42 @@ function openDeadlineEditor(item) {
   input.focus();
 }
 
-function renderItem(item, now) {
+function renderItem(item, now, { completedView = false } = {}) {
   const itemBucket = bucketFor(item, now);
-  const row = element("article", `item${itemBucket === "overdue" ? " is-overdue" : ""}${item.status !== "open" ? " is-complete" : ""}`);
+  const readAnnouncement = !completedView && item.type === "announcement" && Boolean(current.announcementRead[item.id]);
+  const row = element("article", `item${itemBucket === "overdue" ? " is-overdue" : ""}${item.status !== "open" ? " is-complete" : ""}${readAnnouncement ? " is-read-announcement" : ""}`);
   row.style.setProperty("--course-color", item.color || "#0077ca");
 
-  const check = element("button", `check${item.status !== "open" ? " checked" : ""}`);
+  const check = element("button", `check${item.status !== "open" || readAnnouncement ? " checked" : ""}`);
   check.type = "button";
-  check.setAttribute("aria-label", item.status === "open" ? `Mark ${item.title} complete` : `Mark ${item.title} incomplete`);
+  check.setAttribute("aria-label", item.type === "announcement" && !completedView
+    ? `Mark ${item.title} ${readAnnouncement ? "unread" : "read"}`
+    : (item.status === "open" ? `Mark ${item.title} complete` : `Move ${item.title} back to Deadlines`));
   check.disabled = item.submitted || item.canvasComplete;
-  check.addEventListener("click", () => toggleWithMotion(row, check, item));
+  check.addEventListener("click", async () => {
+    if (item.type !== "announcement" || completedView) {
+      await toggleWithMotion(row, check, item);
+      return;
+    }
+    check.disabled = true;
+    const response = await chrome.runtime.sendMessage({
+      type: readAnnouncement ? "panel:mark-announcements-unread" : "panel:mark-announcements-read",
+      itemIds: [item.id],
+    });
+    if (!response?.announcementRead) {
+      check.disabled = false;
+      return;
+    }
+    current.announcementRead = response.announcementRead;
+    announcementUndo = {
+      previous: response.previous,
+      count: response.count,
+      scope: item.courseCode,
+      action: readAnnouncement ? "unread" : "read",
+    };
+    render();
+    focusAfterRender("[data-announcement-status]");
+  });
 
   const main = element("div", "item-main");
   const meta = element("div", "item-meta");
@@ -353,6 +516,15 @@ function renderItem(item, now) {
   title.target = "_blank";
   title.rel = "noreferrer";
   main.append(meta, title);
+  if (readAnnouncement) main.append(element("div", "announcement-read-state", "Read in OTNow"));
+  if (completedView) {
+    const source = completionSource(item);
+    main.append(element(
+      "div",
+      `completion-source ${source === "canvas" ? "is-canvas" : "is-local"}`,
+      source === "canvas" ? "Completed in Canvas" : "Checked off in OTNow",
+    ));
+  }
   if (item.moved) {
     const moved = element("div", "moved");
     moved.append("Moved from ", element("s", "", `${formatDate(item.moved.from)} ${formatTime(item.moved.from)}`));
@@ -365,7 +537,12 @@ function renderItem(item, now) {
   const due = element("div", "due");
   const primary = item.status === "submitted" ? "Submitted" : item.status === "done" ? "Done" : relativeDue(item.dueAt);
   due.append(element("strong", "", primary), element("span", "", `${formatDate(item.dueAt)} · ${formatTime(item.dueAt)}`));
-  if (!item.submitted && !item.canvasComplete) {
+  if (completedView && completionSource(item) === "otnow") {
+    const restore = element("button", "restore-deadline", "Move back to Deadlines");
+    restore.type = "button";
+    restore.addEventListener("click", () => toggleWithMotion(row, check, item));
+    due.append(restore);
+  } else if (!completedView && item.type !== "announcement" && !item.submitted && !item.canvasComplete) {
     const adjust = element("button", `due-adjust${item.deadlineAdjusted ? " active" : ""}`, item.deadlineAdjusted ? "Edit extension" : "Add extension");
     adjust.type = "button";
     adjust.addEventListener("click", () => openDeadlineEditor(item));
@@ -376,10 +553,10 @@ function renderItem(item, now) {
   return row;
 }
 
-function renderDeadlineGroups(items) {
+function renderDeadlineGroups(items, emptyMessage = "No matching dated coursework.") {
   const now = new Date();
   const groups = groupPlannerItems(items, groupMode, now);
-  if (!groups.length) return element("div", "empty", "No matching dated coursework.");
+  if (!groups.length) return element("div", "empty", emptyMessage);
   const output = document.createDocumentFragment();
   for (const groupData of groups) {
     const group = element("section", "group");
@@ -391,6 +568,33 @@ function renderDeadlineGroups(items) {
     output.append(group);
   }
   return output;
+}
+
+function renderCompleted(items) {
+  const section = element("section", "completed-view");
+  const header = element("div", "section-intro");
+  header.append(
+    element("h1", "", "Completed"),
+    element("p", "", "Review finished work. Only check-offs made in OTNow can be moved back to Deadlines."),
+  );
+  section.append(header, renderCompletedControls(current.state.courses));
+  if (!items.length) {
+    section.append(element("div", "empty", courseFilter === "all"
+      ? "No completed dated coursework is saved yet."
+      : "No completed items are saved for this course."));
+    return section;
+  }
+  const groups = groupPlannerItems(items, "type", new Date());
+  for (const groupData of groups) {
+    const group = element("section", "group");
+    const heading = element("div", "group-heading");
+    heading.append(element("h2", "", groupData.label), element("span", "", String(groupData.items.length)));
+    const list = element("div", "items");
+    groupData.items.forEach((item) => list.append(renderItem(item, new Date(), { completedView: true })));
+    group.append(heading, list);
+    section.append(group);
+  }
+  return section;
 }
 
 function canvasCourseUrl(courseId, section = "") {
@@ -503,8 +707,6 @@ function renderInsights(metrics = {}, globalStats = {}, settings = {}) {
     insightRow("Changed dates caught", metrics.movedDeadlinesDetected, "Due-date changes detected after a refresh"),
     insightRow("Reminders delivered", metrics.remindersSent, "Deadline notifications created"),
     insightRow("Manual check-offs", metrics.manualCompletions, "Items marked complete inside OTNow"),
-    insightRow("Successful refreshes", metrics.successfulSyncs, "Canvas updates completed"),
-    insightRow("Days used", metrics.activeDays?.length, "Distinct days OTNow was opened or refreshed"),
   );
 
   const privacy = element("div", "insight-privacy");
@@ -512,6 +714,17 @@ function renderInsights(metrics = {}, globalStats = {}, settings = {}) {
     element("strong", "", "Saved on this device"),
     element("p", "", "This activity summary stays in this Chrome profile. If anonymous statistics are enabled, OTNow shares only the broad counters listed in Settings."),
   );
+  const feedback = element("div", "insight-actions");
+  const feedbackAction = element("a", "insight-action primary", "Send feedback");
+  feedbackAction.href = FEEDBACK_URL;
+  feedbackAction.target = "_blank";
+  feedbackAction.rel = "noopener noreferrer";
+  const securityAction = element("a", "insight-action", "Report a security issue privately");
+  securityAction.href = SECURITY_REPORT_URL;
+  securityAction.target = "_blank";
+  securityAction.rel = "noopener noreferrer";
+  feedback.append(feedbackAction, securityAction);
+  privacy.append(feedback);
 
   const rating = renderRating(metrics, globalStats, settings);
   section.append(header, rows);
@@ -535,14 +748,40 @@ function renderReady(state, settings) {
     return;
   }
 
-  const statusItems = state.items.filter((item) => settings.showCompleted || item.status === "open");
-  const visibleItems = statusItems
-    .filter((item) => courseFilter === "all" || item.courseId === courseFilter)
-    .filter((item) => typeFilter === "all" || item.type === typeFilter);
+  if (activeView === "completed") {
+    const completedItems = plannerItemsForView(state.items, "completed")
+      .filter((item) => courseFilter === "all" || item.courseId === courseFilter);
+    app.append(renderCompleted(completedItems));
+    return;
+  }
 
-  app.append(renderOverview(state.items), renderControls(state.courses, statusItems));
-  const sourceNote = element("p", "source-note", "Assignments, quizzes, discussions, events, planner notes, and other dated Canvas items are included when Canvas returns them.");
-  app.append(sourceNote, renderDeadlineGroups(visibleItems));
+  const statusItems = plannerItemsForView(state.items, "deadlines");
+  const courseItems = statusItems.filter((item) => courseFilter === "all" || item.courseId === courseFilter);
+  const displayItems = filterReadAnnouncements(courseItems, current.announcementRead, showReadAnnouncements);
+  const visibleItems = displayItems
+    .filter((item) => typeFilter === "all" || item.type === typeFilter);
+  const activeItems = filterReadAnnouncements(statusItems, current.announcementRead);
+  const scopeAnnouncementIds = announcementIdsInScope(statusItems, courseFilter, current.announcementRead);
+  const unreadAnnouncementIds = announcementIdsInScope(
+    statusItems,
+    courseFilter,
+    current.announcementRead,
+    { unreadOnly: true },
+  );
+  let emptyMessage = "No matching dated coursework.";
+  if (typeFilter === "announcement" && !scopeAnnouncementIds.length) {
+    emptyMessage = courseFilter === "all"
+      ? "Canvas returned no dated announcements."
+      : "Canvas returned no dated announcements for this course.";
+  } else if (typeFilter === "announcement" && !unreadAnnouncementIds.length && !showReadAnnouncements) {
+    emptyMessage = "All announcements in this scope are marked read. Use Show read announcements to bring them back.";
+  }
+
+  app.append(renderOverview(activeItems), renderControls(state.courses, filterReadAnnouncements(statusItems, current.announcementRead, showReadAnnouncements)));
+  const announcementActions = renderAnnouncementActions(statusItems);
+  if (announcementActions) app.append(announcementActions);
+  const sourceNote = element("p", "source-note", "Announcements, assignments, quizzes, discussions, events, planner notes, and other dated Canvas items are included when Canvas returns them.");
+  app.append(sourceNote, renderDeadlineGroups(visibleItems, emptyMessage));
 }
 
 function render() {
@@ -611,6 +850,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "local") return;
   if (changes.state) current.state = changes.state.newValue;
   if (changes.settings) current.settings = changes.settings.newValue;
+  if (changes.announcementRead) current.announcementRead = changes.announcementRead.newValue || {};
   render();
 });
 

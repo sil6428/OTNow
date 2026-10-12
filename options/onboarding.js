@@ -43,12 +43,12 @@ share.addEventListener("click", async () => {
     if (!response?.ok) throw new Error(response?.error || "Anonymous statistics could not be enabled.");
     const position = Number(response.report?.reportingPosition);
     if (Number.isSafeInteger(position) && position > 0) {
-      successHeading.textContent = `You are the ${ordinal(position)} person to opt in.`;
-      successCopy.textContent = `Your light is now signal #${position} in the public OTNow community field.`;
+      successHeading.textContent = "Anonymous statistics enabled";
+      successCopy.textContent = `This installation is the ${ordinal(position)} current opt-in. Only the disclosed numerical totals will be reported.`;
     }
     actions.hidden = true;
     success.hidden = false;
-    status.textContent = "Anonymous statistics are enabled. You can view the public totals or close this tab.";
+    status.textContent = "Your choice is saved. You can view the public totals or close this tab.";
   } catch (error) {
     status.textContent = String(error?.message || error);
     busy(false);
@@ -65,4 +65,8 @@ decline.addEventListener("click", async () => {
   }
   status.textContent = "Nothing was shared. You can close this tab or enable it later in Settings.";
   actions.hidden = true;
+  successHeading.textContent = "Nothing was shared";
+  successCopy.textContent = "OTNow remains fully available. You can enable anonymous statistics later in Settings.";
+  statsLink.hidden = true;
+  success.hidden = false;
 });

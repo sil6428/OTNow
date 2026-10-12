@@ -10,6 +10,7 @@ export const DATE_GROUPS = [
 ];
 
 export const TYPE_GROUPS = [
+  ["announcement", "Announcements"],
   ["assignment", "Assignments"],
   ["quiz", "Quizzes"],
   ["discussion", "Discussions"],
@@ -35,4 +36,15 @@ export function countPlannerTypes(items) {
   const counts = Object.fromEntries(TYPE_GROUPS.map(([id]) => [id, 0]));
   for (const item of items) counts[item.type in counts ? item.type : "other"] += 1;
   return counts;
+}
+
+export function plannerItemsForView(items = [], view = "deadlines") {
+  if (view === "completed") return items.filter((item) => item.status !== "open");
+  return items.filter((item) => item.status === "open");
+}
+
+export function completionSource(item = {}) {
+  if (item.submitted || item.canvasComplete) return "canvas";
+  if (item.manuallyComplete || item.status === "done") return "otnow";
+  return null;
 }

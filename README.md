@@ -33,17 +33,17 @@ If Chrome reports that it cannot read the manifest, the selected folder is one l
 
 - Reads the current student's active courses and Canvas planner items.
 - Groups dated work by **type** or by **due-date range**.
-- Filters by course and item type, including assignments, quizzes, discussions, events, planner notes, and other dated Canvas items.
+- Filters by course and item type, including announcements, assignments, quizzes, discussions, events, planner notes, and other dated Canvas items.
+- Lets students locally mark visible announcements read by course, undo the latest bulk action, and show read announcements again without changing Canvas.
 - Provides a Courses directory with direct links to each course's home, modules, assignments, quizzes, discussions, files, and grades.
-- Detects assignments Canvas reports as submitted or graded.
-- Lets a student locally check off other items without changing Canvas.
+- Separates completed work into its own view, identifies whether Canvas or OTNow supplied the completion state, and restores only local check-offs.
 - Lets a student apply an approved extension date to one item, updates OTNow reminders and grouping around it, and restores the original Canvas date with one action.
 - Highlights a moved due date for seven days and can notify the student.
 - Supports per-type reminder timing for assignments, quizzes, discussions, events, and planner notes.
 - Allows reminder notifications to be muted for individual courses without hiding their deadlines.
 - Keeps the last successful read available when Canvas or the network is unavailable.
 - Supports light, dark, or system appearance.
-- Shows a local-only Insights summary of deadlines organized, due-date changes detected, reminders delivered, manual check-offs, successful refreshes, and days used.
+- Shows a local-only Insights summary of deadlines organized, due-date changes detected, reminders delivered, and manual check-offs.
 - Offers separate, off-by-default anonymous global statistics that send only a random installation ID, version, numerical totals, and an optional 1–5 rating after explicit consent.
 - Shows a one-time first-run consent screen with clear **Share anonymous statistics** and **Not now** choices; neither is preselected.
 - GitHub-installed copies check the public OTNow repository for a newer version and link to [step-by-step update instructions](UPDATE_GUIDE.md); Chrome Web Store copies update automatically.
@@ -57,7 +57,7 @@ If Chrome reports that it cannot read the manifest, the selected folder is one l
   - `GET /api/v1/courses`
   - `GET /api/v1/planner/items`
 - GitHub-installed copies read only OTNow's public `manifest.json` about every six hours and send no student or course information; the Chrome Web Store build disables this request because Chrome supplies automatic updates.
-- All course data, settings, manual check-offs, local deadline adjustments, reminder history, and Insights totals live in `chrome.storage.local` on the student's computer.
+- All course data, settings, manual check-offs, locally read announcement markers, local deadline adjustments, reminder history, and Insights totals live in `chrome.storage.local` on the student's computer.
 - There is no analytics SDK, ad code, behavioural tracker, or OTNow account. Optional anonymous numerical statistics use a narrow, separately granted host permission and can be deleted by opting out.
 - OTNow is not affiliated with or endorsed by Ontario Tech University or Instructure.
 

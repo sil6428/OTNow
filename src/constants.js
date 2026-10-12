@@ -12,13 +12,16 @@ export const UPDATE_CHECK_ENABLED = true;
 export const MOVED_DATE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 export const REPOSITORY_URL = "https://github.com/sil6428/OTNow";
 export const SUPPORT_URL = "";
+export const FEEDBACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw/viewform";
+export const SECURITY_REPORT_URL = `${REPOSITORY_URL}/security/advisories/new`;
+export const SUPPORT_PAGE_URL = "";
 export const UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/sil6428/OTNow/main/manifest.json";
 export const UPDATE_GUIDE_URL = `${REPOSITORY_URL}/blob/main/UPDATE_GUIDE.md`;
 export const GLOBAL_STATS_ORIGIN = "https://otnow-stats.sil6428-archtech.workers.dev";
 export const GLOBAL_STATS_API_URL = `${GLOBAL_STATS_ORIGIN}/api/report`;
 
 export const DEFAULT_SETTINGS = {
-  schemaVersion: 4,
+  schemaVersion: 5,
   theme: "light",
   notificationsEnabled: true,
   notifyMovedDates: true,
@@ -26,6 +29,7 @@ export const DEFAULT_SETTINGS = {
   statsOnboardingSeen: false,
   showCompleted: false,
   reminderLeads: {
+    announcement: -1,
     assignment: 24 * 60,
     quiz: 12 * 60,
     discussion: 12 * 60,
@@ -37,6 +41,7 @@ export const DEFAULT_SETTINGS = {
 };
 
 export const TYPE_LABELS = {
+  announcement: "Announcement",
   assignment: "Assignment",
   quiz: "Quiz",
   discussion: "Discussion",

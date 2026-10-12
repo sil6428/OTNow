@@ -1,6 +1,6 @@
 # OTNow 1.6 release plan
 
-Status: scope planning started October 11, 2026. No 1.6 feature code or version bump has been made yet.
+Status: local 1.6.0 development candidate implemented October 12, 2026. It has not been pushed, deployed, submitted, or registered as the uninstall destination.
 
 Target: November 2026, with school work taking priority. Reading week can be used for the evidence, design, and implementation work below, but it does not remove the release freeze or verification gates. If representative Canvas data is unavailable or the announcement classification is unreliable, ship the completed-items, onboarding, feedback, and support improvements without announcement classification rather than guessing.
 
@@ -154,14 +154,14 @@ announcementRead = {
 9. A manually completed item offers **Move back to Deadlines**; a Canvas-completed item explains that its status comes from Canvas and cannot be reversed in OTNow.
 10. The bottom of the panel includes restrained **Feedback** and **Support future OTNow development** links only when their validated URLs are configured.
 
-## Required evidence before implementation
+## Evidence and remaining gates
 
-- At least two sanitized announcement response examples from Canvas, preferably from different courses.
-- At least one generic course-item response that is not an announcement, to protect the fallback.
-- Confirmation of whether announcement entries always include a due/plannable date. The current model intentionally drops undated items.
-- Confirmation that the stable item ID remains the same across refreshes.
+- Canvas's official Planner API documents `announcement` as an explicit `plannable_type`, and the signed-in Ontario Tech dashboard confirmed that the current dated notices render through Canvas discussion-topic links. The implementation classifies only that explicit type and never guesses from a title.
+- Sanitized fixtures cover two Canvas-declared announcements, a normal discussion whose title contains “announcement,” and an ambiguous wiki-page item that must remain **Course item**.
+- The existing model continues to accept only dated planner entries. The live Ontario Tech examples were present in the dated To Do feed; undated announcements remain outside OTNow's current planner scope.
+- The local key reuses Canvas's documented `plannable_type` plus `plannable_id`, producing stable IDs such as `announcement:<id>` without storing announcement text in the read-state record.
 - Canonical Ko-fi URL.
-- Final live URL for the uninstall/support page.
+- Deployment and verification of the new `/support` or `/uninstall` route before registering it with Chrome.
 - A direct Brave Split View test confirming which tab receives temporary `activeTab` access when OTNow is opened from the toolbar.
 
 ## Verification matrix
@@ -266,11 +266,10 @@ announcementRead = {
 13. The public dashboard identifies the Chrome Web Store rating, count, link, and check date separately from OTNow's own anonymous rating.
 14. Personal Insights shows only outcome-oriented statistics and no longer spends space on successful refreshes or days used.
 
-## Open blockers
+## Open blockers after local implementation
 
-- Representative sanitized Canvas announcement and non-announcement planner payloads.
 - Canonical Ko-fi URL.
-- Final location for the themed uninstall/support route.
+- Live deployment and verification of the themed uninstall/support route.
 - Brave Split View behaviour for temporary active-page access; this blocks only automatic page-theme matching, not the rest of 1.6.
 - Continued availability of the public Chrome Web Store markup used by the isolated daily refresh; parser failure must retain the last known good value and cannot block the dashboard.
 

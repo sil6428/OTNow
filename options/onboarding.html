@@ -7,37 +7,67 @@
     <link rel="stylesheet" href="onboarding.css">
   </head>
   <body>
+    <header class="topbar">
+      <a class="brand" href="../panel/panel.html" aria-label="OTNow"><span class="brand-mark" aria-hidden="true"></span>OTNow</a>
+      <span>First-run privacy choice</span>
+    </header>
     <main>
-      <p class="eyebrow">Welcome to OTNow</p>
-      <h1>Help improve OTNow?</h1>
-      <p class="lead">You can optionally share anonymous numerical totals that help measure whether OTNow is useful. Nothing is shared unless you choose to enable it.</p>
+      <header class="hero">
+        <p class="eyebrow">Optional and off by default</p>
+        <h1>Choose whether to share anonymous totals.</h1>
+        <p class="lead">OTNow works fully either way. Nothing is shared unless you choose to enable it, and you can change your choice later in Settings.</p>
+      </header>
 
-      <section aria-labelledby="sent-heading">
-        <h2 id="sent-heading">What would be shared</h2>
-        <p>A random installation ID, the OTNow version, and totals for broad item types, reminders, moved deadlines, manual check-offs, successful refreshes, and days used.</p>
-      </section>
+      <div class="information-grid">
+        <section class="information-card" aria-labelledby="local-heading">
+          <span class="section-number" aria-hidden="true">01</span>
+          <div>
+            <h2 id="local-heading">What stays local</h2>
+            <p>Names, courses, coursework titles, URLs, due dates, grades, emails, student numbers, Canvas IDs, passwords, and authentication information stay in this Chrome profile.</p>
+          </div>
+        </section>
 
-      <section aria-labelledby="never-heading">
-        <h2 id="never-heading">What is never shared</h2>
-        <p>Names, course names or codes, coursework titles, URLs, due dates, grades, emails, student numbers, Canvas IDs, passwords, or authentication information.</p>
-      </section>
-
-      <p class="control">If enabled, OTNow reports about once a day. You can turn it off later in Settings, which deletes this installation's aggregate row.</p>
-
-      <div class="actions" id="actions">
-        <button id="share" class="primary" type="button">Share anonymous statistics</button>
-        <button id="decline" class="secondary" type="button">Not now</button>
+        <section class="information-card" aria-labelledby="shared-heading">
+          <span class="section-number" aria-hidden="true">02</span>
+          <div>
+            <h2 id="shared-heading">What would be shared</h2>
+            <p>A random installation ID, the OTNow version, and numerical totals for item types, reminders, moved deadlines, manual check-offs, successful refreshes, and days used.</p>
+          </div>
+        </section>
       </div>
-      <p id="status" class="status" role="status"></p>
-      <section id="success" class="success" hidden aria-live="polite">
-        <p class="signal-mark" aria-hidden="true"></p>
+
+      <section class="example" aria-labelledby="example-heading">
         <div>
-          <h2 id="success-heading">Your anonymous signal is live.</h2>
-          <p id="success-copy">Thanks for helping measure how OTNow is used.</p>
-          <a id="stats-link" class="stats-link" target="_blank" rel="noreferrer">View OTNow - Stats</a>
+          <p class="example-label">Example report</p>
+          <h2 id="example-heading">Numbers, not coursework</h2>
+        </div>
+        <pre aria-label="Example anonymous numerical report"><code>assignments  18
+quizzes       4
+reminders     3
+moved dates   1</code></pre>
+      </section>
+
+      <section class="decision" aria-labelledby="decision-heading">
+        <div class="decision-copy">
+          <h2 id="decision-heading">Your choice</h2>
+          <p>If enabled, OTNow reports about once a day. Turning it off later asks the service to delete this installation's aggregate row.</p>
+        </div>
+        <div class="actions" id="actions">
+          <button id="share" class="choice" type="button">Share anonymous statistics</button>
+          <button id="decline" class="choice" type="button">Not now</button>
+        </div>
+        <p id="status" class="status" role="status"></p>
+        <div id="success" class="success" hidden aria-live="polite">
+          <span class="success-mark" aria-hidden="true">✓</span>
+          <div>
+            <h2 id="success-heading">Choice saved</h2>
+            <p id="success-copy">Anonymous statistics are enabled.</p>
+            <a id="stats-link" class="stats-link" target="_blank" rel="noopener noreferrer">View OTNow Stats</a>
+          </div>
         </div>
       </section>
-      <a href="../PRIVACY.md" target="_blank" rel="noreferrer">Read the privacy policy</a>
+
+      <footer><a href="../PRIVACY.md" target="_blank" rel="noopener noreferrer">Read the full privacy policy</a></footer>
     </main>
     <script type="module" src="onboarding.js"></script>
   </body>

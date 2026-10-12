@@ -31,8 +31,10 @@ const requiredFiles = [
   "src/metrics.js",
   "src/global-stats.js",
   "src/deadline-adjustments.js",
+  "src/announcement-read.js",
   "options/onboarding.html",
   "options/onboarding.js",
+  "stats-worker/src/support-assets.js",
 ];
 await Promise.all(requiredFiles.map((file) => access(resolve(root, file), constants.R_OK)));
 
@@ -74,13 +76,26 @@ for (const workflow of ["quality-checks.yml", "release.yml"]) {
 
 const panelSource = await readFile(resolve(root, "panel/panel.js"), "utf8");
 assert.match(panelSource, /renderInsights/, "Side panel must expose the local Insights view");
+assert.match(panelSource, /renderCompleted/, "Side panel must expose a dedicated Completed view");
+assert.match(panelSource, /panel:mark-announcements-read/, "Side panel must expose local announcement read controls");
 assert.match(panelSource, /panel:set-deadline/, "Side panel must expose local deadline adjustments");
+assert.doesNotMatch(panelSource, /insightRow\("Successful refreshes"/, "Personal Insights must not display refresh vanity metrics");
+assert.doesNotMatch(panelSource, /insightRow\("Days used"/, "Personal Insights must not display active-day vanity metrics");
+
+const panelHtml = await readFile(resolve(root, "panel/panel.html"), "utf8");
+assert.match(panelHtml, /id="feedback-link"/, "Side panel must expose the feedback form");
+
+const optionsHtml = await readFile(resolve(root, "options/options.html"), "utf8");
+assert.doesNotMatch(optionsHtml, /id="show-completed"/, "Completed work belongs in its dedicated view, not a Settings switch");
 
 const onboarding = await readFile(resolve(root, "options/onboarding.html"), "utf8");
 assert.match(onboarding, /Nothing is shared unless you choose to enable it/i);
+assert.match(onboarding, /Optional and off by default/i);
+assert.match(onboarding, /What stays local/i);
+assert.match(onboarding, /Example report/i);
 assert.match(onboarding, /Share anonymous statistics/i);
 assert.match(onboarding, /Not now/i);
-assert.match(onboarding, /View OTNow - Stats/i);
+assert.match(onboarding, /View OTNow Stats/i);
 assert.doesNotMatch(onboarding, /checked/i, "First-run consent must not be preselected");
 
 console.log(`OTNow package check passed (${requiredFiles.length} required files).`);

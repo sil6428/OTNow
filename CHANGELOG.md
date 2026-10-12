@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.6.0 — Local development candidate (2026-10-12)
+
+- Recognizes Canvas-declared announcement planner items without guessing from titles, and keeps ambiguous items under **Course item**.
+- Adds course-aware **Mark announcements read**, exact one-step Undo, and a persistent **Show read announcements** recovery control. Read state stays local and never changes Canvas.
+- Adds a dedicated **Completed** view that separates Canvas-reported completion from OTNow manual check-offs and restores only local check-offs.
+- Makes the established feedback form available from the panel footer and Insights, with security reports directed to GitHub's private vulnerability route.
+- Rebuilds the anonymous-statistics decision page with clearer local/shared boundaries and equal, unselected choices.
+- Removes refresh and days-used vanity cards from personal Insights without deleting their saved counters.
+- Adds themed `/support` and `/uninstall` routes to the statistics Worker. Chrome uninstall registration remains deferred until the route is deployed and verified.
+- Keeps the Ko-fi link hidden until the canonical URL is confirmed and adds no new permissions.
+
 ## 2026-10-04
 
 - Published OTNow v1.5.0 on the Chrome Web Store.

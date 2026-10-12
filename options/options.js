@@ -1,7 +1,6 @@
 import { GLOBAL_STATS_ORIGIN, TYPE_LABELS } from "../src/constants.js";
 
 const theme = document.querySelector("#theme");
-const showCompleted = document.querySelector("#show-completed");
 const notifications = document.querySelector("#notifications");
 const movedDates = document.querySelector("#moved-dates");
 const leadSettings = document.querySelector("#lead-settings");
@@ -105,7 +104,6 @@ async function load() {
   ({ settings, state, globalStats } = await chrome.runtime.sendMessage({ type: "options:get" }));
   theme.value = settings.theme;
   applyTheme(settings.theme);
-  showCompleted.checked = settings.showCompleted;
   notifications.checked = settings.notificationsEnabled;
   movedDates.checked = settings.notifyMovedDates;
   anonymousStats.checked = settings.shareAnonymousStats;
@@ -121,7 +119,6 @@ async function load() {
 }
 
 theme.addEventListener("change", () => { settings.theme = theme.value; applyTheme(settings.theme); queueSave(); });
-showCompleted.addEventListener("change", () => { settings.showCompleted = showCompleted.checked; queueSave(); });
 notifications.addEventListener("change", () => { settings.notificationsEnabled = notifications.checked; queueSave(); });
 movedDates.addEventListener("change", () => { settings.notifyMovedDates = movedDates.checked; queueSave(); });
 
