@@ -1,6 +1,6 @@
 import { DASHBOARD_PAGE, DASHBOARD_SCRIPT } from "./dashboard-assets.js";
 import { PRIVACY_PAGE } from "./privacy-assets.js";
-import { SUPPORT_PAGE } from "./support-assets.js";
+import { SUPPORT_PAGE, SUPPORT_SCRIPT, UNINSTALL_PAGE } from "./support-assets.js";
 
 const MAX_BODY_BYTES = 4096;
 const MAX_RATING_BYTES = 256;
@@ -695,7 +695,9 @@ export default {
     }
     if ((url.pathname === "/" || url.pathname === "/dashboard") && request.method === "GET") return htmlResponse(DASHBOARD_PAGE);
     if ((url.pathname === "/privacy" || url.pathname === "/privacy/") && request.method === "GET") return htmlResponse(PRIVACY_PAGE);
-    if (["/support", "/support/", "/uninstall", "/uninstall/"].includes(url.pathname) && request.method === "GET") return htmlResponse(SUPPORT_PAGE);
+    if (["/support", "/support/"].includes(url.pathname) && request.method === "GET") return htmlResponse(SUPPORT_PAGE);
+    if (["/uninstall", "/uninstall/"].includes(url.pathname) && request.method === "GET") return htmlResponse(UNINSTALL_PAGE);
+    if (url.pathname === "/support.js" && request.method === "GET") return htmlResponse(SUPPORT_SCRIPT, "text/javascript; charset=utf-8");
     if (url.pathname === "/dashboard.js" && request.method === "GET") return htmlResponse(DASHBOARD_SCRIPT, "text/javascript; charset=utf-8");
     if (url.pathname === "/favicon.svg" && request.method === "GET") return htmlResponse(FAVICON_SVG, "image/svg+xml; charset=utf-8");
     return json({ ok: false, error: "Not found" }, 404);

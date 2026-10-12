@@ -56,9 +56,18 @@ try {
     share: document.querySelector("#share")?.textContent,
     decline: document.querySelector("#decline")?.textContent,
     status: document.querySelector("#status")?.textContent,
+    reactiveWash: Boolean(document.querySelector(".wash")),
   }));
-  if (onboarding.heading !== "Choose whether to share anonymous totals." || !onboarding.share || !onboarding.decline || onboarding.status) {
+  if (onboarding.heading !== "Help improve OTNow?" || !onboarding.share || !onboarding.decline || onboarding.status || !onboarding.reactiveWash) {
     throw new Error("First-run consent screen is incomplete or preselected.");
+  }
+  await page.mouse.move(140, 180);
+  const pointerPosition = await page.evaluate(() => ({
+    x: document.documentElement.style.getPropertyValue("--x"),
+    y: document.documentElement.style.getPropertyValue("--y"),
+  }));
+  if (pointerPosition.x !== "140px" || pointerPosition.y !== "180px") {
+    throw new Error("First-run consent background is not reacting to the pointer.");
   }
   await page.locator("#decline").click();
   await page.waitForFunction(() => document.querySelector("#status")?.textContent.includes("Nothing was shared"));

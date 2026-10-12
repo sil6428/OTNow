@@ -34,6 +34,7 @@ const requiredFiles = [
   "src/announcement-read.js",
   "options/onboarding.html",
   "options/onboarding.js",
+  "options/reactive-background.js",
   "stats-worker/src/support-assets.js",
 ];
 await Promise.all(requiredFiles.map((file) => access(resolve(root, file), constants.R_OK)));
@@ -96,6 +97,8 @@ assert.match(onboarding, /Example report/i);
 assert.match(onboarding, /Share anonymous statistics/i);
 assert.match(onboarding, /Not now/i);
 assert.match(onboarding, /View OTNow Stats/i);
+assert.match(onboarding, /class="wash"/i, "First-run consent must include the reactive background wash");
+assert.match(onboarding, /reactive-background\.js/i, "First-run consent must load the reactive background");
 assert.doesNotMatch(onboarding, /checked/i, "First-run consent must not be preselected");
 
 console.log(`OTNow package check passed (${requiredFiles.length} required files).`);

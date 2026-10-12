@@ -3,29 +3,55 @@ const STORE_URL = "https://chromewebstore.google.com/detail/otnow/ekaachncjiajgi
 const REPOSITORY_URL = "https://github.com/sil6428/OTNow";
 const SECURITY_URL = `${REPOSITORY_URL}/security/advisories/new`;
 
-export const SUPPORT_PAGE = String.raw`<!doctype html>
+const PAGE_STYLE = String.raw`
+  :root{color-scheme:dark;--bg:#05070a;--surface:#0b0e13;--text:#f7f8fa;--muted:#9298a2;--line:rgba(255,255,255,.12);--blue:#58baff;--orange:#ff7148;--green:#63daa1}
+  *{box-sizing:border-box}body{min-height:100vh;margin:0;background:var(--bg);color:var(--text);font:15px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}a{color:inherit}.wash{position:fixed;inset:0;pointer-events:none;background:radial-gradient(520px circle at var(--x,58%) var(--y,35%),rgba(88,186,255,.065),transparent 70%);transition:background .1s linear}.bar,.page{position:relative;z-index:1}.bar{border-bottom:1px solid var(--line);background:rgba(5,7,10,.94)}.nav{display:flex;width:min(680px,calc(100% - 36px));min-height:58px;margin:auto;align-items:center;justify-content:space-between}.brand{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:760;text-decoration:none}.mark{width:8px;height:8px;border-radius:2px;background:var(--orange)}.nav>a:last-child{color:var(--muted);font-size:11px;text-decoration:none}.page{display:grid;width:min(680px,calc(100% - 32px));min-height:calc(100vh - 59px);margin:auto;padding:40px 0;place-items:center}.panel{width:100%;padding:32px;border:1px solid var(--line);border-radius:12px;background:rgba(11,14,19,.88)}.eyebrow{margin:0 0 8px;color:#a5d8f8;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}h1{margin:0;font-size:clamp(30px,5vw,40px);font-weight:650;line-height:1.08;letter-spacing:-.04em}.lead{max-width:590px;margin:14px 0 24px;color:var(--muted);font-size:15px}.notice{margin:0;padding:15px 0;border-block:1px solid var(--line);color:#b8bec6;font-size:12px}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:20px}.button{padding:9px 13px;border:1px solid var(--line);border-radius:7px;color:#d5dae0;font-size:12px;font-weight:750;text-decoration:none}.button.primary{border-color:var(--blue);background:var(--blue);color:#06111f}.button:hover,.button:focus-visible{border-color:#fff;color:#fff}.button.primary:hover,.button.primary:focus-visible{color:#06111f;filter:brightness(1.06)}.help{margin:18px 0 0;color:#747b85;font-size:11px}.help a{color:#aeb5be}.help a:hover,.help a:focus-visible{color:#fff}@media(max-width:560px){.page{align-items:start;padding-top:24px}.panel{padding:24px 20px}.actions{flex-direction:column}.button{text-align:center}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.wash{transition:none}}
+`;
+
+function page({ title, eyebrow, heading, lead, notice, actions, help }) {
+  return String.raw`<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="OTNow feedback, help, and reinstall links.">
   <meta name="theme-color" content="#05070a">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <title>OTNow - Feedback and Support</title>
-  <style>
-    :root{color-scheme:dark;--bg:#05070a;--surface:#0b0e13;--text:#f7f8fa;--muted:#9298a2;--line:rgba(255,255,255,.11);--blue:#58baff;--orange:#ff7148;--green:#63daa1}*{box-sizing:border-box}body{min-height:100vh;margin:0;background:radial-gradient(780px circle at 80% 0,rgba(88,186,255,.12),transparent 62%),radial-gradient(620px circle at 5% 75%,rgba(255,113,72,.07),transparent 65%),var(--bg);color:var(--text);font:15px/1.65 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}a{color:inherit}.shell{width:min(980px,calc(100% - 42px));margin:auto}.top{border-bottom:1px solid rgba(255,255,255,.08);background:rgba(5,7,10,.82);backdrop-filter:blur(20px)}.nav{display:flex;min-height:66px;align-items:center;justify-content:space-between;gap:20px}.brand{display:inline-flex;align-items:center;gap:10px;font-size:13px;font-weight:750;text-decoration:none}.mark{position:relative;width:20px;height:20px;border:1.5px solid var(--blue);border-radius:6px;transform:rotate(45deg)}.mark:after{position:absolute;inset:6px;content:"";border-radius:2px;background:var(--orange)}.nav a:last-child{color:var(--muted);font-size:11px;text-decoration:none}.hero{padding:86px 0 46px}.eyebrow{margin:0 0 12px;color:#a5d8f8;font-size:10px;font-weight:800;letter-spacing:.15em;text-transform:uppercase}.eyebrow:before{display:inline-block;width:24px;height:1px;margin:0 9px 3px 0;content:"";background:var(--blue)}h1{max-width:760px;margin:0;font-size:clamp(42px,7vw,72px);font-weight:630;line-height:.98;letter-spacing:-.06em}.lead{max-width:680px;margin:22px 0 0;color:var(--muted);font-size:17px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 0 80px}.card{padding:26px;border:1px solid var(--line);border-radius:18px;background:rgba(11,14,19,.82)}.card.wide{grid-column:1/-1}.number{display:block;margin-bottom:16px;color:var(--blue);font-size:10px;font-weight:800;letter-spacing:.12em}h2{margin:0 0 9px;font-size:20px;letter-spacing:-.03em}.card p{margin:0;color:#afb5bd}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:20px}.button{padding:9px 12px;border:1px solid var(--line);border-radius:999px;color:#d5dae0;font-size:11px;font-weight:750;text-decoration:none}.button.primary{border-color:var(--blue);background:var(--blue);color:#06111f}.button.security{border-color:rgba(99,218,161,.25);color:#bff4d8}.button:hover,.button:focus-visible{border-color:#fff;color:#fff}.button.primary:hover,.button.primary:focus-visible{color:#06111f}.note{margin-top:16px!important;color:#727983!important;font-size:11px}.footer{display:flex;justify-content:space-between;gap:20px;padding:24px 0 32px;border-top:1px solid var(--line);color:#656c76;font-size:10px}.footer a{text-decoration:none}@media(max-width:680px){.shell{width:min(100% - 28px,980px)}.nav{min-height:58px}.hero{padding:60px 0 34px}.lead{font-size:15px}.grid{grid-template-columns:1fr;padding-bottom:56px}.card.wide{grid-column:auto}.footer{align-items:flex-start;flex-direction:column}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
-  </style>
+  <title>${title}</title>
+  <style>${PAGE_STYLE}</style>
 </head>
 <body>
-  <nav class="top"><div class="shell nav"><a class="brand" href="/dashboard"><span class="mark" aria-hidden="true"></span><span>OTNow · Support</span></a><a href="/privacy">Privacy policy</a></div></nav>
-  <main class="shell">
-    <header class="hero"><p class="eyebrow">Feedback and support</p><h1>Leaving, troubleshooting, or sharing an idea?</h1><p class="lead">Everything here is optional. Uninstalling OTNow removes its local extension data through Chrome; it does not change or delete anything in Canvas.</p></header>
-    <section class="grid">
-      <article class="card"><span class="number">01</span><h2>Send feedback</h2><p>Report a bug, describe a confusing interaction, or suggest an improvement through the private OTNow feedback form.</p><div class="actions"><a class="button primary" href="${FEEDBACK_URL}">Open feedback form ↗</a></div><p class="note">Remove student numbers, grades, private course content, and screenshots containing personal information before submitting.</p></article>
-      <article class="card"><span class="number">02</span><h2>Reinstall or get help</h2><p>The Chrome Web Store provides automatic updates. The GitHub repository contains setup information, known limitations, and release notes.</p><div class="actions"><a class="button" href="${STORE_URL}">Chrome Web Store ↗</a><a class="button" href="${REPOSITORY_URL}">GitHub help ↗</a></div></article>
-      <article class="card wide"><span class="number">03</span><h2>Security concerns use a private route</h2><p>Do not place suspected vulnerabilities, session details, or security-sensitive screenshots in the feedback form, server chats, or public GitHub issues.</p><div class="actions"><a class="button security" href="${SECURITY_URL}">Report a vulnerability privately ↗</a></div></article>
-    </section>
-  </main>
-  <footer class="shell footer"><span>OTNow is an independent student project.</span><span><a href="/dashboard">Statistics</a> · <a href="/privacy">Privacy</a></span></footer>
+  <div class="wash" aria-hidden="true"></div>
+  <header class="bar"><nav class="nav"><a class="brand" href="/dashboard"><span class="mark" aria-hidden="true"></span>OTNow</a><a href="/privacy">Privacy policy</a></nav></header>
+  <main class="page"><section class="panel"><p class="eyebrow">${eyebrow}</p><h1>${heading}</h1><p class="lead">${lead}</p><p class="notice">${notice}</p><div class="actions">${actions}</div><p class="help">${help}</p></section></main>
+  <script src="/support.js"></script>
 </body>
 </html>`;
+}
+
+export const SUPPORT_PAGE = page({
+  title: "OTNow - Support",
+  eyebrow: "Support",
+  heading: "How can we help?",
+  lead: "Report a problem, suggest an improvement, or find the official installation and project pages.",
+  notice: "Before sending feedback, remove student numbers, grades, private course content, and screenshots containing personal information.",
+  actions: `<a class="button primary" href="${FEEDBACK_URL}">Open feedback form ↗</a><a class="button" href="${REPOSITORY_URL}">GitHub help ↗</a><a class="button" href="${STORE_URL}">Chrome Web Store ↗</a>`,
+  help: `Found a possible security issue? <a href="${SECURITY_URL}">Report it privately through GitHub ↗</a>`,
+});
+
+export const UNINSTALL_PAGE = page({
+  title: "OTNow - Thanks for trying it",
+  eyebrow: "Thank you",
+  heading: "Thanks for trying OTNow.",
+  lead: "If something did not work or the extension was not useful for you, a short note would help make the next version better.",
+  notice: "Uninstalling OTNow removes its local extension data through Chrome. It does not change or delete anything in Canvas.",
+  actions: `<a class="button primary" href="${FEEDBACK_URL}">Share feedback ↗</a><a class="button" href="${STORE_URL}">Reinstall OTNow ↗</a>`,
+  help: `Need help instead? <a href="${REPOSITORY_URL}">Open the GitHub project ↗</a> · Security concerns use the <a href="${SECURITY_URL}">private reporting form ↗</a>`,
+});
+
+export const SUPPORT_SCRIPT = String.raw`
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (!reducedMotion) addEventListener('pointermove', function (event) {
+  document.documentElement.style.setProperty('--x', event.clientX + 'px');
+  document.documentElement.style.setProperty('--y', event.clientY + 'px');
+});
+`;

@@ -245,18 +245,40 @@ test("serves a themed privacy policy page", async () => {
   assert.match(html, /Public totals may use compact display labels/);
 });
 
-test("serves a neutral themed support and uninstall page", async () => {
-  for (const path of ["/support", "/uninstall"]) {
-    const response = await worker.fetch(new Request(`https://stats.example${path}`), aggregateEnvironment());
-    const html = await response.text();
-    assert.equal(response.status, 200);
-    assert.match(html, /<title>OTNow - Feedback and Support<\/title>/);
-    assert.match(html, /Uninstalling OTNow removes its local extension data through Chrome/);
-    assert.match(html, /Open feedback form/);
-    assert.match(html, /Chrome Web Store/);
-    assert.match(html, /Report a vulnerability privately/);
-    assert.match(html, /security\/advisories\/new/);
-  }
+test("serves a concise support page", async () => {
+  const response = await worker.fetch(new Request("https://stats.example/support"), aggregateEnvironment());
+  const html = await response.text();
+  assert.equal(response.status, 200);
+  assert.match(html, /<title>OTNow - Support<\/title>/);
+  assert.match(html, /How can we help\?/);
+  assert.match(html, /Open feedback form/);
+  assert.match(html, /Chrome Web Store/);
+  assert.match(html, /security\/advisories\/new/);
+  assert.match(html, /class="wash"/);
+  assert.match(html, /src="\/support\.js"/);
+});
+
+test("serves a concise uninstall thank-you page", async () => {
+  const response = await worker.fetch(new Request("https://stats.example/uninstall"), aggregateEnvironment());
+  const html = await response.text();
+  assert.equal(response.status, 200);
+  assert.match(html, /<title>OTNow - Thanks for trying it<\/title>/);
+  assert.match(html, /Thanks for trying OTNow/);
+  assert.match(html, /Uninstalling OTNow removes its local extension data through Chrome/);
+  assert.match(html, /Share feedback/);
+  assert.match(html, /Reinstall OTNow/);
+  assert.match(html, /security\/advisories\/new/);
+  assert.match(html, /class="wash"/);
+  assert.match(html, /src="\/support\.js"/);
+});
+
+test("serves the reactive support background script", async () => {
+  const response = await worker.fetch(new Request("https://stats.example/support.js"), aggregateEnvironment());
+  const script = await response.text();
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type"), /text\/javascript/);
+  assert.match(script, /prefers-reduced-motion/);
+  assert.match(script, /pointermove/);
 });
 
 test("serves the OTNow browser icon", async () => {

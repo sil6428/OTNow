@@ -7,68 +7,54 @@
     <link rel="stylesheet" href="onboarding.css">
   </head>
   <body>
+    <div class="wash" aria-hidden="true"></div>
     <header class="topbar">
       <a class="brand" href="../panel/panel.html" aria-label="OTNow"><span class="brand-mark" aria-hidden="true"></span>OTNow</a>
-      <span>First-run privacy choice</span>
+      <span>Privacy choice</span>
     </header>
+
     <main>
-      <header class="hero">
-        <p class="eyebrow">Optional and off by default</p>
-        <h1>Choose whether to share anonymous totals.</h1>
-        <p class="lead">OTNow works fully either way. Nothing is shared unless you choose to enable it, and you can change your choice later in Settings.</p>
-      </header>
+      <section class="consent" aria-labelledby="consent-heading">
+        <header class="intro">
+          <p class="eyebrow">Optional and off by default</p>
+          <h1 id="consent-heading">Help improve OTNow?</h1>
+          <p class="lead">OTNow works fully without sharing statistics. Nothing is shared unless you choose to enable it. If you opt in, it sends a small anonymous numerical report about once a day, and you can turn this off later in Settings.</p>
+        </header>
 
-      <div class="information-grid">
-        <section class="information-card" aria-labelledby="local-heading">
-          <span class="section-number" aria-hidden="true">01</span>
-          <div>
-            <h2 id="local-heading">What stays local</h2>
-            <p>Names, courses, coursework titles, URLs, due dates, grades, emails, student numbers, Canvas IDs, passwords, and authentication information stay in this Chrome profile.</p>
-          </div>
-        </section>
-
-        <section class="information-card" aria-labelledby="shared-heading">
-          <span class="section-number" aria-hidden="true">02</span>
-          <div>
-            <h2 id="shared-heading">What would be shared</h2>
+        <div class="disclosure">
+          <section>
+            <h2>Shared only if you opt in</h2>
             <p>A random installation ID, the OTNow version, and numerical totals for item types, reminders, moved deadlines, manual check-offs, successful refreshes, and days used.</p>
+          </section>
+          <section>
+            <h2>What stays local</h2>
+            <p>Names, courses, coursework titles, URLs, due dates, grades, emails, student numbers, Canvas IDs, passwords, and authentication information.</p>
+          </section>
+        </div>
+
+        <p class="example"><strong>Example report:</strong> 18 assignments · 4 quizzes · 3 reminders · 1 moved date</p>
+
+        <div class="decision">
+          <div class="actions" id="actions">
+            <button id="share" class="choice primary" type="button">Share anonymous statistics</button>
+            <button id="decline" class="choice" type="button">Not now</button>
           </div>
-        </section>
-      </div>
-
-      <section class="example" aria-labelledby="example-heading">
-        <div>
-          <p class="example-label">Example report</p>
-          <h2 id="example-heading">Numbers, not coursework</h2>
-        </div>
-        <pre aria-label="Example anonymous numerical report"><code>assignments  18
-quizzes       4
-reminders     3
-moved dates   1</code></pre>
-      </section>
-
-      <section class="decision" aria-labelledby="decision-heading">
-        <div class="decision-copy">
-          <h2 id="decision-heading">Your choice</h2>
-          <p>If enabled, OTNow reports about once a day. Turning it off later asks the service to delete this installation's aggregate row.</p>
-        </div>
-        <div class="actions" id="actions">
-          <button id="share" class="choice" type="button">Share anonymous statistics</button>
-          <button id="decline" class="choice" type="button">Not now</button>
-        </div>
-        <p id="status" class="status" role="status"></p>
-        <div id="success" class="success" hidden aria-live="polite">
-          <span class="success-mark" aria-hidden="true">✓</span>
-          <div>
-            <h2 id="success-heading">Choice saved</h2>
-            <p id="success-copy">Anonymous statistics are enabled.</p>
-            <a id="stats-link" class="stats-link" target="_blank" rel="noopener noreferrer">View OTNow Stats</a>
+          <p id="status" class="status" role="status"></p>
+          <div id="success" class="success" hidden aria-live="polite">
+            <span class="success-mark" aria-hidden="true">✓</span>
+            <div>
+              <h2 id="success-heading">Choice saved</h2>
+              <p id="success-copy">Anonymous statistics are enabled.</p>
+              <a id="stats-link" class="stats-link" target="_blank" rel="noopener noreferrer">View OTNow Stats</a>
+            </div>
           </div>
         </div>
-      </section>
 
-      <footer><a href="../PRIVACY.md" target="_blank" rel="noopener noreferrer">Read the full privacy policy</a></footer>
+        <footer><a href="../PRIVACY.md" target="_blank" rel="noopener noreferrer">Read the full privacy policy</a></footer>
+      </section>
     </main>
+
+    <script src="reactive-background.js" defer></script>
     <script type="module" src="onboarding.js"></script>
   </body>
 </html>
