@@ -67,6 +67,13 @@ try {
 
   if (errors.length) throw new Error(`Options page errors: ${errors.join("; ")}`);
   await page.goto(`chrome-extension://${extensionId}/panel/panel.html`);
+  await page.waitForSelector(".view-tabs");
+  if (!page.url().endsWith("/panel/panel.html")) throw new Error("The optional statistics prompt blocked the main OTNow panel.");
+  const promptText = await page.locator(".statistics-prompt").innerText();
+  if (!promptText.includes("Optional anonymous statistics") || !promptText.includes("Nothing is shared")) {
+    throw new Error("The non-blocking anonymous statistics notification is incomplete.");
+  }
+  await page.getByRole("button", { name: "Review", exact: true }).click();
   await page.waitForURL(`chrome-extension://${extensionId}/options/onboarding.html?source=panel`);
   const onboarding = await page.evaluate(() => ({
     heading: document.querySelector("h1")?.textContent,
@@ -76,7 +83,7 @@ try {
     reactiveWash: Boolean(document.querySelector(".wash")),
   }));
   if (onboarding.heading !== "Help improve OTNow?" || !onboarding.share || !onboarding.decline || onboarding.status || !onboarding.reactiveWash) {
-    throw new Error("First-run consent screen is incomplete or preselected.");
+    throw new Error("Optional statistics disclosure is incomplete or preselected.");
   }
   await page.mouse.move(140, 180);
   const pointerPosition = await page.evaluate(() => ({
@@ -84,7 +91,7 @@ try {
     y: document.documentElement.style.getPropertyValue("--y"),
   }));
   if (pointerPosition.x !== "140px" || pointerPosition.y !== "180px") {
-    throw new Error("First-run consent background is not reacting to the pointer.");
+    throw new Error("Statistics disclosure background is not reacting to the pointer.");
   }
   await page.locator("#decline").click();
   await page.waitForURL(`chrome-extension://${extensionId}/panel/panel.html`);
@@ -95,7 +102,7 @@ try {
     }),
   }));
   if (!declined.settings.statsOnboardingSeen || declined.settings.shareAnonymousStats || declined.permission) {
-    throw new Error("Declining first-run statistics did not preserve the privacy-first defaults.");
+    throw new Error("Declining optional statistics did not preserve the privacy-first defaults.");
   }
 
   await page.evaluate(async () => {
@@ -135,10 +142,22 @@ try {
       },
     });
     localStorage.removeItem("otnow:view");
+    localStorage.removeItem("otnow:group");
+    localStorage.removeItem("otnow:completed-group");
+    localStorage.removeItem("otnow:completed-type");
+    localStorage.removeItem("otnow:organizer-open:deadlines");
+    localStorage.removeItem("otnow:organizer-open:completed");
   });
 
   await page.goto(`chrome-extension://${extensionId}/panel/panel.html`);
   await page.waitForSelector(".view-tabs");
+  const deadlineOrganizer = page.locator("details.organizer");
+  const deadlineGroup = deadlineOrganizer.locator(".control").nth(2).locator("select");
+  if (!(await deadlineOrganizer.evaluate((node) => node.open))) throw new Error("Deadline organization should start expanded.");
+  if (await deadlineGroup.inputValue() !== "date") throw new Error("Fresh installs should group deadlines by date.");
+  await deadlineOrganizer.locator("summary").click();
+  if (await deadlineOrganizer.evaluate((node) => node.open)) throw new Error("Deadline organization could not be collapsed.");
+  await deadlineOrganizer.locator("summary").click();
   const initialPanel = await page.locator("#app").innerText();
   if (!initialPanel.includes("Announcements") || !initialPanel.includes("Mark 1 announcement read")) {
     throw new Error("Announcement controls are missing from the deadline view.");
@@ -150,12 +169,27 @@ try {
   await page.getByRole("button", { name: "Undo" }).click();
   await page.waitForFunction(async () => !((await chrome.storage.local.get("announcementRead")).announcementRead?.["announcement:1"]));
   await page.getByRole("button", { name: "Mark Sanitized notice read" }).click();
+  await page.waitForSelector("[data-announcement-status]");
+  await page.waitForSelector("[data-announcement-status]", { state: "detached", timeout: 8_000 });
   await page.getByRole("button", { name: "Show 1 read announcement" }).click();
   await page.waitForFunction(() => document.querySelector("#app")?.innerText.includes("Read in OTNow"));
   await page.getByRole("button", { name: "Mark Sanitized notice unread" }).click();
   await page.waitForFunction(async () => !((await chrome.storage.local.get("announcementRead")).announcementRead?.["announcement:1"]));
 
   await page.getByRole("button", { name: /Completed/ }).click();
+  const completedOrganizer = page.locator("details.organizer");
+  const completedType = completedOrganizer.locator(".control").nth(1).locator("select");
+  const completedGroup = completedOrganizer.locator(".control").nth(2).locator("select");
+  if (!(await completedOrganizer.evaluate((node) => node.open))) throw new Error("Completed organization should start expanded.");
+  if (await completedOrganizer.locator("select").count() !== 3) throw new Error("Completed view is missing course, type, or grouping controls.");
+  if (await completedGroup.inputValue() !== "date") throw new Error("Completed work should default to due-date grouping.");
+  await completedType.selectOption("note");
+  const filteredCompleted = await page.locator("#app").innerText();
+  if (!filteredCompleted.includes("Local check-off") || filteredCompleted.includes("Submitted item")) {
+    throw new Error("Completed type filtering did not isolate the requested item type.");
+  }
+  await completedOrganizer.locator(".control").nth(1).locator("select").selectOption("all");
+  await completedOrganizer.locator(".control").nth(2).locator("select").selectOption("type");
   const completedPanel = await page.locator("#app").innerText();
   if (!completedPanel.includes("Completed in Canvas") || !completedPanel.includes("Checked off in OTNow")) {
     throw new Error("Completed view does not distinguish Canvas and local completion.");

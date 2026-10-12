@@ -28,6 +28,7 @@ Make announcement-like Canvas planner entries understandable and dismissible wit
 - Treat “read” as an OTNow display preference stored locally. It does not delete content or change Canvas.
 - Hide locally read announcements from the normal deadline list while leaving assignments, quizzes, discussions, events, and notes untouched.
 - Offer one brief **Undo** action after a bulk change. Undo must restore the exact prior set, not simply mark every announcement unread.
+- Remove the confirmation and Undo notice automatically after six seconds so read actions do not accumulate permanent status rows.
 - Provide a discoverable way to show previously read announcements again so the action is reversible after the brief Undo period.
 
 ### 3. Support and uninstall route
@@ -59,16 +60,18 @@ Make announcement-like Canvas planner entries understandable and dismissible wit
 - Display the source of completion clearly: **Completed in Canvas** or **Checked off in OTNow**.
 - Allow only OTNow manual check-offs to be restored to Deadlines. Canvas-reported completion is read-only because OTNow must not pretend it can reverse a Canvas submission or grade state.
 - Preserve course filtering and provide a useful empty state when no completed items are available.
+- Give Completed its own type filter plus **By due date** and **By type** grouping, while retaining the course filter.
 - Keep the existing `manualDone` record and toggle path; migrate the interface without deleting prior manual check-offs.
 - Remove the redundant **Show completed items** control from Settings after upgrade behavior is verified. A stored legacy value may remain harmlessly during migration.
 
 ### 7. Redesign the anonymous-statistics decision page
 
-- Do not open a separate statistics tab during installation. Show the choice inside the side panel the first time the student actually opens OTNow, after the browser's own permission prompts are finished.
-- Use a compact consent form rather than a product showcase: a clear **Optional and off by default** label, short disclosure, privacy-policy link, and the two decisions.
-- Match the dark statistics and uninstall pages, with the same restrained particle field and cursor-reactive wash for a cohesive first impression. Keep the text surface calm and readable, and disable decorative motion when reduced motion is requested.
+- Do not open a separate statistics tab during installation or block access to deadlines. Show a compact, non-blocking notification inside the normal panel the first time the student opens OTNow, after the browser's own permission prompts are finished.
+- The notification offers **Review** and **Not now**. **Review** opens the full disclosure; only that disclosure offers **Share anonymous statistics**.
+- Keep the full disclosure a compact consent form rather than a product showcase: a clear **Optional and off by default** label, short disclosure, privacy-policy link, and the two decisions.
+- Match the disclosure to the dark statistics and uninstall pages, with the same restrained particle field and cursor-reactive wash. Keep the text surface calm and readable, and disable decorative motion when reduced motion is requested.
 - Keep **Share anonymous statistics** and **Not now** equally understandable and immediately available. Do not use countdowns, preselection, guilt, deceptive colour contrast, or repeated prompts.
-- Record a decision only after the student selects it. **Not now** sends nothing, returns directly to the OTNow panel, and does not interrupt later opens.
+- Record a decision only after the student enables sharing or selects **Not now** in either location. **Not now** sends nothing and does not interrupt later opens.
 - When sharing is off, keep a persistent **Review anonymous statistics** action in Insights so the student can reconsider without being prompted again.
 - Preserve the privacy-policy link and provide a clear status before returning to OTNow after either choice.
 - Meet keyboard, screen-reader, reduced-motion, high-contrast, 200% zoom, and narrow-window requirements.
@@ -120,7 +123,7 @@ This is a prototype and release decision, not yet frozen 1.6 scope:
 - `src/constants.js` owns labels, reminder defaults, and the currently blank Ko-fi URL.
 - `src/view-model.js` owns type groups and counts.
 - `panel/panel.js` renders filters, groups, items, and the prepared support link.
-- `options/onboarding.html`, `options/onboarding.css`, `options/onboarding.js`, and `options/reactive-background.js` own the dark first-open anonymous-statistics choice and its restrained visual effects.
+- `panel/panel.js` owns the non-blocking first-open statistics notification. `options/onboarding.html`, `options/onboarding.css`, `options/onboarding.js`, and `options/reactive-background.js` own the optional full disclosure and its restrained visual effects.
 - `options/options.html` and `options/options.js` currently own the legacy **Show completed items** control.
 - `stats-worker/src/dashboard-assets.js` owns the public dashboard presentation; `stats-worker/src/worker.js` and the D1 migration own the isolated daily Store-rating refresh and last-known-good value.
 - `src/storage.js` owns local settings and user state.
@@ -155,6 +158,7 @@ announcementRead = {
 8. **Completed** appears beside Deadlines, Courses, and Insights with its own count.
 9. A manually completed item offers **Move back to Deadlines**; a Canvas-completed item explains that its status comes from Canvas and cannot be reversed in OTNow.
 10. The bottom of the panel includes restrained **Feedback** and **Support future OTNow development** links only when their validated URLs are configured.
+11. Deadline and Completed organization controls start expanded, can be collapsed independently, and remember that local preference. A new installation groups deadlines by date.
 
 ## Evidence and remaining gates
 
@@ -183,6 +187,7 @@ announcementRead = {
 - A selected course never changes another course's announcements.
 - All-courses scope changes the exact set shown in the confirmation.
 - Undo restores the exact previous read map.
+- The announcement confirmation and Undo notice disappear after six seconds without changing saved read state.
 - Read state survives panel close, browser restart, sync, and offline-cache use.
 - Removed/stale announcements are pruned without deleting unrelated local data.
 
@@ -192,11 +197,13 @@ announcementRead = {
 - Existing manual check-offs survive the upgrade and can be moved back to Deadlines.
 - Canvas-reported completion cannot be reversed by the interface.
 - Course filtering and empty states work independently in the Completed view.
+- Completed type filtering and both due-date and type grouping preserve the correct completion source and restore action.
 
 ### Consent and feedback
 
-- Installation does not open an OTNow statistics tab; the decision appears only on the first side-panel open.
-- Both first-open choices remain visible without scrolling at common desktop sizes and remain usable at 200% zoom.
+- Installation does not open an OTNow statistics tab, and the first side-panel open remains usable behind a compact statistics notification.
+- The full disclosure opens only after **Review**, never as a mandatory screen.
+- Both notification actions remain visible without scrolling at common desktop sizes, and the optional disclosure remains usable at 200% zoom.
 - Declining sends nothing, returns to the panel, and does not trigger repeated prompts.
 - When sharing is off, Insights continues to expose **Review anonymous statistics**.
 - Enabling requests only the existing optional statistics origin and still shows the exact disclosure.
@@ -226,7 +233,7 @@ announcementRead = {
 - Write failing classification tests from those fixtures.
 - Confirm local read-state semantics and copy.
 - Confirm the uninstall page and Ko-fi URLs, or explicitly move either blocked item out of 1.6.
-- Confirm the compact first-open consent hierarchy before styling it; avoid a multi-section product showcase.
+- Confirm the compact notification and optional disclosure hierarchy before styling them; avoid a multi-section product showcase.
 - Prototype active-page theme sampling in the development build only and record a ship/defer decision; do not let it block the release.
 - Record the current Chrome Web Store average and rating count from the public listing as the dated initial snapshot, then verify the daily refresh parser against the real response.
 
@@ -243,7 +250,7 @@ announcementRead = {
 - Publish and verify the uninstall/support page.
 - Enable the support link only if its canonical URL is known.
 - Add the persistent feedback link and the Insights feedback action.
-- Implement the compact dark first-open statistics decision and its persistent Insights recovery action.
+- Implement the non-blocking first-open statistics notification, optional dark disclosure, and persistent Insights recovery action.
 - Remove the two low-value personal Insights cards without deleting their stored counters.
 - Add the separately sourced Chrome Web Store rating row to the existing statistics dashboard without changing its overall design.
 
@@ -272,6 +279,7 @@ announcementRead = {
 13. The public dashboard identifies the Chrome Web Store rating, count, link, and check date separately from OTNow's own anonymous rating.
 14. Personal Insights shows only outcome-oriented statistics and no longer spends space on successful refreshes or days used.
 15. Canvas-declared discussion assignments appear as discussions without title guessing or changes to ordinary assignments.
+16. Deadline organization can collapse, new installations default to date grouping, and Completed supports course, type, and due-date/type organization.
 
 ## Open blockers after local implementation
 

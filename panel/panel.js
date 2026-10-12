@@ -13,6 +13,7 @@ import {
 import {
   completionSource,
   countPlannerTypes,
+  groupCompletedItems,
   groupPlannerItems,
   plannerItemsForView,
   TYPE_GROUPS,
@@ -33,10 +34,15 @@ const savedView = localStorage.getItem("otnow:view");
 let activeView = ["completed", "courses", "insights"].includes(savedView) ? savedView : "deadlines";
 let courseFilter = localStorage.getItem("otnow:course") || "all";
 let typeFilter = localStorage.getItem("otnow:type") || "all";
-let groupMode = localStorage.getItem("otnow:group") === "date" ? "date" : "type";
+let groupMode = localStorage.getItem("otnow:group") === "type" ? "type" : "date";
+let completedTypeFilter = localStorage.getItem("otnow:completed-type") || "all";
+let completedGroupMode = localStorage.getItem("otnow:completed-group") === "type" ? "type" : "date";
 let showReadAnnouncements = localStorage.getItem("otnow:show-read-announcements") === "true";
 let announcementUndo = null;
+let announcementUndoTimer = null;
 let pendingFocus = null;
+
+const ANNOUNCEMENT_UNDO_MS = 6_000;
 
 function element(tag, className, text) {
   const node = document.createElement(tag);
@@ -141,6 +147,40 @@ function renderUpdateNotice(update) {
   return banner;
 }
 
+function renderStatisticsPrompt(settings) {
+  if (settings.statsOnboardingSeen) return null;
+  const prompt = element("section", "statistics-prompt");
+  prompt.setAttribute("aria-label", "Optional anonymous statistics");
+  const copy = element("div", "statistics-prompt-copy");
+  copy.append(
+    element("strong", "", "Optional anonymous statistics"),
+    element("span", "", "Help measure OTNow with anonymous totals. Nothing is shared unless you review and enable it."),
+  );
+  const actions = element("div", "statistics-prompt-actions");
+  const review = element("button", "statistics-prompt-button primary", "Review");
+  review.type = "button";
+  review.addEventListener("click", () => {
+    location.href = "../options/onboarding.html?source=panel";
+  });
+  const dismiss = element("button", "statistics-prompt-button", "Not now");
+  dismiss.type = "button";
+  dismiss.addEventListener("click", async () => {
+    dismiss.disabled = true;
+    review.disabled = true;
+    const response = await chrome.runtime.sendMessage({ type: "stats:onboarding-decline" });
+    if (!response?.settings) {
+      dismiss.disabled = false;
+      review.disabled = false;
+      return;
+    }
+    current.settings = response.settings;
+    render();
+  });
+  actions.append(review, dismiss);
+  prompt.append(copy, actions);
+  return prompt;
+}
+
 function renderOverview(items) {
   const now = new Date();
   const open = items.filter((item) => item.status === "open");
@@ -181,6 +221,29 @@ function selectControl(label, value, options, onChange) {
   return field;
 }
 
+function courseFilterLabel(courses) {
+  if (courseFilter === "all") return "All courses";
+  return courses.find((course) => course.id === courseFilter)?.code || "Selected course";
+}
+
+function typeFilterLabel(value) {
+  return value === "all" ? "All types" : (TYPE_LABELS[value] || TYPE_LABELS.other);
+}
+
+function renderOrganizer(view, controls, summaryParts) {
+  const organizer = element("details", "organizer");
+  const storageKey = `otnow:organizer-open:${view}`;
+  organizer.open = localStorage.getItem(storageKey) !== "false";
+  organizer.addEventListener("toggle", () => localStorage.setItem(storageKey, String(organizer.open)));
+  const summary = element("summary", "organizer-summary");
+  summary.append(
+    element("strong", "", "Organize"),
+    element("span", "", summaryParts.join(" · ")),
+  );
+  organizer.append(summary, controls);
+  return organizer;
+}
+
 function renderControls(courses, items) {
   const controls = element("section", "controls");
   const courseOptions = [
@@ -213,7 +276,11 @@ function renderControls(courses, items) {
       render();
     }),
   );
-  return controls;
+  return renderOrganizer("deadlines", controls, [
+    courseFilterLabel(courses),
+    typeFilterLabel(typeFilter),
+    groupMode === "date" ? "By date" : "By type",
+  ]);
 }
 
 function scopedCourseLabel() {
@@ -228,6 +295,25 @@ function focusAfterRender(selector) {
     document.querySelector(pendingFocus)?.focus();
     pendingFocus = null;
   });
+}
+
+function scheduleAnnouncementUndo(value) {
+  if (announcementUndoTimer) clearTimeout(announcementUndoTimer);
+  announcementUndo = value;
+  announcementUndoTimer = setTimeout(() => {
+    const status = document.querySelector("[data-announcement-status]");
+    const restoreFocus = Boolean(status?.contains(document.activeElement));
+    announcementUndo = null;
+    announcementUndoTimer = null;
+    render();
+    if (restoreFocus) focusAfterRender(".announcement-action");
+  }, ANNOUNCEMENT_UNDO_MS);
+}
+
+function clearAnnouncementUndo() {
+  if (announcementUndoTimer) clearTimeout(announcementUndoTimer);
+  announcementUndoTimer = null;
+  announcementUndo = null;
 }
 
 function renderAnnouncementActions(openItems) {
@@ -261,7 +347,7 @@ function renderAnnouncementActions(openItems) {
         return;
       }
       current.announcementRead = response.announcementRead;
-      announcementUndo = { previous: response.previous, count: response.count, scope, action: "read" };
+      scheduleAnnouncementUndo({ previous: response.previous, count: response.count, scope, action: "read" });
       render();
       focusAfterRender("[data-announcement-status]");
     });
@@ -298,13 +384,21 @@ function renderAnnouncementActions(openItems) {
     undo.type = "button";
     undo.addEventListener("click", async () => {
       undo.disabled = true;
+      const undoState = announcementUndo;
+      if (!undoState) return;
+      if (announcementUndoTimer) clearTimeout(announcementUndoTimer);
+      announcementUndoTimer = null;
       const response = await chrome.runtime.sendMessage({
         type: "panel:restore-announcements-read",
-        previous: announcementUndo.previous,
+        previous: undoState.previous,
       });
-      if (!response?.announcementRead) return;
+      if (!response?.announcementRead) {
+        undo.disabled = false;
+        scheduleAnnouncementUndo(undoState);
+        return;
+      }
       current.announcementRead = response.announcementRead;
-      announcementUndo = null;
+      clearAnnouncementUndo();
       render();
       focusAfterRender(".announcement-action");
     });
@@ -314,18 +408,43 @@ function renderAnnouncementActions(openItems) {
   return section;
 }
 
-function renderCompletedControls(courses) {
+function renderCompletedControls(courses, items) {
   const controls = element("section", "controls completed-controls");
   const courseOptions = [
     { value: "all", label: "All courses" },
     ...courses.map((course) => ({ value: course.id, label: course.code })),
   ];
-  controls.append(selectControl("Course", courseFilter, courseOptions, (value) => {
-    courseFilter = value;
-    localStorage.setItem("otnow:course", value);
-    render();
-  }));
-  return controls;
+  const courseItems = courseFilter === "all" ? items : items.filter((item) => item.courseId === courseFilter);
+  const typeCounts = countPlannerTypes(courseItems);
+  const typeOptions = [
+    { value: "all", label: `All types (${courseItems.length})` },
+    ...TYPE_GROUPS.map(([id, label]) => ({ value: id, label: `${label} (${typeCounts[id]})` })),
+  ];
+  controls.append(
+    selectControl("Course", courseFilter, courseOptions, (value) => {
+      courseFilter = value;
+      localStorage.setItem("otnow:course", value);
+      render();
+    }),
+    selectControl("Type", completedTypeFilter, typeOptions, (value) => {
+      completedTypeFilter = value;
+      localStorage.setItem("otnow:completed-type", value);
+      render();
+    }),
+    selectControl("Group", completedGroupMode, [
+      { value: "date", label: "By due date" },
+      { value: "type", label: "By type" },
+    ], (value) => {
+      completedGroupMode = value;
+      localStorage.setItem("otnow:completed-group", value);
+      render();
+    }),
+  );
+  return renderOrganizer("completed", controls, [
+    courseFilterLabel(courses),
+    typeFilterLabel(completedTypeFilter),
+    completedGroupMode === "date" ? "By due date" : "By type",
+  ]);
 }
 
 function pause(milliseconds) {
@@ -498,12 +617,12 @@ function renderItem(item, now, { completedView = false } = {}) {
       return;
     }
     current.announcementRead = response.announcementRead;
-    announcementUndo = {
+    scheduleAnnouncementUndo({
       previous: response.previous,
       count: response.count,
       scope: item.courseCode,
       action: readAnnouncement ? "unread" : "read",
-    };
+    });
     render();
     focusAfterRender("[data-announcement-status]");
   });
@@ -577,14 +696,16 @@ function renderCompleted(items) {
     element("h1", "", "Completed"),
     element("p", "", "Review finished work. Only check-offs made in OTNow can be moved back to Deadlines."),
   );
-  section.append(header, renderCompletedControls(current.state.courses));
-  if (!items.length) {
+  section.append(header, renderCompletedControls(current.state.courses, items));
+  const courseItems = courseFilter === "all" ? items : items.filter((item) => item.courseId === courseFilter);
+  const visibleItems = courseItems.filter((item) => completedTypeFilter === "all" || item.type === completedTypeFilter);
+  if (!visibleItems.length) {
     section.append(element("div", "empty", courseFilter === "all"
-      ? "No completed dated coursework is saved yet."
-      : "No completed items are saved for this course."));
+      ? (completedTypeFilter === "all" ? "No completed dated coursework is saved yet." : "No completed items match this type.")
+      : "No completed items match this course and type."));
     return section;
   }
-  const groups = groupPlannerItems(items, "type", new Date());
+  const groups = groupCompletedItems(visibleItems, completedGroupMode, new Date());
   for (const groupData of groups) {
     const group = element("section", "group");
     const heading = element("div", "group-heading");
@@ -755,6 +876,8 @@ function renderReady(state, settings) {
   app.replaceChildren(renderViewTabs(state));
   const updateNotice = renderUpdateNotice(state.update);
   if (updateNotice) app.append(updateNotice);
+  const statisticsPrompt = renderStatisticsPrompt(settings);
+  if (statisticsPrompt) app.append(statisticsPrompt);
 
   if (activeView === "courses") {
     app.append(renderCourseDirectory(state.courses, state.items));
@@ -766,8 +889,7 @@ function renderReady(state, settings) {
   }
 
   if (activeView === "completed") {
-    const completedItems = plannerItemsForView(state.items, "completed")
-      .filter((item) => courseFilter === "all" || item.courseId === courseFilter);
+    const completedItems = plannerItemsForView(state.items, "completed");
     app.append(renderCompleted(completedItems));
     return;
   }
@@ -830,10 +952,6 @@ function render() {
 async function load({ recordOpen = false } = {}) {
   appVersion.textContent = `v${chrome.runtime.getManifest().version}`;
   current = await chrome.runtime.sendMessage({ type: "panel:get" });
-  if (!current.settings.statsOnboardingSeen) {
-    location.replace("../options/onboarding.html?source=panel");
-    return;
-  }
   if (recordOpen) {
     const response = await chrome.runtime.sendMessage({ type: "panel:opened" });
     if (response?.state) current.state = response.state;

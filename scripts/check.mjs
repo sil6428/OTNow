@@ -83,7 +83,8 @@ assert.match(panelSource, /panel:set-deadline/, "Side panel must expose local de
 assert.doesNotMatch(panelSource, /insightRow\("Successful refreshes"/, "Personal Insights must not display refresh vanity metrics");
 assert.doesNotMatch(panelSource, /insightRow\("Days used"/, "Personal Insights must not display active-day vanity metrics");
 assert.match(panelSource, /Review anonymous statistics/, "Insights must keep anonymous statistics available after a decline");
-assert.match(panelSource, /statsOnboardingSeen/, "The first panel open must defer the statistics choice until OTNow is opened");
+assert.match(panelSource, /statistics-prompt/, "The first panel open must use a non-blocking statistics notification");
+assert.match(panelSource, /statsOnboardingSeen/, "The statistics notification must stop after the user chooses or dismisses it");
 
 const backgroundSource = await readFile(resolve(root, "src/background.js"), "utf8");
 assert.doesNotMatch(backgroundSource, /tabs\.create\(\{\s*url:\s*chrome\.runtime\.getURL\("options\/onboarding\.html"\)/, "Installation must not open the statistics choice before OTNow is used");
@@ -103,9 +104,9 @@ assert.match(onboarding, /Example report/i);
 assert.match(onboarding, /Share anonymous statistics/i);
 assert.match(onboarding, /Not now/i);
 assert.match(onboarding, /View OTNow Stats/i);
-assert.match(onboarding, /class="wash"/i, "First-run consent must include the reactive background wash");
-assert.match(onboarding, /id="field"/i, "First-run consent must include the reactive background field");
-assert.match(onboarding, /reactive-background\.js/i, "First-run consent must load the reactive background");
-assert.doesNotMatch(onboarding, /checked/i, "First-run consent must not be preselected");
+assert.match(onboarding, /class="wash"/i, "Statistics disclosure must include the reactive background wash");
+assert.match(onboarding, /id="field"/i, "Statistics disclosure must include the reactive background field");
+assert.match(onboarding, /reactive-background\.js/i, "Statistics disclosure must load the reactive background");
+assert.doesNotMatch(onboarding, /checked/i, "Statistics disclosure must not be preselected");
 
 console.log(`OTNow package check passed (${requiredFiles.length} required files).`);

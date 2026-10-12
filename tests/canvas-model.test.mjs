@@ -22,8 +22,10 @@ import {
 import { bucketFor } from "../src/dates.js";
 import { mergeSettings } from "../src/storage.js";
 import {
+  completedDateBucket,
   completionSource,
   countPlannerTypes,
+  groupCompletedItems,
   groupPlannerItems,
   plannerItemsForView,
 } from "../src/view-model.js";
@@ -248,6 +250,23 @@ test("groups planner items by type without hiding supported Canvas types", () =>
     note: 1,
     other: 1,
   });
+});
+
+test("organizes completed work by due date or type with recent items first", () => {
+  const now = new Date("2026-10-12T12:00:00Z");
+  const items = [
+    { id: "a", type: "assignment", dueAt: "2026-10-20T12:00:00Z", status: "done" },
+    { id: "q", type: "quiz", dueAt: "2026-10-10T12:00:00Z", status: "submitted" },
+    { id: "d", type: "discussion", dueAt: "2026-10-01T12:00:00Z", status: "submitted" },
+    { id: "b", type: "assignment", dueAt: "2026-09-10T12:00:00Z", status: "done" },
+  ];
+  assert.equal(completedDateBucket(items[0], now), "upcoming");
+  assert.equal(completedDateBucket(items[1], now), "recent");
+  assert.equal(completedDateBucket(items[2], now), "month");
+  assert.equal(completedDateBucket(items[3], now), "older");
+  assert.deepEqual(groupCompletedItems(items, "date", now).map((group) => group.id), ["upcoming", "recent", "month", "older"]);
+  assert.deepEqual(groupCompletedItems(items, "type", now).map((group) => group.id), ["assignment", "quiz", "discussion"]);
+  assert.deepEqual(groupCompletedItems(items, "type", now)[0].items.map((item) => item.id), ["a", "b"]);
 });
 
 test("separates active deadlines from completed work without changing completion sources", () => {
