@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import worker, { validateReport, validateSiteRating } from "../stats-worker/src/worker.js";
+import worker, { parseChromeWebStoreRating, validateReport, validateSiteRating } from "../stats-worker/src/worker.js";
 
 const validReport = {
   schema: 1,
@@ -33,6 +33,7 @@ function aggregateEnvironment() {
         return [
           { results: [{ reportingInstallations: 3, totalItems: 48, ratingSum: 5, ratingCount: 1 }] },
           { results: [{ ratingSum: 9, ratingCount: 2 }] },
+          { results: [{ averageRating: 5, ratingCount: 2, checkedAt: "2026-10-11T00:00:00.000Z" }] },
         ];
       },
     },
@@ -130,6 +131,13 @@ test("accepts only a bounded anonymous site rating", () => {
   assert.equal(validateSiteRating({ rating: 5, name: "A student" }), false);
 });
 
+test("extracts a bounded rating from the public Chrome Web Store listing", () => {
+  const html = '<span role="img" aria-label="Average rating 4.8 out of 5 stars."><span>4.8</span></span><span>(<a><p>1,234 ratings</p></a>)</span>';
+  assert.deepEqual(parseChromeWebStoreRating(html), { averageRating: 4.8, ratingCount: 1234 });
+  assert.equal(parseChromeWebStoreRating("<html>listing changed</html>"), null);
+  assert.equal(parseChromeWebStoreRating('aria-label="Average rating 9 out of 5 stars."><p>2 ratings</p>'), null);
+});
+
 test("serves the aggregate statistics endpoint without a dashboard credential", async () => {
   const response = await worker.fetch(new Request("https://stats.example/api/stats"), aggregateEnvironment());
   assert.equal(response.status, 200);
@@ -144,6 +152,12 @@ test("serves the aggregate statistics endpoint without a dashboard credential", 
   assert.equal(body.summary.averageRating, 4.7);
   assert.equal(body.summary.ratingCount, 3);
   assert.equal(body.summary.ratingCountDisplay, null);
+  assert.deepEqual(body.chromeWebStore, {
+    averageRating: 5,
+    ratingCount: 2,
+    checkedAt: "2026-10-11T00:00:00.000Z",
+    url: "https://chromewebstore.google.com/detail/otnow/ekaachncjiajgiikgikhpafcnepompkn?hl=en-GB",
+  });
   assert.equal("activity" in body, false);
   assert.equal("versions" in body, false);
   assert.equal("newInstallations" in body, false);
@@ -208,6 +222,8 @@ test("public dashboard requires no token and explains the privacy boundary", asy
   assert.match(html, /<title>OTNow - Stats<\/title>/);
   assert.match(html, /reporting installations/);
   assert.match(html, /community rating/);
+  assert.match(html, /Chrome Web Store/);
+  assert.match(html, /store-rating-link/);
   assert.match(html, /data-rating="5"/);
   assert.match(html, /forms\/d\/e\/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw\/viewform/);
   assert.match(html, /Written feedback uses a separate Google Form/);

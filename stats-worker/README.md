@@ -12,7 +12,9 @@ Reports from one installation are accepted no more than once every 15 minutes. N
 
 The read-only dashboard is available at `/dashboard`, and the matching themed privacy policy is available at `/privacy`. The JSON endpoint exposes only totals across consenting installations. It never returns installation hashes or individual rows.
 
-The dashboard fits into one viewport and uses direct, descriptive copy. It shows reporting installations, items organized, and the optional community rating average. Exact activity windows, version distribution, per-type totals, and installation history are not exposed by the public API. Aggregate totals are exact. The interface switches to compact notation only when a value becomes too wide, and the exact count remains available through the value's title and accessible label. Public responses are cached for one hour without write-triggered invalidation. Visitors can submit a one-to-five-star rating directly from the page. The rating table stores only the selected number and submission time; browser storage discourages accidental repeat ratings.
+The dashboard fits into one viewport and uses direct, descriptive copy. It shows reporting installations, items organized, and the optional community rating average. A separate, clearly labelled line shows the Chrome Web Store average and rating count; it is never merged with OTNow's first-party community rating. Exact activity windows, version distribution, per-type totals, and installation history are not exposed by the public API. Aggregate totals are exact. The interface switches to compact notation only when a value becomes too wide, and the exact count remains available through the value's title and accessible label. Public responses are cached for one hour without write-triggered invalidation. Visitors can submit a one-to-five-star rating directly from the page. The rating table stores only the selected number and submission time; browser storage discourages accidental repeat ratings.
+
+The existing daily scheduled job fetches the public Chrome Web Store listing once, validates its accessibility-labelled rating and count, and stores only those two public values plus the check time. If the request or parser fails, the last known good value remains available and the dashboard continues normally. The Store-management API does not expose ratings, so this isolated refresh is deliberately not part of any dashboard request.
 
 Written feedback uses a separate Google Form linked from the header and footer. The form does not collect email addresses, makes the name field optional, and writes responses to a private Google Sheet for review.
 
@@ -24,7 +26,7 @@ Keeping the dashboard and API in the same Worker avoids a second deployment, cro
 
 1. Authenticate Wrangler with the intended Cloudflare account.
 2. Create a D1 database named `otnow-stats` and place its ID in `wrangler.jsonc`.
-3. Apply `schema.sql` to the remote database.
+3. Apply `schema.sql` for a new database, or apply every unapplied file in `stats-worker/migrations` to an existing database.
 4. Deploy with `wrangler deploy --config stats-worker/wrangler.jsonc` from the repository root.
 
 Never commit `.dev.vars`, database exports, or report data. Chrome Web Store installation metrics remain the source of truth for total users; this service counts only consenting reporting installations.

@@ -5,7 +5,9 @@ const MAX_BODY_BYTES = 4096;
 const MAX_RATING_BYTES = 256;
 const MAX_COUNTER = 10_000_000;
 const PUBLIC_STATS_CACHE_SECONDS = 60 * 60;
-const PUBLIC_STATS_CACHE_VERSION = "4";
+const PUBLIC_STATS_CACHE_VERSION = "6";
+const CHROME_WEB_STORE_URL = "https://chromewebstore.google.com/detail/otnow/ekaachncjiajgiikgikhpafcnepompkn?hl=en-GB";
+const MAX_STORE_PAGE_BYTES = 2_000_000;
 const VERSION_PATTERN = /^\d+\.\d+\.\d+$/;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -64,6 +66,48 @@ export function validateSiteRating(payload) {
   if (!Number.isSafeInteger(payload.rating) || payload.rating < 1 || payload.rating > 5) return false;
   if (payload.website != null && typeof payload.website !== "string") return false;
   return String(payload.website || "").length <= 200;
+}
+
+export function parseChromeWebStoreRating(html) {
+  if (typeof html !== "string" || !html || html.length > MAX_STORE_PAGE_BYTES) return null;
+  const ratingMatch = html.match(/aria-label=["']Average rating\s+([0-5](?:\.\d+)?)\s+out of 5 stars?\.?["']/i);
+  if (!ratingMatch) return null;
+  const nearby = html.slice(ratingMatch.index, ratingMatch.index + 2500);
+  const countMatch = nearby.match(/>\s*([\d][\d,.]*)\s+ratings?\s*</i);
+  if (!countMatch) return null;
+
+  const averageRating = Number(ratingMatch[1]);
+  const ratingCount = Number(countMatch[1].replace(/[^\d]/g, ""));
+  if (!Number.isFinite(averageRating) || averageRating < 0 || averageRating > 5) return null;
+  if (!Number.isSafeInteger(ratingCount) || ratingCount < 1) return null;
+  return { averageRating, ratingCount };
+}
+
+async function refreshChromeWebStoreRating(env) {
+  const response = await fetch(CHROME_WEB_STORE_URL, {
+    headers: {
+      accept: "text/html,application/xhtml+xml",
+      "accept-language": "en-GB,en;q=0.9",
+    },
+    redirect: "follow",
+  });
+  if (!response.ok) throw new Error(`store-response-${response.status}`);
+  const declaredLength = Number(response.headers.get("content-length") || 0);
+  if (declaredLength > MAX_STORE_PAGE_BYTES) throw new Error("store-response-too-large");
+  const html = await response.text();
+  const rating = parseChromeWebStoreRating(html);
+  if (!rating) throw new Error("store-rating-not-found");
+
+  const checkedAt = new Date().toISOString();
+  await env.DB.prepare(`
+    INSERT INTO chrome_web_store_rating (id, average_rating, rating_count, checked_at)
+    VALUES (1, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      average_rating = excluded.average_rating,
+      rating_count = excluded.rating_count,
+      checked_at = excluded.checked_at
+  `).bind(rating.averageRating, rating.ratingCount, checkedAt).run();
+  return { ...rating, checkedAt };
 }
 
 async function readSiteRating(request) {
@@ -215,7 +259,7 @@ async function submitSiteRating(request, env) {
 }
 
 async function globalStats(env) {
-  const [summaryResult, siteRatingResult] = await env.DB.batch([
+  const [summaryResult, siteRatingResult, storeRatingResult] = await env.DB.batch([
     env.DB.prepare(`
       SELECT
         COUNT(*) AS reportingInstallations,
@@ -225,6 +269,7 @@ async function globalStats(env) {
       FROM installations
     `),
     env.DB.prepare("SELECT COALESCE(SUM(rating), 0) AS ratingSum, COUNT(rating) AS ratingCount FROM site_ratings"),
+    env.DB.prepare("SELECT average_rating AS averageRating, rating_count AS ratingCount, checked_at AS checkedAt FROM chrome_web_store_rating WHERE id = 1"),
   ]);
 
   const summary = summaryResult.results?.[0] || {};
@@ -245,9 +290,18 @@ async function globalStats(env) {
   summary.totalItemsDisplay = null;
   summary.totalItemsIsRounded = false;
 
+  const storedStoreRating = storeRatingResult?.results?.[0];
+  const chromeWebStore = storedStoreRating ? {
+    averageRating: Number(storedStoreRating.averageRating),
+    ratingCount: Number(storedStoreRating.ratingCount),
+    checkedAt: storedStoreRating.checkedAt,
+    url: CHROME_WEB_STORE_URL,
+  } : null;
+
   return {
     generatedAt: new Date(Math.floor(Date.now() / 3_600_000) * 3_600_000).toISOString(),
     summary,
+    chromeWebStore,
   };
 }
 
@@ -647,5 +701,10 @@ export default {
   async scheduled(_controller, env) {
     await env.DB.prepare("DELETE FROM installations WHERE last_seen < datetime('now', '-180 days')").run();
     await env.DB.prepare("DELETE FROM site_ratings WHERE created_at < datetime('now', '-180 days')").run();
+    try {
+      await refreshChromeWebStoreRating(env);
+    } catch (error) {
+      console.warn("Chrome Web Store rating refresh failed; keeping the last known good value.", error);
+    }
   },
 };

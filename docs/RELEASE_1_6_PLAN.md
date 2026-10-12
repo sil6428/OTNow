@@ -2,11 +2,11 @@
 
 Status: scope planning started October 11, 2026. No 1.6 feature code or version bump has been made yet.
 
-Target: November 2026, with school work taking priority. If representative Canvas data is unavailable or the announcement classification is unreliable, ship the support/uninstall improvements as 1.5.x and delay the announcement feature rather than guessing.
+Target: November 2026, with school work taking priority. Reading week can be used for the evidence, design, and implementation work below, but it does not remove the release freeze or verification gates. If representative Canvas data is unavailable or the announcement classification is unreliable, ship the completed-items, onboarding, feedback, and support improvements without announcement classification rather than guessing.
 
 ## Release goal
 
-Make announcement-like Canvas planner entries understandable and dismissible without weakening OTNow's local-first privacy model, then complete the support path around installation, feedback, and removal.
+Make announcement-like Canvas planner entries understandable and dismissible without weakening OTNow's local-first privacy model, make completed work easier to review and restore, and improve the consent, feedback, support, and removal experience.
 
 ## Frozen 1.6 scope
 
@@ -43,6 +43,56 @@ Make announcement-like Canvas planner entries understandable and dismissible wit
 - Keep it at the bottom of extension pages, beside ordinary actions on the statistics site, and more visibly in the long GitHub README.
 - Do not add a popup, onboarding step, donation gate, or feature restriction.
 
+### 5. Make feedback reachable inside OTNow
+
+- Add a persistent, low-emphasis **Feedback** link near the bottom of the side panel.
+- Add a clearer **Send feedback** action in Insights beside the explanation of what stays local and what may be shared.
+- Point both locations to the existing Google Form in a new tab; do not build a second form or collect written feedback inside the extension.
+- State that bug reports and suggestions belong in the feedback form, while suspected vulnerabilities must use GitHub's private vulnerability-reporting route.
+- Do not require anonymous statistics to be enabled before written feedback can be submitted.
+
+### 6. Add a dedicated Completed view
+
+- Add **Completed** as a top-level panel view rather than mixing finished items into the normal deadlines list through a Settings switch.
+- Include Canvas-reported submitted, graded, pending-review, complete, or completed items, plus items manually checked off inside OTNow.
+- Display the source of completion clearly: **Completed in Canvas** or **Checked off in OTNow**.
+- Allow only OTNow manual check-offs to be restored to Deadlines. Canvas-reported completion is read-only because OTNow must not pretend it can reverse a Canvas submission or grade state.
+- Preserve course filtering and provide a useful empty state when no completed items are available.
+- Keep the existing `manualDone` record and toggle path; migrate the interface without deleting prior manual check-offs.
+- Remove the redundant **Show completed items** control from Settings after upgrade behavior is verified. A stored legacy value may remain harmlessly during migration.
+
+### 7. Redesign the anonymous-statistics decision page
+
+- Replace the current dense centered disclosure card with a clearer, responsive OTNow-branded layout.
+- Borrow the Ontario Tech CS Club site's strong hierarchy, generous spacing, numbered sections, and approachable transitions without copying its code, assets, video treatment, or visual identity.
+- Lead with **Optional and off by default**, followed by two scannable sections: **What stays local** and **What would be shared**.
+- Show one compact example of the numerical report rather than relying only on prose.
+- Keep **Share anonymous statistics** and **Not now** equally understandable and immediately available. Do not use countdowns, preselection, guilt, deceptive colour contrast, or repeated prompts.
+- Preserve the privacy-policy link and provide a clear success state after either choice.
+- Meet keyboard, screen-reader, reduced-motion, high-contrast, 200% zoom, narrow-window, light, and dark-mode requirements.
+
+### 8. Show the Chrome Web Store rating on the public statistics dashboard
+
+- Keep the current statistics dashboard layout; add a compact, separately labelled **Chrome Web Store rating** row or card rather than redesigning the page.
+- Display the Store average, rating count, official listing link, and **Last checked** date. Never combine the Store rating with OTNow's own first-party star responses or imply that they measure the same audience.
+- The official Chrome Web Store API does not expose ratings or reviews. Use the existing once-daily Worker schedule to fetch the public listing, parse only the accessibility-labelled average and count, and persist the last successful value rather than scraping during dashboard requests.
+- Seed the first value from a manually verified public listing. Every later refresh must validate bounds, retain the last known good value on failure, expose the check date, and fail without breaking the dashboard.
+- If no verified Store value is configured, hide the row or mark it unavailable; never invent, round up, or silently reuse an undated rating.
+
+## Reading-week research spike: match the active page theme
+
+The requested behaviour is to sample the page beside OTNow and select light or dark mode to match it, especially when Brave displays two tabs in Split View and OTNow opens on the right.
+
+This is a prototype and release decision, not yet frozen 1.6 scope:
+
+- The current extension can read Ontario Tech Canvas because that origin is already allowlisted, but it cannot inspect arbitrary websites with its present permissions.
+- A privacy-bounded prototype may use `activeTab` plus `scripting` to sample only the explicitly invoked active page's declared `color-scheme` and computed visible background colour.
+- Never request `<all_urls>`, never inject a persistent content script on arbitrary sites, and never store or transmit page URLs, titles, colours, screenshots, or page content.
+- Treat the result as a one-time best-effort theme choice when OTNow is opened. Continuous following across arbitrary tab changes would require broader access and is out of scope.
+- Test Brave Split View directly. Brave treats the panes as independent tabs and allows their positions to be swapped, while the standard extension APIs identify the active tab but do not expose a dependable `rightmostPane` property. The feature must therefore say **Match active page**, not promise **Match rightmost pane**.
+- Restricted browser pages, PDFs, extension pages, unavailable styles, transparent backgrounds, images, and misleading brand colours must fall back to the user's saved Light, Dark, or Follow system preference.
+- If the prototype cannot identify the intended Brave pane consistently, adds an unacceptable permission boundary, or causes theme flicker, do not ship it in 1.6.
+
 ## Non-goals for 1.6
 
 - Google Calendar or any OAuth permission.
@@ -51,6 +101,8 @@ Make announcement-like Canvas planner entries understandable and dismissible wit
 - Syllabus or announcement text extraction for exam prediction.
 - A phone app, OTNow account, or hosted personal calendar.
 - Any new Canvas endpoint unless real announcement samples prove the existing planner response is insufficient and a separate review approves the permission and privacy impact.
+- Continuous reading of arbitrary websites for theme changes or broad `<all_urls>` access.
+- Per-request scraping of the Chrome Web Store page or reliance on an undocumented ratings endpoint.
 
 ## Current code map
 
@@ -59,6 +111,9 @@ Make announcement-like Canvas planner entries understandable and dismissible wit
 - `src/constants.js` owns labels, reminder defaults, and the currently blank Ko-fi URL.
 - `src/view-model.js` owns type groups and counts.
 - `panel/panel.js` renders filters, groups, items, and the prepared support link.
+- `options/onboarding.html`, `options/onboarding.css`, and `options/onboarding.js` own the first-run anonymous-statistics choice.
+- `options/options.html` and `options/options.js` currently own the legacy **Show completed items** control.
+- `stats-worker/src/dashboard-assets.js` owns the public dashboard presentation; `stats-worker/src/worker.js` and the D1 migration own the isolated daily Store-rating refresh and last-known-good value.
 - `src/storage.js` owns local settings and user state.
 - `src/background.js` owns synchronization and panel messages.
 - `tests/canvas-model.test.mjs` is the first home for sanitized announcement fixtures and classification cases.
@@ -88,6 +143,9 @@ announcementRead = {
 5. A small **Show read announcements** control lets the user recover older dismissed items later.
 6. Empty states distinguish “no announcements returned,” “all announcements marked read,” and “no matches for this course.”
 7. Keyboard focus moves to the status/Undo control after a bulk change and returns predictably after Undo.
+8. **Completed** appears beside Deadlines, Courses, and Insights with its own count.
+9. A manually completed item offers **Move back to Deadlines**; a Canvas-completed item explains that its status comes from Canvas and cannot be reversed in OTNow.
+10. The bottom of the panel includes restrained **Feedback** and **Support future OTNow development** links only when their validated URLs are configured.
 
 ## Required evidence before implementation
 
@@ -97,6 +155,7 @@ announcementRead = {
 - Confirmation that the stable item ID remains the same across refreshes.
 - Canonical Ko-fi URL.
 - Final live URL for the uninstall/support page.
+- A direct Brave Split View test confirming which tab receives temporary `activeTab` access when OTNow is opened from the toolbar.
 
 ## Verification matrix
 
@@ -116,6 +175,27 @@ announcementRead = {
 - Read state survives panel close, browser restart, sync, and offline-cache use.
 - Removed/stale announcements are pruned without deleting unrelated local data.
 
+### Completed view
+
+- Open deadlines and completed items never appear in the wrong view or duplicate across both views.
+- Existing manual check-offs survive the upgrade and can be moved back to Deadlines.
+- Canvas-reported completion cannot be reversed by the interface.
+- Course filtering and empty states work independently in the Completed view.
+
+### Consent and feedback
+
+- Both first-run choices remain visible without scrolling at common desktop sizes and remain usable at 200% zoom.
+- Declining sends nothing and does not trigger repeated prompts.
+- Enabling requests only the existing optional statistics origin and still shows the exact disclosure.
+- Feedback opens the established Google Form without requiring statistics consent.
+- Security-reporting guidance points to the private vulnerability route instead of the feedback form.
+
+### Public rating source
+
+- The Chrome Web Store rating and OTNow's own anonymous rating are visibly labelled as separate sources.
+- The Store value includes its rating count, official listing link, and last-checked date.
+- A missing, invalid, or stale Store snapshot cannot break the dashboard or alter the first-party rating.
+
 ### Regression and release
 
 - Existing deadline completion, moved-date detection, reminder, extension-date, course mute, statistics opt-in, and cache behaviour remain unchanged.
@@ -132,18 +212,25 @@ announcementRead = {
 - Write failing classification tests from those fixtures.
 - Confirm local read-state semantics and copy.
 - Confirm the uninstall page and Ko-fi URLs, or explicitly move either blocked item out of 1.6.
+- Create a low-fidelity consent-page layout from the agreed content hierarchy before styling it.
+- Prototype active-page theme sampling in the development build only and record a ship/defer decision; do not let it block the release.
+- Record the current Chrome Web Store average and rating count from the public listing as the dated initial snapshot, then verify the daily refresh parser against the real response.
 
 ### Week 2 — model and storage
 
 - Add verified announcement normalization and labels.
 - Add local read-state storage, pruning, and migration behaviour.
 - Add unit coverage for classification, persistence, and course scoping.
+- Add the Completed view using the existing Canvas status and `manualDone` boundary, then verify upgrade preservation.
 
 ### Week 3 — panel and routes
 
 - Add the filter, course-aware bulk action, Undo, show-read control, and accessible status handling.
 - Publish and verify the uninstall/support page.
 - Enable the support link only if its canonical URL is known.
+- Add the persistent feedback link and the Insights feedback action.
+- Implement the redesigned anonymous-statistics decision page from the approved layout.
+- Add the separately sourced Chrome Web Store rating row to the existing statistics dashboard without changing its overall design.
 
 ### Week 4 — freeze and release
 
@@ -163,10 +250,17 @@ announcementRead = {
 6. The uninstall/support route is live and neutral.
 7. Ko-fi remains hidden if the canonical URL is still unknown.
 8. All automated, accessibility, packaging, and 1.5.0 upgrade checks pass.
+9. Completed items are separated from active deadlines and manual check-offs can be restored without changing Canvas-reported status.
+10. Feedback is reachable from the panel and Insights without statistics consent.
+11. The redesigned statistics decision remains neutral, accurate, responsive, and accessible.
+12. Active-page theme matching ships only if the bounded prototype passes the permission and Brave Split View review; otherwise the existing manual and system choices remain.
+13. The public dashboard identifies the Chrome Web Store rating, count, link, and check date separately from OTNow's own anonymous rating.
 
 ## Open blockers
 
 - Representative sanitized Canvas announcement and non-announcement planner payloads.
 - Canonical Ko-fi URL.
 - Final location for the themed uninstall/support route.
+- Brave Split View behaviour for temporary active-page access; this blocks only automatic page-theme matching, not the rest of 1.6.
+- Continued availability of the public Chrome Web Store markup used by the isolated daily refresh; parser failure must retain the last known good value and cannot block the dashboard.
 

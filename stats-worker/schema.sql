@@ -30,3 +30,10 @@ CREATE TABLE IF NOT EXISTS site_ratings (
 );
 
 CREATE INDEX IF NOT EXISTS site_ratings_created_at_idx ON site_ratings(created_at);
+
+CREATE TABLE IF NOT EXISTS chrome_web_store_rating (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  average_rating REAL NOT NULL CHECK (average_rating BETWEEN 0 AND 5),
+  rating_count INTEGER NOT NULL CHECK (rating_count >= 1),
+  checked_at TEXT NOT NULL
+);
