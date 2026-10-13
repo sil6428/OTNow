@@ -100,6 +100,18 @@ Make announcement-like Canvas planner entries understandable and dismissible wit
 - During local development, bump the preview announcement ID for every meaningful build so each change can be tested once. Consolidate those notes under the final version ID before Store submission.
 - Link the themed page to the repository changelog for older releases without loading remote code or requesting another permission.
 
+### 11. Finish the common support and recovery paths
+
+- Add local search to Deadlines and Completed. Search only the items already loaded on the device by item title, course name or code, and Canvas-declared type; never transmit the query or matching content.
+- When course, type, or search filters produce no results, provide one **Clear filters** action that restores the full view.
+- When the saved Canvas data is stale, explain whether OTNow is offline, signed out, or unable to refresh. Preserve the cache and provide **Open Canvas** and **Try again** rather than a dead-end error.
+- Keep the footer’s relative sync age, and expose the exact successful date and time on hover or keyboard focus.
+- Keep **What’s new**, Settings, Privacy, the official Chrome Web Store listing, and GitHub available from a compact About area in Insights.
+- Add **Copy troubleshooting info** in Insights. The report may include OTNow/browser versions, coarse operating-system family, panel size, display scale, online status, sync state, anonymous item-type counts, feature settings, and active-filter state.
+- The report must never include a name, email, course name or code, item title, grade, due date, URL, Canvas ID, extension identifier, password, session data, authentication token, IP address, or full browser user-agent string.
+- For technical bug or sync reports, make the diagnostic field required in the existing feedback form and tell the student to paste the report from Insights. Feature suggestions and general feedback should not be forced through an irrelevant technical-data step; use form branching if available.
+- Keep security reports on GitHub’s private vulnerability route. A copied diagnostic is support context, not a substitute for a private security report.
+
 ## Reading-week research spike: match the active page theme
 
 The requested behaviour is to sample the page beside OTNow and select light or dark mode to match it, especially when Brave displays two tabs in Split View and OTNow opens on the right.
@@ -169,6 +181,9 @@ announcementRead = {
 9. A manually completed item offers **Move back to Deadlines**; a Canvas-completed item explains that its status comes from Canvas and cannot be reversed in OTNow.
 10. The bottom of the panel includes restrained **Feedback** and **Support future OTNow development** links only when their validated URLs are configured.
 11. Deadline and Completed organization controls start expanded, can be collapsed independently, and remember that local preference. A new installation groups deadlines by date.
+12. Deadlines and Completed each provide local search, and an empty filtered state can clear all filters in one action.
+13. Stale saved data remains visible with clear reconnect and retry actions; the exact last successful sync is available without taking permanent panel space.
+14. Insights provides a user-initiated privacy-safe diagnostic copy plus a compact About section with persistent support links.
 
 ## Evidence and remaining gates
 
@@ -221,6 +236,17 @@ announcementRead = {
 - Feedback opens the established Google Form without requiring statistics consent.
 - Security-reporting guidance points to the private vulnerability route instead of the feedback form.
 - Personal Insights no longer shows successful-refresh or days-used vanity counters, while the four outcome-oriented counters remain accurate.
+- The troubleshooting report is copied only after a deliberate button press and is never uploaded automatically.
+- Sanitized browser-level checks prove the report excludes loaded course codes, course names, item titles, and Canvas paths.
+- Technical issue submissions require the copied diagnostic through a conditional form path; unrelated suggestions remain simple to submit.
+
+### Search and sync recovery
+
+- Search matches only locally loaded item titles, course names or codes, and declared item types.
+- Deadline and Completed queries persist locally but are never added to anonymous statistics or support requests automatically.
+- Clearing filters resets course, type, and search state for the active view without changing coursework or completion status.
+- A stale signed-out cache shows both **Open Canvas** and **Try again** while preserving saved deadlines.
+- The footer exposes the exact last successful sync time on hover or keyboard focus.
 
 ### Public rating source
 
@@ -265,6 +291,8 @@ announcementRead = {
 - Implement the non-blocking first-open statistics notification, optional dark disclosure, and persistent Insights recovery action.
 - Remove the two low-value personal Insights cards without deleting their stored counters.
 - Add the separately sourced Chrome Web Store rating row to the existing statistics dashboard without changing its overall design.
+- Add local search, one-click filter recovery, stale-sync recovery, the Insights About area, and privacy-safe troubleshooting copy.
+- Update the Google Form so technical bug and sync paths require the copied diagnostic while nontechnical paths do not.
 
 ### Week 4 — freeze and release
 
@@ -293,6 +321,8 @@ announcementRead = {
 15. Canvas-declared discussion assignments appear as discussions without title guessing or changes to ordinary assignments.
 16. Deadline organization can collapse, new installations default to date grouping, and Completed supports course, type, and due-date/type organization.
 17. Upgrades show one dismissible plain-language release notice, fresh installs do not, and the detailed themed page matches the current packaged announcement ID.
+18. Search, filter reset, stale-cache recovery, and the privacy-safe diagnostic pass the browser-level smoke test without any new permission.
+19. Technical feedback asks for the copied diagnostic, but feature suggestions and general feedback do not require irrelevant troubleshooting data.
 
 ## Open blockers after local implementation
 

@@ -3,7 +3,7 @@
 // Keep the voice thankful and personal, but vary the opening and milestone
 // wording for each patch instead of turning this into a repeated template.
 export const CURRENT_RELEASE_NOTE = Object.freeze({
-  id: "1.6.0-local-20261012-06",
+  id: "1.6.0-local-20261012-07",
   version: "1.6.0",
   date: "October 12, 2026",
   label: "Local preview",
@@ -15,7 +15,7 @@ export const CURRENT_RELEASE_NOTE = Object.freeze({
     reportingInstallations: 12,
     totalItems: 781,
   }),
-  summary: "This update gives you more room for deadlines, makes Completed easier to sort, and gets temporary messages out of the way.",
+  summary: "This update makes deadlines easier to find, stale Canvas sessions easier to fix, and support reports more useful without including coursework.",
   items: Object.freeze([
     Object.freeze({
       title: "More room for deadlines",
@@ -36,6 +36,22 @@ export const CURRENT_RELEASE_NOTE = Object.freeze({
     Object.freeze({
       title: "Clearer Canvas items",
       detail: "OTNow recognizes Canvas-declared announcements and discussion assignments without guessing from titles.",
+    }),
+    Object.freeze({
+      title: "Faster local search",
+      detail: "Search Deadlines or Completed by item, course, or type, then clear every active filter in one click.",
+    }),
+    Object.freeze({
+      title: "Better sync recovery",
+      detail: "Stale saved data now explains what happened, shows the exact last sync on hover, and offers Canvas and retry actions.",
+    }),
+    Object.freeze({
+      title: "Privacy-safe troubleshooting",
+      detail: "Insights can copy detailed technical information for a bug report without names, coursework, dates, links, Canvas IDs, or login data.",
+    }),
+    Object.freeze({
+      title: "Useful links stay available",
+      detail: "Insights now keeps What’s new, Settings, Privacy, the Chrome Web Store, and GitHub together in one About section.",
     }),
   ]),
 });

@@ -97,6 +97,13 @@ assert.match(panelSource, /Review anonymous statistics/, "Insights must keep ano
 assert.match(panelSource, /statistics-prompt/, "The first panel open must use a non-blocking statistics notification");
 assert.match(panelSource, /statsOnboardingSeen/, "The statistics notification must stop after the user chooses or dismisses it");
 assert.match(panelSource, /release-note-prompt/, "Version changes must use a one-time release announcement");
+assert.match(panelSource, /renderSyncNotice/, "Stale cached data must expose a recovery notice");
+assert.match(panelSource, /Copy troubleshooting info/, "Insights must expose privacy-safe troubleshooting information");
+assert.match(panelSource, /Privacy check: This report contains no names/, "Troubleshooting information must state its privacy boundary");
+assert.match(panelSource, /renderSearch\("completed", "completed items"\)/, "Completed work must support local search");
+assert.match(panelSource, /Clear filters/, "Filtered empty states must offer a one-click reset");
+assert.match(panelSource, /What's new/, "Insights must keep the current release notes accessible");
+assert.match(panelSource, /Chrome Web Store/, "Insights must link back to the official Store listing");
 
 const backgroundSource = await readFile(resolve(root, "src/background.js"), "utf8");
 assert.doesNotMatch(backgroundSource, /tabs\.create\(\{\s*url:\s*chrome\.runtime\.getURL\("options\/onboarding\.html"\)/, "Installation must not open the statistics choice before OTNow is used");
@@ -104,6 +111,7 @@ assert.doesNotMatch(backgroundSource, /stats:onboarding-opened/, "Viewing the co
 
 const panelHtml = await readFile(resolve(root, "panel/panel.html"), "utf8");
 assert.match(panelHtml, /id="feedback-link"/, "Side panel must expose the feedback form");
+assert.match(panelHtml, /id="sync-status" tabindex="0"/, "The exact sync time must be keyboard accessible");
 
 const optionsHtml = await readFile(resolve(root, "options/options.html"), "utf8");
 assert.doesNotMatch(optionsHtml, /id="show-completed"/, "Completed work belongs in its dedicated view, not a Settings switch");

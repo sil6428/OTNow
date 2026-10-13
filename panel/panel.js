@@ -4,7 +4,10 @@ import {
 } from "../src/announcement-read.js";
 import {
   CANVAS_ORIGIN,
+  CHROME_WEB_STORE_URL,
   FEEDBACK_URL,
+  GLOBAL_STATS_ORIGIN,
+  REPOSITORY_URL,
   SECURITY_REPORT_URL,
   SUPPORT_URL,
   TYPE_LABELS,
@@ -37,11 +40,20 @@ let typeFilter = localStorage.getItem("otnow:type") || "all";
 let groupMode = localStorage.getItem("otnow:group") === "type" ? "type" : "date";
 let completedTypeFilter = localStorage.getItem("otnow:completed-type") || "all";
 let completedGroupMode = localStorage.getItem("otnow:completed-group") === "type" ? "type" : "date";
+const searchQueries = {
+  deadlines: localStorage.getItem("otnow:search:deadlines") || "",
+  completed: localStorage.getItem("otnow:search:completed") || "",
+};
+const searchOpen = {
+  deadlines: Boolean(searchQueries.deadlines),
+  completed: Boolean(searchQueries.completed),
+};
 let announcementUndo = null;
 let announcementUndoTimer = null;
 let pendingFocus = null;
 
 const ANNOUNCEMENT_UNDO_MS = 6_000;
+const STALE_SYNC_MS = 2 * 60 * 60 * 1000;
 
 function element(tag, className, text) {
   const node = document.createElement(tag);
@@ -80,6 +92,117 @@ function relativeSync(iso) {
   return `Synced ${Math.round(seconds / 3600)}h ago`;
 }
 
+function exactSync(iso) {
+  if (!iso) return "No successful sync yet";
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(iso));
+}
+
+function syncAge(iso) {
+  if (!iso) return Number.POSITIVE_INFINITY;
+  return Math.max(0, Date.now() - Date.parse(iso));
+}
+
+function platformName() {
+  const value = navigator.userAgentData?.platform || navigator.platform || "Unknown";
+  if (/win/i.test(value)) return "Windows";
+  if (/mac/i.test(value)) return "macOS";
+  if (/cros/i.test(value)) return "ChromeOS";
+  if (/android/i.test(value)) return "Android";
+  if (/linux/i.test(value)) return "Linux";
+  return "Other";
+}
+
+async function browserName() {
+  let name = "Chromium";
+  if (await navigator.brave?.isBrave?.()) name = "Brave";
+  else if (/Edg\//.test(navigator.userAgent)) name = "Microsoft Edge";
+  else if (/Chrome\//.test(navigator.userAgent)) name = "Google Chrome";
+  const version = navigator.userAgent.match(/(?:Edg|Chrome)\/([\d.]+)/)?.[1];
+  return version ? `${name} ${version}` : name;
+}
+
+function yesNo(value) {
+  return value ? "yes" : "no";
+}
+
+async function buildDiagnosticReport() {
+  const state = current.state;
+  const settings = current.settings;
+  const deadlines = plannerItemsForView(state.items, "deadlines", current.announcementRead);
+  const completed = plannerItemsForView(state.items, "completed", current.announcementRead);
+  const counts = countPlannerTypes(state.items);
+  const optionalStatsPermission = await chrome.permissions.contains({
+    origins: [`${GLOBAL_STATS_ORIGIN}/*`],
+  });
+  const browser = await browserName();
+  const manualCompleted = state.items.filter((item) => completionSource(item) === "otnow").length;
+  const adjustedDeadlines = state.items.filter((item) => item.deadlineAdjusted).length;
+  const readAnnouncements = Object.keys(current.announcementRead || {}).length;
+  const viewedRelease = current.releaseNoteSeen === CURRENT_RELEASE_NOTE.id;
+
+  return [
+    "OTNow troubleshooting information",
+    `Generated: ${new Date().toLocaleString()}`,
+    "",
+    `OTNow version: ${chrome.runtime.getManifest().version}`,
+    `Browser: ${browser}`,
+    `Platform: ${platformName()}`,
+    `Panel size: ${window.innerWidth} x ${window.innerHeight} CSS pixels`,
+    `Display scale: ${window.devicePixelRatio || 1}`,
+    `Browser reports online: ${yesNo(navigator.onLine)}`,
+    "",
+    `Sync status: ${state.status}`,
+    `Last successful sync: ${exactSync(state.lastSyncAt)}`,
+    `Sync data is stale: ${yesNo(Boolean(state.stale) || syncAge(state.lastSyncAt) >= STALE_SYNC_MS)}`,
+    `Last sync error category: ${state.errorKind || "none"}`,
+    `First sync completed: ${yesNo(state.firstSyncComplete)}`,
+    `Cached courses: ${state.courses.length}`,
+    `Cached dated items: ${state.items.length}`,
+    `Items in Deadlines: ${deadlines.length}`,
+    `Items in Completed: ${completed.length}`,
+    `Assignments / quizzes / discussions: ${counts.assignment} / ${counts.quiz} / ${counts.discussion}`,
+    `Announcements / events / notes / other: ${counts.announcement} / ${counts.event} / ${counts.note} / ${counts.other}`,
+    `Read announcements saved locally: ${readAnnouncements}`,
+    `Manual completions currently loaded: ${manualCompleted}`,
+    `Adjusted deadlines currently loaded: ${adjustedDeadlines}`,
+    "",
+    `Theme: ${settings.theme}`,
+    `Notifications enabled: ${yesNo(settings.notificationsEnabled)}`,
+    `Moved-date alerts enabled: ${yesNo(settings.notifyMovedDates)}`,
+    `Muted course count: ${settings.mutedCourseIds.length}`,
+    `Anonymous statistics enabled: ${yesNo(settings.shareAnonymousStats)}`,
+    `Statistics permission granted: ${yesNo(optionalStatsPermission)}`,
+    `Statistics choice completed: ${yesNo(settings.statsOnboardingSeen)}`,
+    `Current update note acknowledged: ${yesNo(viewedRelease)}`,
+    `Current panel view: ${activeView}`,
+    `Deadline filters active: ${yesNo(courseFilter !== "all" || typeFilter !== "all" || Boolean(searchQueries.deadlines))}`,
+    `Completed filters active: ${yesNo(courseFilter !== "all" || completedTypeFilter !== "all" || Boolean(searchQueries.completed))}`,
+    "",
+    "Privacy check: This report contains no names, emails, course names or codes, assignment titles, grades, due dates, URLs, Canvas IDs, extension identifiers, passwords, session data, authentication tokens, IP addresses, or full browser user-agent string.",
+  ].join("\n");
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const input = document.createElement("textarea");
+    input.value = text;
+    input.setAttribute("readonly", "");
+    input.style.position = "fixed";
+    input.style.opacity = "0";
+    document.body.append(input);
+    input.select();
+    const copied = document.execCommand("copy");
+    input.remove();
+    return copied;
+  }
+}
+
 function showState(title, message, { openCanvas = false, retry = false } = {}) {
   app.replaceChildren();
   const screen = element("section", "state-screen");
@@ -99,6 +222,43 @@ function showState(title, message, { openCanvas = false, retry = false } = {}) {
   }
   screen.append(actions);
   app.append(screen);
+}
+
+function renderSyncNotice(state) {
+  const ageStale = syncAge(state.lastSyncAt) >= STALE_SYNC_MS;
+  const shouldShow = state.items.length > 0 && state.status !== "syncing" && (Boolean(state.stale) || ageStale);
+  notice.hidden = !shouldShow;
+  notice.replaceChildren();
+  if (!shouldShow) return;
+
+  const copy = element("div", "sync-warning-copy");
+  let heading = "OTNow hasn't synced recently";
+  let message = "Your Canvas session may have expired. Your saved deadlines are still available.";
+  if (state.errorKind === "offline") {
+    heading = "You're offline";
+    message = "OTNow is showing the deadlines saved during the last successful sync.";
+  } else if (["signed-out", "no-tab"].includes(state.errorKind)) {
+    heading = "Canvas needs to be reconnected";
+    message = "Open Canvas, make sure you're signed in, and then try the sync again.";
+  } else if (state.stale) {
+    heading = "Canvas couldn't be refreshed";
+    message = "OTNow is showing your last saved deadlines while you reconnect.";
+  }
+  copy.append(
+    element("strong", "", heading),
+    element("span", "", message),
+    element("small", "", `Last successful sync: ${exactSync(state.lastSyncAt)}`),
+  );
+
+  const actions = element("div", "sync-warning-actions");
+  const canvas = element("button", "sync-warning-button", "Open Canvas");
+  canvas.type = "button";
+  canvas.addEventListener("click", () => chrome.runtime.sendMessage({ type: "panel:open-canvas" }));
+  const retry = element("button", "sync-warning-button primary", "Try again");
+  retry.type = "button";
+  retry.addEventListener("click", syncNow);
+  actions.append(canvas, retry);
+  notice.append(copy, actions);
 }
 
 function renderViewTabs(state) {
@@ -271,6 +431,93 @@ function courseFilterLabel(courses) {
 
 function typeFilterLabel(value) {
   return value === "all" ? "All types" : (TYPE_LABELS[value] || TYPE_LABELS.other);
+}
+
+function itemMatchesSearch(item, query) {
+  const value = query.trim().toLocaleLowerCase();
+  if (!value) return true;
+  const course = current.state.courses.find((entry) => entry.id === item.courseId);
+  return [item.title, item.courseCode, course?.name, TYPE_LABELS[item.type] || TYPE_LABELS.other]
+    .filter(Boolean)
+    .some((part) => String(part).toLocaleLowerCase().includes(value));
+}
+
+function filtersActive(view) {
+  const type = view === "completed" ? completedTypeFilter : typeFilter;
+  return courseFilter !== "all" || type !== "all" || Boolean(searchQueries[view]);
+}
+
+function clearListFilters(view) {
+  courseFilter = "all";
+  localStorage.setItem("otnow:course", "all");
+  if (view === "completed") {
+    completedTypeFilter = "all";
+    localStorage.setItem("otnow:completed-type", "all");
+  } else {
+    typeFilter = "all";
+    localStorage.setItem("otnow:type", "all");
+  }
+  searchQueries[view] = "";
+  searchOpen[view] = false;
+  localStorage.removeItem(`otnow:search:${view}`);
+  render();
+}
+
+function renderSearch(view, label) {
+  const wrap = element("section", `list-search${searchOpen[view] || searchQueries[view] ? " is-open" : ""}`);
+  if (!searchOpen[view] && !searchQueries[view]) {
+    const open = element("button", "list-search-toggle", `Search ${label}`);
+    open.type = "button";
+    open.setAttribute("aria-expanded", "false");
+    open.addEventListener("click", () => {
+      searchOpen[view] = true;
+      render();
+      focusAfterRender(`[data-search-view="${view}"]`);
+    });
+    wrap.append(open);
+    return wrap;
+  }
+
+  const form = element("form", "list-search-form");
+  form.setAttribute("role", "search");
+  const input = element("input", "list-search-input");
+  input.type = "search";
+  input.placeholder = `Search ${label}`;
+  input.value = searchQueries[view];
+  input.dataset.searchView = view;
+  input.setAttribute("aria-label", `Search ${label}`);
+  const apply = element("button", "list-search-button primary", "Search");
+  apply.type = "submit";
+  const clear = element("button", "list-search-button", searchQueries[view] ? "Clear" : "Close");
+  clear.type = "button";
+  clear.addEventListener("click", () => {
+    searchQueries[view] = "";
+    searchOpen[view] = false;
+    localStorage.removeItem(`otnow:search:${view}`);
+    render();
+  });
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    searchQueries[view] = input.value.trim();
+    localStorage.setItem(`otnow:search:${view}`, searchQueries[view]);
+    searchOpen[view] = Boolean(searchQueries[view]);
+    render();
+  });
+  form.append(input, apply, clear);
+  wrap.append(form);
+  return wrap;
+}
+
+function renderEmptyState(message, view) {
+  const empty = element("div", "empty list-empty");
+  empty.append(element("p", "", message));
+  if (filtersActive(view)) {
+    const clear = element("button", "clear-filters", "Clear filters");
+    clear.type = "button";
+    clear.addEventListener("click", () => clearListFilters(view));
+    empty.append(clear);
+  }
+  return empty;
 }
 
 function renderOrganizer(view, controls, summaryParts) {
@@ -707,7 +954,7 @@ function renderItem(item, now, { completedView = false } = {}) {
 function renderDeadlineGroups(items, emptyMessage = "No matching dated coursework.") {
   const now = new Date();
   const groups = groupPlannerItems(items, groupMode, now);
-  if (!groups.length) return element("div", "empty", emptyMessage);
+  if (!groups.length) return renderEmptyState(emptyMessage, "deadlines");
   const output = document.createDocumentFragment();
   for (const groupData of groups) {
     const group = element("section", "group");
@@ -728,13 +975,18 @@ function renderCompleted(items) {
     element("h1", "", "Completed"),
     element("p", "", "Review finished work. Only check-offs made in OTNow can be moved back to Deadlines."),
   );
-  section.append(header, renderCompletedControls(current.state.courses, items));
+  section.append(header, renderSearch("completed", "completed items"), renderCompletedControls(current.state.courses, items));
   const courseItems = courseFilter === "all" ? items : items.filter((item) => item.courseId === courseFilter);
-  const visibleItems = courseItems.filter((item) => completedTypeFilter === "all" || item.type === completedTypeFilter);
+  const visibleItems = courseItems
+    .filter((item) => completedTypeFilter === "all" || item.type === completedTypeFilter)
+    .filter((item) => itemMatchesSearch(item, searchQueries.completed));
   if (!visibleItems.length) {
-    section.append(element("div", "empty", courseFilter === "all"
-      ? (completedTypeFilter === "all" ? "No completed dated coursework is saved yet." : "No completed items match this type.")
-      : "No completed items match this course and type."));
+    const message = searchQueries.completed
+      ? `No completed items match “${searchQueries.completed}”.`
+      : courseFilter === "all"
+        ? (completedTypeFilter === "all" ? "No completed dated coursework is saved yet." : "No completed items match this type.")
+        : "No completed items match this course and type.";
+    section.append(renderEmptyState(message, "completed"));
     return section;
   }
   const groups = groupCompletedItems(visibleItems, completedGroupMode, new Date());
@@ -846,6 +1098,73 @@ function renderRating(metrics = {}, globalStats = {}, settings = {}) {
   return wrap;
 }
 
+function actionLink(label, href, className = "insight-action") {
+  const link = element("a", className, label);
+  link.href = href;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  return link;
+}
+
+function renderTroubleshooting() {
+  const section = element("section", "insight-panel insight-troubleshooting");
+  section.append(
+    element("strong", "", "Troubleshooting and feedback"),
+    element("p", "", "For a bug or sync problem, copy the technical report first and paste it into the required diagnostics field in the feedback form. It never includes coursework, account details, URLs or login data."),
+  );
+  const status = element("p", "diagnostic-status");
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
+  status.hidden = true;
+  const actions = element("div", "insight-actions");
+  const copy = element("button", "insight-action", "Copy troubleshooting info");
+  copy.type = "button";
+  copy.addEventListener("click", async () => {
+    copy.disabled = true;
+    const report = await buildDiagnosticReport();
+    const copied = await copyText(report);
+    status.hidden = false;
+    status.textContent = copied
+      ? "Troubleshooting info copied. Paste it into the feedback form."
+      : "The report could not be copied. Try again or describe the problem manually.";
+    copy.textContent = copied ? "Copied" : "Try copying again";
+    copy.disabled = false;
+  });
+  actions.append(
+    copy,
+    actionLink("Open feedback form", FEEDBACK_URL, "insight-action primary"),
+    actionLink("Report a security issue privately", SECURITY_REPORT_URL),
+  );
+  section.append(status, actions);
+  return section;
+}
+
+function renderAbout() {
+  const section = element("section", "insight-panel insight-about");
+  section.append(
+    element("strong", "", "About OTNow"),
+    element("p", "", `Version ${chrome.runtime.getManifest().version} · Unofficial and independent from Ontario Tech University and Instructure.`),
+  );
+  const actions = element("div", "insight-actions");
+  const changes = element("button", "insight-action", "What's new");
+  changes.type = "button";
+  changes.addEventListener("click", () => {
+    location.href = "../options/changelog.html?source=insights";
+  });
+  const settings = element("button", "insight-action", "Settings");
+  settings.type = "button";
+  settings.addEventListener("click", () => chrome.runtime.sendMessage({ type: "panel:open-options" }));
+  actions.append(
+    changes,
+    settings,
+    actionLink("Privacy", `${GLOBAL_STATS_ORIGIN}/privacy`),
+    actionLink("Chrome Web Store", CHROME_WEB_STORE_URL),
+    actionLink("GitHub", REPOSITORY_URL),
+  );
+  section.append(actions);
+  return section;
+}
+
 function renderInsights(metrics = {}, globalStats = {}, settings = {}) {
   const section = element("section", "insights");
   const header = element("div", "section-intro");
@@ -878,28 +1197,17 @@ function renderInsights(metrics = {}, globalStats = {}, settings = {}) {
     statisticsChoice.append(statisticsCopy, statisticsButton);
   }
 
-  const privacy = element("div", "insight-privacy");
+  const privacy = element("section", "insight-panel insight-privacy");
   privacy.append(
     element("strong", "", "Saved on this device"),
     element("p", "", "This activity summary stays in this Chrome profile. If anonymous statistics are enabled, OTNow shares only the broad counters described in Insights and Settings."),
   );
-  const feedback = element("div", "insight-actions");
-  const feedbackAction = element("a", "insight-action primary", "Send feedback");
-  feedbackAction.href = FEEDBACK_URL;
-  feedbackAction.target = "_blank";
-  feedbackAction.rel = "noopener noreferrer";
-  const securityAction = element("a", "insight-action", "Report a security issue privately");
-  securityAction.href = SECURITY_REPORT_URL;
-  securityAction.target = "_blank";
-  securityAction.rel = "noopener noreferrer";
-  feedback.append(feedbackAction, securityAction);
-  privacy.append(feedback);
 
   const rating = renderRating(metrics, globalStats, settings);
   section.append(header, rows);
   if (statisticsChoice) section.append(statisticsChoice);
   if (rating) section.append(rating);
-  section.append(privacy);
+  section.append(renderTroubleshooting(), privacy, renderAbout());
   return section;
 }
 
@@ -934,7 +1242,8 @@ function renderReady(state, settings) {
   const statusItems = plannerItemsForView(state.items, "deadlines", current.announcementRead);
   const courseItems = statusItems.filter((item) => courseFilter === "all" || item.courseId === courseFilter);
   const visibleItems = courseItems
-    .filter((item) => typeFilter === "all" || item.type === typeFilter);
+    .filter((item) => typeFilter === "all" || item.type === typeFilter)
+    .filter((item) => itemMatchesSearch(item, searchQueries.deadlines));
   const scopeAnnouncementIds = announcementIdsInScope(allOpenItems, courseFilter, current.announcementRead);
   const unreadAnnouncementIds = announcementIdsInScope(
     allOpenItems,
@@ -943,7 +1252,9 @@ function renderReady(state, settings) {
     { unreadOnly: true },
   );
   let emptyMessage = "No matching dated coursework.";
-  if (typeFilter === "announcement" && !scopeAnnouncementIds.length) {
+  if (searchQueries.deadlines) {
+    emptyMessage = `No deadlines match “${searchQueries.deadlines}”.`;
+  } else if (typeFilter === "announcement" && !scopeAnnouncementIds.length) {
     emptyMessage = courseFilter === "all"
       ? "Canvas returned no dated announcements."
       : "Canvas returned no dated announcements for this course.";
@@ -951,7 +1262,7 @@ function renderReady(state, settings) {
     emptyMessage = "All announcements in this scope are read. Find them in Completed.";
   }
 
-  app.append(renderOverview(statusItems), renderControls(state.courses, statusItems));
+  app.append(renderOverview(statusItems), renderSearch("deadlines", "deadlines"), renderControls(state.courses, statusItems));
   const announcementActions = renderAnnouncementActions(statusItems);
   if (announcementActions) app.append(announcementActions);
   const sourceNote = element("p", "source-note", "Announcements, assignments, quizzes, discussions, events, planner notes, and other dated Canvas items are included when Canvas returns them.");
@@ -969,8 +1280,9 @@ function render() {
   refreshButton.classList.toggle("spinning", state.status === "syncing");
   refreshButton.disabled = state.status === "syncing";
   syncStatus.textContent = relativeSync(state.lastSyncAt);
-  notice.hidden = !state.stale;
-  if (state.stale) notice.textContent = `${state.error || "Canvas could not be refreshed."} Showing the last saved deadlines.`;
+  syncStatus.title = exactSync(state.lastSyncAt);
+  syncStatus.setAttribute("aria-label", `${relativeSync(state.lastSyncAt)}. Last successful sync: ${exactSync(state.lastSyncAt)}.`);
+  renderSyncNotice(state);
 
   if (state.status === "idle" || (state.status === "syncing" && !state.items.length)) {
     showState("Reading Canvas", "OTNow is collecting your active courses and dated coursework.");
@@ -1032,5 +1344,10 @@ chrome.storage.onChanged.addListener((changes, area) => {
 configureSupportLink();
 load({ recordOpen: true });
 setInterval(() => {
-  if (current.state) syncStatus.textContent = relativeSync(current.state.lastSyncAt);
+  if (current.state) {
+    syncStatus.textContent = relativeSync(current.state.lastSyncAt);
+    syncStatus.title = exactSync(current.state.lastSyncAt);
+    syncStatus.setAttribute("aria-label", `${relativeSync(current.state.lastSyncAt)}. Last successful sync: ${exactSync(current.state.lastSyncAt)}.`);
+    renderSyncNotice(current.state);
+  }
 }, 60_000);

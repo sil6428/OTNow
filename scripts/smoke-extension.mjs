@@ -189,6 +189,25 @@ try {
   if (!initialPanel.includes("Announcements") || !initialPanel.includes("Mark 1 announcement read")) {
     throw new Error("Announcement controls are missing from the deadline view.");
   }
+
+  await page.getByRole("button", { name: /Search deadlines/ }).click();
+  const deadlineSearch = page.locator('[data-search-view="deadlines"]');
+  await deadlineSearch.fill("Sanitized assignment");
+  await deadlineSearch.press("Enter");
+  const searchedDeadlineTitles = await page.locator(".item-title").allInnerTexts();
+  if (searchedDeadlineTitles.length !== 1 || searchedDeadlineTitles[0] !== "Sanitized assignment") {
+    throw new Error(`Deadline search did not isolate the matching local item: ${JSON.stringify(searchedDeadlineTitles)}`);
+  }
+  await page.locator('[data-search-view="deadlines"]').fill("No result should match");
+  await page.locator('[data-search-view="deadlines"]').press("Enter");
+  if (!await page.getByRole("button", { name: "Clear filters", exact: true }).count()) {
+    throw new Error("An empty deadline search does not offer a one-click filter reset.");
+  }
+  await page.getByRole("button", { name: "Clear filters", exact: true }).click();
+  if (!(await page.locator("#app").innerText()).includes("Mark 1 announcement read")) {
+    throw new Error("Clearing deadline filters did not restore the full local list.");
+  }
+
   await page.getByRole("button", { name: "Mark 1 announcement read" }).click();
   await page.waitForSelector("[data-announcement-status]");
   const markedRead = await page.evaluate(async () => (await chrome.storage.local.get("announcementRead")).announcementRead);
@@ -215,6 +234,14 @@ try {
   }
   await completedOrganizer.locator(".control").nth(1).locator("select").selectOption("all");
   await completedOrganizer.locator(".control").nth(2).locator("select").selectOption("type");
+  await page.getByRole("button", { name: /Search completed items/ }).click();
+  await page.locator('[data-search-view="completed"]').fill("Local check-off");
+  await page.locator('[data-search-view="completed"]').press("Enter");
+  const searchedCompletedTitles = await page.locator(".item-title").allInnerTexts();
+  if (searchedCompletedTitles.length !== 1 || searchedCompletedTitles[0] !== "Local check-off") {
+    throw new Error(`Completed search did not isolate the matching local item: ${JSON.stringify(searchedCompletedTitles)}`);
+  }
+  await page.getByRole("button", { name: "Clear", exact: true }).click();
   const completedPanel = await page.locator("#app").innerText();
   if (!completedPanel.includes("Sanitized notice") || !completedPanel.includes("Read in OTNow") || !completedPanel.includes("Mark unread")) {
     throw new Error("Read announcements are not recoverable from Completed.");
@@ -229,6 +256,43 @@ try {
   await page.waitForFunction(async () => !((await chrome.storage.local.get("announcementRead")).announcementRead?.["announcement:1"]));
   if ((await page.locator("#app").innerText()).includes("Sanitized notice")) throw new Error("Mark unread did not remove the announcement from Completed.");
 
+  await page.evaluate(async () => {
+    const { state } = await chrome.storage.local.get("state");
+    await chrome.storage.local.set({
+      state: {
+        ...state,
+        status: "ready",
+        stale: { at: new Date().toISOString(), kind: "signed-out" },
+        errorKind: "signed-out",
+        lastSyncAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+      },
+    });
+  });
+  await page.waitForSelector(".sync-warning-copy");
+  const syncWarning = await page.locator("#notice").innerText();
+  if (!syncWarning.includes("Canvas needs to be reconnected") || !syncWarning.includes("Last successful sync")) {
+    throw new Error("Stale signed-out data does not explain how to reconnect Canvas.");
+  }
+  if (!await page.getByRole("button", { name: "Open Canvas", exact: true }).count()
+    || !await page.getByRole("button", { name: "Try again", exact: true }).count()) {
+    throw new Error("The stale-data notice is missing its recovery actions.");
+  }
+  if (!await page.locator("#sync-status").getAttribute("title")) {
+    throw new Error("The sync footer does not expose the exact successful sync time on hover.");
+  }
+  await page.evaluate(async () => {
+    const { state } = await chrome.storage.local.get("state");
+    await chrome.storage.local.set({
+      state: {
+        ...state,
+        stale: null,
+        errorKind: null,
+        lastSyncAt: new Date().toISOString(),
+      },
+    });
+  });
+  await page.waitForSelector("#notice", { state: "hidden" });
+
   await page.getByRole("button", { name: "Insights" }).click();
   const insightsPanel = await page.locator("#app").innerText();
   if (insightsPanel.includes("Successful refreshes") || insightsPanel.includes("Days used")) {
@@ -236,6 +300,28 @@ try {
   }
   if (!insightsPanel.includes("Review anonymous statistics")) {
     throw new Error("Insights does not preserve the anonymous statistics opt-in after a decline.");
+  }
+  for (const expected of ["Troubleshooting and feedback", "Copy troubleshooting info", "What's new", "Chrome Web Store"]) {
+    if (!insightsPanel.includes(expected)) throw new Error(`Insights is missing its completeness action: ${expected}`);
+  }
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        writeText: async (value) => {
+          window.__copiedDiagnostic = value;
+        },
+      },
+    });
+  });
+  await page.getByRole("button", { name: "Copy troubleshooting info", exact: true }).click();
+  await page.waitForFunction(() => document.querySelector(".diagnostic-status")?.textContent?.includes("copied"));
+  const diagnostic = await page.evaluate(() => window.__copiedDiagnostic || "");
+  for (const expected of ["OTNow troubleshooting information", "OTNow version:", "Last sync error category:", "Cached dated items:"]) {
+    if (!diagnostic.includes(expected)) throw new Error(`Copied diagnostics are missing: ${expected}`);
+  }
+  for (const forbidden of ["TEST 1000", "Sanitized test course", "Sanitized assignment", "discussion_topics/1"]) {
+    if (diagnostic.includes(forbidden)) throw new Error(`Copied diagnostics leaked test data: ${forbidden}`);
   }
   const feedbackHref = await page.locator("#feedback-link").getAttribute("href");
   if (!feedbackHref?.startsWith("https://docs.google.com/forms/")) throw new Error("Panel feedback link is not configured.");
@@ -249,6 +335,9 @@ try {
     declineVerified: true,
     announcementsVerified: true,
     completedVerified: true,
+    searchVerified: true,
+    syncRecoveryVerified: true,
+    diagnosticsVerified: true,
     insightsVerified: true,
   }));
 } finally {
