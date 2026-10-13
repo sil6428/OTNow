@@ -1110,7 +1110,7 @@ function renderTroubleshooting() {
   const section = element("section", "insight-panel insight-troubleshooting");
   section.append(
     element("strong", "", "Troubleshooting and feedback"),
-    element("p", "", "For a bug or sync problem, copy the technical report first and paste it into the required diagnostics field in the feedback form. It never includes coursework, account details, URLs or login data."),
+    element("p", "", "For a bug or sync problem, copy the technical report first and paste it into the troubleshooting field in the feedback form. It never includes coursework, account details, URLs or login data."),
   );
   const status = element("p", "diagnostic-status");
   status.setAttribute("role", "status");
