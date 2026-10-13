@@ -385,7 +385,8 @@ main { padding: 0 14px 58px; }
   border-radius: 8px;
   background: var(--surface-subtle);
 }
-.organizer .controls { margin-top: 0; border-radius: 0 0 8px 8px; background: transparent; }
+.organizer .controls { margin-top: 0; border-radius: 0; background: transparent; }
+.organizer .list-search { min-height: 38px; margin: 0; padding: 0 10px 10px; }
 .completed-controls { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 104px; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -590,6 +591,10 @@ main { padding: 0 14px 58px; }
 .course-link.primary { font-weight: 700; }
 
 .insights { padding-bottom: 10px; }
+.insight-activity { margin-top: 17px; }
+.insight-section-title,
+.insight-panel-title { margin: 0; font-size: 12px; line-height: 1.3; }
+.insight-section-title { color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .insight-list { margin-top: 6px; }
 .insight-row {
   display: flex;
@@ -656,7 +661,6 @@ main { padding: 0 14px 58px; }
 .rating-choices:has(.rating-choice:hover) .rating-choice:not(:hover) { opacity: .5; }
 .rating-choices.is-submitting { pointer-events: none; opacity: .55; }
 .insight-panel { margin-top: 15px; padding: 13px 2px 0; border-top: 1px solid var(--line); }
-.insight-panel strong { font-size: 12px; }
 .insight-panel p { margin: 4px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
 .insight-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
 .insight-action { padding: 6px 8px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); color: var(--muted); font-size: 10px; font-weight: 700; text-decoration: none; cursor: pointer; }
@@ -664,6 +668,11 @@ main { padding: 0 14px 58px; }
 .insight-action:focus-visible { border-color: var(--blue); color: var(--blue); }
 .insight-action.primary { border-color: var(--blue); background: var(--blue); color: white; }
 .insight-action:disabled { cursor: wait; opacity: .6; }
+.insight-links { display: flex; flex-wrap: wrap; gap: 7px 13px; margin-top: 10px; }
+.insight-link { padding: 0; border: 0; background: transparent; color: var(--blue); font-size: 10px; font-weight: 700; text-decoration: none; cursor: pointer; }
+.insight-link:hover,
+.insight-link:focus-visible { color: var(--text); text-decoration: underline; }
+.insight-actions .security-link { align-self: center; margin-left: 1px; }
 .diagnostic-status { padding: 7px 8px; border-radius: 5px; background: var(--surface-subtle); color: var(--green) !important; }
 .diagnostic-status[hidden] { display: none; }
 

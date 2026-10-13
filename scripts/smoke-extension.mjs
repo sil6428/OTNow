@@ -181,6 +181,9 @@ try {
   const deadlineOrganizer = page.locator("details.organizer");
   const deadlineGroup = deadlineOrganizer.locator(".control").nth(2).locator("select");
   if (!(await deadlineOrganizer.evaluate((node) => node.open))) throw new Error("Deadline organization should start expanded.");
+  if (await deadlineOrganizer.getByRole("button", { name: /Search deadlines/ }).count() !== 1) {
+    throw new Error("Deadline search should live inside the Organize area.");
+  }
   if (await deadlineGroup.inputValue() !== "date") throw new Error("Fresh installs should group deadlines by date.");
   await deadlineOrganizer.locator("summary").click();
   if (await deadlineOrganizer.evaluate((node) => node.open)) throw new Error("Deadline organization could not be collapsed.");
@@ -225,6 +228,9 @@ try {
   const completedType = completedOrganizer.locator(".control").nth(1).locator("select");
   const completedGroup = completedOrganizer.locator(".control").nth(2).locator("select");
   if (!(await completedOrganizer.evaluate((node) => node.open))) throw new Error("Completed organization should start expanded.");
+  if (await completedOrganizer.getByRole("button", { name: /Search completed items/ }).count() !== 1) {
+    throw new Error("Completed search should live inside the Organize area.");
+  }
   if (await completedOrganizer.locator("select").count() !== 3) throw new Error("Completed view is missing course, type, or grouping controls.");
   if (await completedGroup.inputValue() !== "date") throw new Error("Completed work should default to due-date grouping.");
   await completedType.selectOption("note");
@@ -301,8 +307,14 @@ try {
   if (!insightsPanel.includes("Review anonymous statistics")) {
     throw new Error("Insights does not preserve the anonymous statistics opt-in after a decline.");
   }
-  for (const expected of ["Troubleshooting and feedback", "Copy troubleshooting info", "What's new", "Chrome Web Store"]) {
+  for (const expected of ["YOUR ACTIVITY", "Help and feedback", "Copy troubleshooting info", "About and settings", "What's new", "Chrome Web Store"]) {
     if (!insightsPanel.includes(expected)) throw new Error(`Insights is missing its completeness action: ${expected}`);
+  }
+  const activityPosition = insightsPanel.indexOf("YOUR ACTIVITY");
+  const helpPosition = insightsPanel.indexOf("Help and feedback");
+  const aboutPosition = insightsPanel.indexOf("About and settings");
+  if (!(activityPosition < helpPosition && helpPosition < aboutPosition)) {
+    throw new Error("Insights sections are not ordered as activity, help, then about and settings.");
   }
   await page.evaluate(() => {
     Object.defineProperty(navigator, "clipboard", {

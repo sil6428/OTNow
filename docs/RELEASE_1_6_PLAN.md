@@ -102,12 +102,13 @@ Make announcement-like Canvas planner entries understandable and dismissible wit
 
 ### 11. Finish the common support and recovery paths
 
-- Add local search to Deadlines and Completed. Search only the items already loaded on the device by item title, course name or code, and Canvas-declared type; never transmit the query or matching content.
+- Add local search to Deadlines and Completed inside each view's collapsible **Organize** area. Search only the items already loaded on the device by item title, course name or code, and Canvas-declared type; never transmit the query or matching content.
 - When course, type, or search filters produce no results, provide one **Clear filters** action that restores the full view.
 - When the saved Canvas data is stale, explain whether OTNow is offline, signed out, or unable to refresh. Preserve the cache and provide **Open Canvas** and **Try again** rather than a dead-end error.
 - Keep the footer’s relative sync age, and expose the exact successful date and time on hover or keyboard focus.
 - Keep **What’s new**, Settings, Privacy, the official Chrome Web Store listing, and GitHub available from a compact About area in Insights.
 - Add **Copy troubleshooting info** in Insights. The report may include OTNow/browser versions, coarse operating-system family, panel size, display scale, online status, sync state, anonymous item-type counts, feature settings, and active-filter state.
+- Give Insights a clear order: local activity first, optional statistics second, help and feedback third, then a compact unboxed About and Settings link row. Do not repeat a separate privacy card when the page introduction already explains that the summary is local.
 - The report must never include a name, email, course name or code, item title, grade, due date, URL, Canvas ID, extension identifier, password, session data, authentication token, IP address, or full browser user-agent string.
 - Add a conditional technical-feedback path to the existing form and tell the student to paste the report from Insights. Keep the diagnostic optional while public users remain on 1.5, then make it required for that technical path only after 1.6 is published and the copy action is available to them. Feature suggestions and general feedback must bypass the technical section.
 - Keep security reports on GitHub’s private vulnerability route. A copied diagnostic is support context, not a substitute for a private security report.

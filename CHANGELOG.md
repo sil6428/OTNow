@@ -10,10 +10,10 @@
 - Replaces the mandatory first-open statistics screen with a compact, non-blocking notification that links to the full opt-in disclosure.
 - Adds a one-time plain-language release announcement and a themed **What’s new** page. Local previews use a revision ID so each meaningful build can be tested once before release notes are consolidated.
 - Removes refresh and days-used vanity cards from personal Insights without deleting their saved counters.
-- Adds local search to Deadlines and Completed, plus a one-click reset when a search or filter produces no results.
+- Adds local search inside the collapsible **Organize** area in Deadlines and Completed, plus a one-click reset when a search or filter produces no results.
 - Adds a stale-sync recovery notice with an exact last-successful-sync tooltip, **Open Canvas**, and **Try again** actions while preserving the offline cache.
 - Expands Insights with a privacy-safe troubleshooting report that copies technical state and anonymous counts without names, coursework, dates, URLs, Canvas IDs, extension identifiers, passwords, sessions, authentication tokens, or a full browser user-agent string.
-- Adds a compact About area in Insights for current release notes, Settings, Privacy, the Chrome Web Store listing, and GitHub.
+- Reorders Insights into local activity, optional sharing, help and feedback, then a compact unboxed About and Settings link row.
 - Adds themed `/support` and `/uninstall` routes to the statistics Worker. Chrome uninstall registration remains deferred until the route is deployed and verified.
 - Keeps the Ko-fi link hidden until the canonical URL is confirmed and adds no new permissions.
 

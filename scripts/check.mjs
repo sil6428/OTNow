@@ -100,7 +100,7 @@ assert.match(panelSource, /release-note-prompt/, "Version changes must use a one
 assert.match(panelSource, /renderSyncNotice/, "Stale cached data must expose a recovery notice");
 assert.match(panelSource, /Copy troubleshooting info/, "Insights must expose privacy-safe troubleshooting information");
 assert.match(panelSource, /Privacy check: This report contains no names/, "Troubleshooting information must state its privacy boundary");
-assert.match(panelSource, /renderSearch\("completed", "completed items"\)/, "Completed work must support local search");
+assert.match(panelSource, /organizer\.append\(summary, controls, renderSearch\(view, searchLabel\)\)/, "Local search must live inside the Organize area");
 assert.match(panelSource, /Clear filters/, "Filtered empty states must offer a one-click reset");
 assert.match(panelSource, /What's new/, "Insights must keep the current release notes accessible");
 assert.match(panelSource, /Chrome Web Store/, "Insights must link back to the official Store listing");

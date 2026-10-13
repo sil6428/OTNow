@@ -3,7 +3,7 @@
 // Keep the voice thankful and personal, but vary the opening and milestone
 // wording for each patch instead of turning this into a repeated template.
 export const CURRENT_RELEASE_NOTE = Object.freeze({
-  id: "1.6.0-local-20261012-07",
+  id: "1.6.0-local-20261012-08",
   version: "1.6.0",
   date: "October 12, 2026",
   label: "Local preview",
@@ -39,7 +39,7 @@ export const CURRENT_RELEASE_NOTE = Object.freeze({
     }),
     Object.freeze({
       title: "Faster local search",
-      detail: "Search Deadlines or Completed by item, course, or type, then clear every active filter in one click.",
+      detail: "Search now sits inside Organize with the other filters, and every active filter can still be cleared in one click.",
     }),
     Object.freeze({
       title: "Better sync recovery",
@@ -50,8 +50,8 @@ export const CURRENT_RELEASE_NOTE = Object.freeze({
       detail: "Insights can copy detailed technical information for a bug report without names, coursework, dates, links, Canvas IDs, or login data.",
     }),
     Object.freeze({
-      title: "Useful links stay available",
-      detail: "Insights now keeps What’s new, Settings, Privacy, the Chrome Web Store, and GitHub together in one About section.",
+      title: "A cleaner Insights page",
+      detail: "Activity, optional sharing, help, and About now follow a clear order, with the smaller links kept together at the bottom.",
     }),
   ]),
 });

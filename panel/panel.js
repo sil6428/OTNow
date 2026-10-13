@@ -520,17 +520,19 @@ function renderEmptyState(message, view) {
   return empty;
 }
 
-function renderOrganizer(view, controls, summaryParts) {
+function renderOrganizer(view, controls, summaryParts, searchLabel) {
   const organizer = element("details", "organizer");
   const storageKey = `otnow:organizer-open:${view}`;
   organizer.open = localStorage.getItem(storageKey) !== "false";
   organizer.addEventListener("toggle", () => localStorage.setItem(storageKey, String(organizer.open)));
   const summary = element("summary", "organizer-summary");
+  const summaryDetails = [...summaryParts];
+  if (searchQueries[view]) summaryDetails.push(`Search: ${searchQueries[view]}`);
   summary.append(
     element("strong", "", "Organize"),
-    element("span", "", summaryParts.join(" · ")),
+    element("span", "", summaryDetails.join(" · ")),
   );
-  organizer.append(summary, controls);
+  organizer.append(summary, controls, renderSearch(view, searchLabel));
   return organizer;
 }
 
@@ -570,7 +572,7 @@ function renderControls(courses, items) {
     courseFilterLabel(courses),
     typeFilterLabel(typeFilter),
     groupMode === "date" ? "By date" : "By type",
-  ]);
+  ], "deadlines");
 }
 
 function scopedCourseLabel() {
@@ -716,7 +718,7 @@ function renderCompletedControls(courses, items) {
     courseFilterLabel(courses),
     typeFilterLabel(completedTypeFilter),
     completedGroupMode === "date" ? "By due date" : "By type",
-  ]);
+  ], "completed items");
 }
 
 function pause(milliseconds) {
@@ -975,7 +977,7 @@ function renderCompleted(items) {
     element("h1", "", "Completed"),
     element("p", "", "Review finished work. Only check-offs made in OTNow can be moved back to Deadlines."),
   );
-  section.append(header, renderSearch("completed", "completed items"), renderCompletedControls(current.state.courses, items));
+  section.append(header, renderCompletedControls(current.state.courses, items));
   const courseItems = courseFilter === "all" ? items : items.filter((item) => item.courseId === courseFilter);
   const visibleItems = courseItems
     .filter((item) => completedTypeFilter === "all" || item.type === completedTypeFilter)
@@ -1109,8 +1111,8 @@ function actionLink(label, href, className = "insight-action") {
 function renderTroubleshooting() {
   const section = element("section", "insight-panel insight-troubleshooting");
   section.append(
-    element("strong", "", "Troubleshooting and feedback"),
-    element("p", "", "For a bug or sync problem, copy the technical report first and paste it into the troubleshooting field in the feedback form. It never includes coursework, account details, URLs or login data."),
+    element("h2", "insight-panel-title", "Help and feedback"),
+    element("p", "", "Send general feedback anytime. For a bug or sync problem, copy the troubleshooting info first and paste it into the form. It never includes coursework, account details, URLs or login data."),
   );
   const status = element("p", "diagnostic-status");
   status.setAttribute("role", "status");
@@ -1131,9 +1133,9 @@ function renderTroubleshooting() {
     copy.disabled = false;
   });
   actions.append(
-    copy,
     actionLink("Open feedback form", FEEDBACK_URL, "insight-action primary"),
-    actionLink("Report a security issue privately", SECURITY_REPORT_URL),
+    copy,
+    actionLink("Report a security issue privately", SECURITY_REPORT_URL, "insight-link security-link"),
   );
   section.append(status, actions);
   return section;
@@ -1142,24 +1144,24 @@ function renderTroubleshooting() {
 function renderAbout() {
   const section = element("section", "insight-panel insight-about");
   section.append(
-    element("strong", "", "About OTNow"),
+    element("h2", "insight-panel-title", "About and settings"),
     element("p", "", `Version ${chrome.runtime.getManifest().version} · Unofficial and independent from Ontario Tech University and Instructure.`),
   );
-  const actions = element("div", "insight-actions");
-  const changes = element("button", "insight-action", "What's new");
+  const actions = element("div", "insight-links");
+  const changes = element("button", "insight-link", "What's new");
   changes.type = "button";
   changes.addEventListener("click", () => {
     location.href = "../options/changelog.html?source=insights";
   });
-  const settings = element("button", "insight-action", "Settings");
+  const settings = element("button", "insight-link", "Settings");
   settings.type = "button";
   settings.addEventListener("click", () => chrome.runtime.sendMessage({ type: "panel:open-options" }));
   actions.append(
-    changes,
     settings,
-    actionLink("Privacy", `${GLOBAL_STATS_ORIGIN}/privacy`),
-    actionLink("Chrome Web Store", CHROME_WEB_STORE_URL),
-    actionLink("GitHub", REPOSITORY_URL),
+    changes,
+    actionLink("Privacy", `${GLOBAL_STATS_ORIGIN}/privacy`, "insight-link"),
+    actionLink("Chrome Web Store", CHROME_WEB_STORE_URL, "insight-link"),
+    actionLink("GitHub", REPOSITORY_URL, "insight-link"),
   );
   section.append(actions);
   return section;
@@ -1169,10 +1171,12 @@ function renderInsights(metrics = {}, globalStats = {}, settings = {}) {
   const section = element("section", "insights");
   const header = element("div", "section-intro");
   header.append(
-    element("h1", "", "Your OTNow activity"),
-    element("p", "", "Activity recorded by OTNow in this Chrome profile."),
+    element("h1", "", "Insights"),
+    element("p", "", "A local summary of what OTNow has organized in this Chrome profile."),
   );
 
+  const activity = element("section", "insight-activity");
+  activity.append(element("h2", "insight-section-title", "Your activity"));
   const rows = element("div", "insight-list");
   rows.append(
     insightRow("Deadlines organized", metrics.deadlinesDiscovered, "Distinct dated Canvas items found"),
@@ -1180,6 +1184,7 @@ function renderInsights(metrics = {}, globalStats = {}, settings = {}) {
     insightRow("Reminders delivered", metrics.remindersSent, "Deadline notifications created"),
     insightRow("Manual check-offs", metrics.manualCompletions, "Items marked complete inside OTNow"),
   );
+  activity.append(rows);
 
   let statisticsChoice = null;
   if (!settings.shareAnonymousStats) {
@@ -1197,17 +1202,11 @@ function renderInsights(metrics = {}, globalStats = {}, settings = {}) {
     statisticsChoice.append(statisticsCopy, statisticsButton);
   }
 
-  const privacy = element("section", "insight-panel insight-privacy");
-  privacy.append(
-    element("strong", "", "Saved on this device"),
-    element("p", "", "This activity summary stays in this Chrome profile. If anonymous statistics are enabled, OTNow shares only the broad counters described in Insights and Settings."),
-  );
-
   const rating = renderRating(metrics, globalStats, settings);
-  section.append(header, rows);
+  section.append(header, activity);
   if (statisticsChoice) section.append(statisticsChoice);
   if (rating) section.append(rating);
-  section.append(renderTroubleshooting(), privacy, renderAbout());
+  section.append(renderTroubleshooting(), renderAbout());
   return section;
 }
 
@@ -1262,7 +1261,7 @@ function renderReady(state, settings) {
     emptyMessage = "All announcements in this scope are read. Find them in Completed.";
   }
 
-  app.append(renderOverview(statusItems), renderSearch("deadlines", "deadlines"), renderControls(state.courses, statusItems));
+  app.append(renderOverview(statusItems), renderControls(state.courses, statusItems));
   const announcementActions = renderAnnouncementActions(statusItems);
   if (announcementActions) app.append(announcementActions);
   const sourceNote = element("p", "source-note", "Announcements, assignments, quizzes, discussions, events, planner notes, and other dated Canvas items are included when Canvas returns them.");
