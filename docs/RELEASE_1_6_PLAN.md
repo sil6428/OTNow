@@ -109,7 +109,7 @@ Make announcement-like Canvas planner entries understandable and dismissible wit
 - Keep **What’s new**, Settings, Privacy, the official Chrome Web Store listing, and GitHub available from a compact About area in Insights.
 - Add **Copy troubleshooting info** in Insights. The report may include OTNow/browser versions, coarse operating-system family, panel size, display scale, online status, sync state, anonymous item-type counts, feature settings, and active-filter state.
 - The report must never include a name, email, course name or code, item title, grade, due date, URL, Canvas ID, extension identifier, password, session data, authentication token, IP address, or full browser user-agent string.
-- For technical bug or sync reports, make the diagnostic field required in the existing feedback form and tell the student to paste the report from Insights. Feature suggestions and general feedback should not be forced through an irrelevant technical-data step; use form branching if available.
+- Add a conditional technical-feedback path to the existing form and tell the student to paste the report from Insights. Keep the diagnostic optional while public users remain on 1.5, then make it required for that technical path only after 1.6 is published and the copy action is available to them. Feature suggestions and general feedback must bypass the technical section.
 - Keep security reports on GitHub’s private vulnerability route. A copied diagnostic is support context, not a substitute for a private security report.
 
 ## Reading-week research spike: match the active page theme
@@ -238,7 +238,7 @@ announcementRead = {
 - Personal Insights no longer shows successful-refresh or days-used vanity counters, while the four outcome-oriented counters remain accurate.
 - The troubleshooting report is copied only after a deliberate button press and is never uploaded automatically.
 - Sanitized browser-level checks prove the report excludes loaded course codes, course names, item titles, and Canvas paths.
-- Technical issue submissions require the copied diagnostic through a conditional form path; unrelated suggestions remain simple to submit.
+- The live form routes only bug and sync reports to the diagnostic section. The field stays optional until 1.6 is published, then becomes required for that technical path; unrelated suggestions remain simple to submit.
 
 ### Search and sync recovery
 
@@ -292,7 +292,7 @@ announcementRead = {
 - Remove the two low-value personal Insights cards without deleting their stored counters.
 - Add the separately sourced Chrome Web Store rating row to the existing statistics dashboard without changing its overall design.
 - Add local search, one-click filter recovery, stale-sync recovery, the Insights About area, and privacy-safe troubleshooting copy.
-- Update the Google Form so technical bug and sync paths require the copied diagnostic while nontechnical paths do not.
+- Update the Google Form with conditional routing now, keep diagnostics optional for public 1.5 users, and switch only the technical path to required after 1.6 is published.
 
 ### Week 4 — freeze and release
 
@@ -322,7 +322,7 @@ announcementRead = {
 16. Deadline organization can collapse, new installations default to date grouping, and Completed supports course, type, and due-date/type organization.
 17. Upgrades show one dismissible plain-language release notice, fresh installs do not, and the detailed themed page matches the current packaged announcement ID.
 18. Search, filter reset, stale-cache recovery, and the privacy-safe diagnostic pass the browser-level smoke test without any new permission.
-19. Technical feedback asks for the copied diagnostic, but feature suggestions and general feedback do not require irrelevant troubleshooting data.
+19. Technical feedback asks for the copied diagnostic and requires it only after 1.6 is publicly available; feature suggestions and general feedback bypass the technical section.
 
 ## Open blockers after local implementation
 
