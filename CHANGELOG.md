@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.6.0 — Local development candidate (2026-10-12)
+## 1.6.0 — Local development candidate (2026-10-14)
 
 - Recognizes Canvas-declared announcement planner items without guessing from titles, and keeps ambiguous items under **Course item**.
 - Adds course-aware **Mark announcements read** with a six-second floating Undo. Read announcements leave Deadlines, appear in Completed, and can be marked unread without changing Canvas.
@@ -16,6 +16,7 @@
 - Reorders Insights into local activity, optional sharing, help and feedback, then a compact unboxed About and Settings link row.
 - Adds themed `/support` and `/uninstall` routes to the statistics Worker. Chrome uninstall registration remains deferred until the route is deployed and verified.
 - Keeps the Ko-fi link hidden until the canonical URL is confirmed and adds no new permissions.
+- Adds a Firefox 142+ package from the same source, using Firefox's native sidebar, Mozilla-managed updates, and built-in optional data-sharing consent without broadening Canvas access.
 
 ## 2026-10-04
 

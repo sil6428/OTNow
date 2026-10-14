@@ -2,6 +2,7 @@ import { DEFAULT_SETTINGS } from "./constants.js";
 import { normalizeDeadlineAdjustments } from "./deadline-adjustments.js";
 import { emptyMetrics, mergeMetrics } from "./metrics.js";
 import { normalizeAnnouncementRead } from "./announcement-read.js";
+import { browserApi } from "./browser-api.js";
 
 export function emptyState() {
   return {
@@ -43,7 +44,7 @@ export function mergeSettings(saved = {}) {
 }
 
 export async function getSettings() {
-  const { settings } = await chrome.storage.local.get("settings");
+  const { settings } = await browserApi.storage.local.get("settings");
   return mergeSettings(settings);
 }
 
@@ -53,12 +54,12 @@ export async function setSettings(nextOrUpdater) {
     ? nextOrUpdater(structuredClone(current)) || current
     : { ...current, ...nextOrUpdater };
   const merged = mergeSettings(next);
-  await chrome.storage.local.set({ settings: merged });
+  await browserApi.storage.local.set({ settings: merged });
   return merged;
 }
 
 export async function getState() {
-  const { state } = await chrome.storage.local.get("state");
+  const { state } = await browserApi.storage.local.get("state");
   if (!state) return emptyState();
   const empty = emptyState();
   return {
@@ -70,7 +71,7 @@ export async function getState() {
 }
 
 export async function setState(state) {
-  await chrome.storage.local.set({ state });
+  await browserApi.storage.local.set({ state });
   return state;
 }
 
@@ -81,43 +82,43 @@ export async function updateState(updater) {
 }
 
 export async function getManualDone() {
-  const { manualDone } = await chrome.storage.local.get("manualDone");
+  const { manualDone } = await browserApi.storage.local.get("manualDone");
   return manualDone && typeof manualDone === "object" ? manualDone : {};
 }
 
 export async function setManualDone(manualDone) {
-  await chrome.storage.local.set({ manualDone });
+  await browserApi.storage.local.set({ manualDone });
 }
 
 export async function getAnnouncementRead() {
-  const { announcementRead } = await chrome.storage.local.get("announcementRead");
+  const { announcementRead } = await browserApi.storage.local.get("announcementRead");
   return normalizeAnnouncementRead(announcementRead);
 }
 
 export async function setAnnouncementRead(announcementRead) {
   const clean = normalizeAnnouncementRead(announcementRead);
-  await chrome.storage.local.set({ announcementRead: clean });
+  await browserApi.storage.local.set({ announcementRead: clean });
   return clean;
 }
 
 export async function getReleaseNoteSeen() {
-  const { releaseNoteSeen } = await chrome.storage.local.get("releaseNoteSeen");
+  const { releaseNoteSeen } = await browserApi.storage.local.get("releaseNoteSeen");
   return typeof releaseNoteSeen === "string" ? releaseNoteSeen : "";
 }
 
 export async function setReleaseNoteSeen(releaseNoteSeen) {
   const value = typeof releaseNoteSeen === "string" ? releaseNoteSeen : "";
-  await chrome.storage.local.set({ releaseNoteSeen: value });
+  await browserApi.storage.local.set({ releaseNoteSeen: value });
   return value;
 }
 
 export async function getDeadlineAdjustments() {
-  const { deadlineAdjustments } = await chrome.storage.local.get("deadlineAdjustments");
+  const { deadlineAdjustments } = await browserApi.storage.local.get("deadlineAdjustments");
   return normalizeDeadlineAdjustments(deadlineAdjustments);
 }
 
 export async function setDeadlineAdjustments(deadlineAdjustments) {
   const clean = normalizeDeadlineAdjustments(deadlineAdjustments);
-  await chrome.storage.local.set({ deadlineAdjustments: clean });
+  await browserApi.storage.local.set({ deadlineAdjustments: clean });
   return clean;
 }

@@ -1,4 +1,5 @@
 import { GLOBAL_STATS_ORIGIN } from "../src/constants.js";
+import { browserApi, optionalStatsPermission } from "../src/browser-api.js";
 
 const share = document.querySelector("#share");
 const decline = document.querySelector("#decline");
@@ -34,11 +35,11 @@ function ordinal(value) {
 
 share.addEventListener("click", async () => {
   busy(true);
-  status.textContent = "Waiting for Chrome permission…";
+  status.textContent = "Waiting for browser permission…";
   try {
-    const granted = await chrome.permissions.request({ origins: [`${GLOBAL_STATS_ORIGIN}/*`] });
+    const granted = await browserApi.permissions.request(optionalStatsPermission(GLOBAL_STATS_ORIGIN));
     if (!granted) {
-      await chrome.runtime.sendMessage({ type: "stats:onboarding-decline" });
+      await browserApi.runtime.sendMessage({ type: "stats:onboarding-decline" });
       status.textContent = "Permission was not granted. Nothing was shared; you can enable it later in Insights.";
       actions.hidden = true;
       successHeading.textContent = "Nothing was shared";
@@ -49,7 +50,7 @@ share.addEventListener("click", async () => {
       return;
     }
     status.textContent = "Permission granted. Adding your anonymous signal…";
-    const response = await chrome.runtime.sendMessage({ type: "stats:enable" });
+    const response = await browserApi.runtime.sendMessage({ type: "stats:enable" });
     if (!response?.ok) throw new Error(response?.error || "Anonymous statistics could not be enabled.");
     const position = Number(response.report?.reportingPosition);
     if (Number.isSafeInteger(position) && position > 0) {
@@ -70,7 +71,7 @@ share.addEventListener("click", async () => {
 
 decline.addEventListener("click", async () => {
   busy(true);
-  const response = await chrome.runtime.sendMessage({ type: "stats:onboarding-decline" });
+  const response = await browserApi.runtime.sendMessage({ type: "stats:onboarding-decline" });
   if (!response?.ok) {
     status.textContent = response?.error || "Your choice could not be saved.";
     busy(false);

@@ -12,6 +12,8 @@ export const UPDATE_CHECK_ENABLED = true;
 export const MOVED_DATE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 export const REPOSITORY_URL = "https://github.com/sil6428/OTNow";
 export const CHROME_WEB_STORE_URL = "https://chromewebstore.google.com/detail/otnow/ekaachncjiajgiikgikhpafcnepompkn";
+// Add the final AMO listing URL after Mozilla assigns the public slug.
+export const FIREFOX_ADDONS_URL = "";
 export const SUPPORT_URL = "";
 export const FEEDBACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw/viewform";
 export const SECURITY_REPORT_URL = `${REPOSITORY_URL}/security/advisories/new`;

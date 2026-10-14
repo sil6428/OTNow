@@ -37,13 +37,18 @@ jobs:
         run: npm test
 
       - name: Validate extension
-        run: npm run check
+        run: |
+          npm run check
+          npm run check:firefox
 
       - name: Build GitHub release package
         run: npm run package:release
 
       - name: Build Chrome Web Store package
         run: npm run package:store
+
+      - name: Build Firefox package
+        run: npm run package:firefox
 
       - name: Upload validated packages
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

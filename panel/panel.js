@@ -6,12 +6,14 @@ import {
   CANVAS_ORIGIN,
   CHROME_WEB_STORE_URL,
   FEEDBACK_URL,
+  FIREFOX_ADDONS_URL,
   GLOBAL_STATS_ORIGIN,
   REPOSITORY_URL,
   SECURITY_REPORT_URL,
   SUPPORT_URL,
   TYPE_LABELS,
 } from "../src/constants.js";
+import { browserApi, IS_FIREFOX_BUILD, optionalStatsPermission } from "../src/browser-api.js";
 import {
   completionSource,
   countPlannerTypes,
@@ -117,10 +119,11 @@ function platformName() {
 
 async function browserName() {
   let name = "Chromium";
-  if (await navigator.brave?.isBrave?.()) name = "Brave";
+  if (/Firefox\//.test(navigator.userAgent)) name = "Mozilla Firefox";
+  else if (await navigator.brave?.isBrave?.()) name = "Brave";
   else if (/Edg\//.test(navigator.userAgent)) name = "Microsoft Edge";
   else if (/Chrome\//.test(navigator.userAgent)) name = "Google Chrome";
-  const version = navigator.userAgent.match(/(?:Edg|Chrome)\/([\d.]+)/)?.[1];
+  const version = navigator.userAgent.match(/(?:Firefox|Edg|Chrome)\/([\d.]+)/)?.[1];
   return version ? `${name} ${version}` : name;
 }
 
@@ -134,9 +137,9 @@ async function buildDiagnosticReport() {
   const deadlines = plannerItemsForView(state.items, "deadlines", current.announcementRead);
   const completed = plannerItemsForView(state.items, "completed", current.announcementRead);
   const counts = countPlannerTypes(state.items);
-  const optionalStatsPermission = await chrome.permissions.contains({
-    origins: [`${GLOBAL_STATS_ORIGIN}/*`],
-  });
+  const statsPermissionGranted = await browserApi.permissions.contains(
+    optionalStatsPermission(GLOBAL_STATS_ORIGIN),
+  );
   const browser = await browserName();
   const manualCompleted = state.items.filter((item) => completionSource(item) === "otnow").length;
   const adjustedDeadlines = state.items.filter((item) => item.deadlineAdjusted).length;
@@ -147,7 +150,7 @@ async function buildDiagnosticReport() {
     "OTNow troubleshooting information",
     `Generated: ${new Date().toLocaleString()}`,
     "",
-    `OTNow version: ${chrome.runtime.getManifest().version}`,
+    `OTNow version: ${browserApi.runtime.getManifest().version}`,
     `Browser: ${browser}`,
     `Platform: ${platformName()}`,
     `Panel size: ${window.innerWidth} x ${window.innerHeight} CSS pixels`,
@@ -174,7 +177,7 @@ async function buildDiagnosticReport() {
     `Moved-date alerts enabled: ${yesNo(settings.notifyMovedDates)}`,
     `Muted course count: ${settings.mutedCourseIds.length}`,
     `Anonymous statistics enabled: ${yesNo(settings.shareAnonymousStats)}`,
-    `Statistics permission granted: ${yesNo(optionalStatsPermission)}`,
+    `Statistics permission granted: ${yesNo(statsPermissionGranted)}`,
     `Statistics choice completed: ${yesNo(settings.statsOnboardingSeen)}`,
     `Current update note acknowledged: ${yesNo(viewedRelease)}`,
     `Current panel view: ${activeView}`,
@@ -211,7 +214,7 @@ function showState(title, message, { openCanvas = false, retry = false } = {}) {
   if (openCanvas) {
     const button = element("button", "primary-button", "Open Canvas");
     button.type = "button";
-    button.addEventListener("click", () => chrome.runtime.sendMessage({ type: "panel:open-canvas" }));
+    button.addEventListener("click", () => browserApi.runtime.sendMessage({ type: "panel:open-canvas" }));
     actions.append(button);
   }
   if (retry) {
@@ -253,7 +256,7 @@ function renderSyncNotice(state) {
   const actions = element("div", "sync-warning-actions");
   const canvas = element("button", "sync-warning-button", "Open Canvas");
   canvas.type = "button";
-  canvas.addEventListener("click", () => chrome.runtime.sendMessage({ type: "panel:open-canvas" }));
+  canvas.addEventListener("click", () => browserApi.runtime.sendMessage({ type: "panel:open-canvas" }));
   const retry = element("button", "sync-warning-button primary", "Try again");
   retry.type = "button";
   retry.addEventListener("click", syncNow);
@@ -298,7 +301,7 @@ function renderUpdateNotice(update) {
   );
   const button = element("button", "update-button", "Update steps");
   button.type = "button";
-  button.addEventListener("click", () => chrome.runtime.sendMessage({ type: "panel:open-update-guide" }));
+  button.addEventListener("click", () => browserApi.runtime.sendMessage({ type: "panel:open-update-guide" }));
   banner.append(copy, button);
   return banner;
 }
@@ -323,7 +326,7 @@ function renderStatisticsPrompt(settings) {
   dismiss.addEventListener("click", async () => {
     dismiss.disabled = true;
     review.disabled = true;
-    const response = await chrome.runtime.sendMessage({ type: "stats:onboarding-decline" });
+    const response = await browserApi.runtime.sendMessage({ type: "stats:onboarding-decline" });
     if (!response?.settings) {
       dismiss.disabled = false;
       review.disabled = false;
@@ -338,7 +341,7 @@ function renderStatisticsPrompt(settings) {
 }
 
 async function dismissReleaseNote() {
-  const response = await chrome.runtime.sendMessage({
+  const response = await browserApi.runtime.sendMessage({
     type: "release-note:dismiss",
     id: CURRENT_RELEASE_NOTE.id,
   });
@@ -628,7 +631,7 @@ function renderAnnouncementActions(openItems) {
   mark.type = "button";
   mark.addEventListener("click", async () => {
     mark.disabled = true;
-    const response = await chrome.runtime.sendMessage({ type: "panel:mark-announcements-read", itemIds: unreadIds });
+    const response = await browserApi.runtime.sendMessage({ type: "panel:mark-announcements-read", itemIds: unreadIds });
     if (!response?.announcementRead) {
       mark.disabled = false;
       notice.hidden = false;
@@ -664,7 +667,7 @@ function renderAnnouncementUndoNotice() {
     if (!undoState) return;
     if (announcementUndoTimer) clearTimeout(announcementUndoTimer);
     announcementUndoTimer = null;
-    const response = await chrome.runtime.sendMessage({
+    const response = await browserApi.runtime.sendMessage({
       type: "panel:restore-announcements-read",
       previous: undoState.previous,
     });
@@ -731,7 +734,7 @@ async function toggleWithMotion(row, check, item) {
   row.classList.add("is-settling");
   check.classList.add("springing");
   await pause(matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 240);
-  await chrome.runtime.sendMessage({ type: "panel:toggle", itemId: item.id });
+  await browserApi.runtime.sendMessage({ type: "panel:toggle", itemId: item.id });
 }
 
 function addSwipeCompletion(row, check, item) {
@@ -819,7 +822,7 @@ function openDeadlineEditor(item) {
     reset.type = "button";
     reset.addEventListener("click", async () => {
       reset.disabled = true;
-      const response = await chrome.runtime.sendMessage({ type: "panel:set-deadline", itemId: item.id, dueAt: null });
+      const response = await browserApi.runtime.sendMessage({ type: "panel:set-deadline", itemId: item.id, dueAt: null });
       if (!response?.state) {
         reset.disabled = false;
         error.hidden = false;
@@ -843,7 +846,7 @@ function openDeadlineEditor(item) {
     save.disabled = true;
     error.hidden = true;
     const dueAt = new Date(input.value).toISOString();
-    const response = await chrome.runtime.sendMessage({ type: "panel:set-deadline", itemId: item.id, dueAt });
+    const response = await browserApi.runtime.sendMessage({ type: "panel:set-deadline", itemId: item.id, dueAt });
     if (!response?.state) {
       save.disabled = false;
       error.hidden = false;
@@ -882,7 +885,7 @@ function renderItem(item, now, { completedView = false } = {}) {
       return;
     }
     check.disabled = true;
-    const response = await chrome.runtime.sendMessage({
+    const response = await browserApi.runtime.sendMessage({
       type: readAnnouncement ? "panel:mark-announcements-unread" : "panel:mark-announcements-read",
       itemIds: [item.id],
     });
@@ -1084,7 +1087,7 @@ function renderRating(metrics = {}, globalStats = {}, settings = {}) {
     button.setAttribute("aria-label", `${value} out of 5`);
     button.addEventListener("click", async () => {
       choices.classList.add("is-submitting");
-      const response = await chrome.runtime.sendMessage({ type: "stats:rate", rating: value });
+      const response = await browserApi.runtime.sendMessage({ type: "stats:rate", rating: value });
       if (!response?.ok) {
         choices.classList.remove("is-submitting");
         notice.hidden = false;
@@ -1145,7 +1148,7 @@ function renderAbout() {
   const section = element("section", "insight-panel insight-about");
   section.append(
     element("h2", "insight-panel-title", "About and settings"),
-    element("p", "", `Version ${chrome.runtime.getManifest().version} · Unofficial and independent from Ontario Tech University and Instructure.`),
+    element("p", "", `Version ${browserApi.runtime.getManifest().version} · Unofficial and independent from Ontario Tech University and Instructure.`),
   );
   const actions = element("div", "insight-links");
   const changes = element("button", "insight-link", "What's new");
@@ -1155,12 +1158,15 @@ function renderAbout() {
   });
   const settings = element("button", "insight-link", "Settings");
   settings.type = "button";
-  settings.addEventListener("click", () => chrome.runtime.sendMessage({ type: "panel:open-options" }));
+  settings.addEventListener("click", () => browserApi.runtime.sendMessage({ type: "panel:open-options" }));
+  const storeLink = IS_FIREFOX_BUILD
+    ? (FIREFOX_ADDONS_URL ? actionLink("Firefox Add-ons", FIREFOX_ADDONS_URL, "insight-link") : null)
+    : actionLink("Chrome Web Store", CHROME_WEB_STORE_URL, "insight-link");
   actions.append(
     settings,
     changes,
     actionLink("Privacy", `${GLOBAL_STATS_ORIGIN}/privacy`, "insight-link"),
-    actionLink("Chrome Web Store", CHROME_WEB_STORE_URL, "insight-link"),
+    ...(storeLink ? [storeLink] : []),
     actionLink("GitHub", REPOSITORY_URL, "insight-link"),
   );
   section.append(actions);
@@ -1172,7 +1178,7 @@ function renderInsights(metrics = {}, globalStats = {}, settings = {}) {
   const header = element("div", "section-intro");
   header.append(
     element("h1", "", "Insights"),
-    element("p", "", "A local summary of what OTNow has organized in this Chrome profile."),
+    element("p", "", "A local summary of what OTNow has organized in this browser profile."),
   );
 
   const activity = element("section", "insight-activity");
@@ -1296,10 +1302,10 @@ function render() {
 }
 
 async function load({ recordOpen = false } = {}) {
-  appVersion.textContent = `v${chrome.runtime.getManifest().version}`;
-  current = await chrome.runtime.sendMessage({ type: "panel:get" });
+  appVersion.textContent = `v${browserApi.runtime.getManifest().version}`;
+  current = await browserApi.runtime.sendMessage({ type: "panel:get" });
   if (recordOpen) {
-    const response = await chrome.runtime.sendMessage({ type: "panel:opened" });
+    const response = await browserApi.runtime.sendMessage({ type: "panel:opened" });
     if (response?.state) current.state = response.state;
   }
   render();
@@ -1310,7 +1316,7 @@ async function syncNow() {
   refreshButton.classList.remove("success");
   refreshButton.classList.add("spinning");
   refreshButton.disabled = true;
-  const result = await chrome.runtime.sendMessage({ type: "panel:sync" });
+  const result = await browserApi.runtime.sendMessage({ type: "panel:sync" });
   await load();
   if (result?.status !== "error") {
     refreshButton.classList.add("success");
@@ -1321,17 +1327,17 @@ async function syncNow() {
 refreshButton.addEventListener("click", syncNow);
 themeButton.addEventListener("click", async () => {
   const theme = usingDarkTheme(current.settings.theme) ? "light" : "dark";
-  const response = await chrome.runtime.sendMessage({ type: "options:set", settings: { theme } });
+  const response = await browserApi.runtime.sendMessage({ type: "options:set", settings: { theme } });
   current.settings = response.settings;
   render();
 });
-settingsButton.addEventListener("click", () => chrome.runtime.sendMessage({ type: "panel:open-options" }));
+settingsButton.addEventListener("click", () => browserApi.runtime.sendMessage({ type: "panel:open-options" }));
 
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
   if (current.settings?.theme === "system") render();
 });
 
-chrome.storage.onChanged.addListener((changes, area) => {
+browserApi.storage.onChanged.addListener((changes, area) => {
   if (area !== "local") return;
   if (changes.state) current.state = changes.state.newValue;
   if (changes.settings) current.settings = changes.settings.newValue;

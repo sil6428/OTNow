@@ -15,6 +15,7 @@ import {
   UPDATE_MANIFEST_URL,
 } from "./constants.js";
 import { sameDay } from "./dates.js";
+import { browserApi, IS_FIREFOX_BUILD, optionalStatsPermission } from "./browser-api.js";
 import { mergePlannerItems } from "./canvas-model.js";
 import {
   isAnnouncementRead,
@@ -64,7 +65,7 @@ let syncPromise = null;
 let updatePromise = null;
 
 async function hasGlobalStatsPermission() {
-  return chrome.permissions.contains({ origins: [`${GLOBAL_STATS_ORIGIN}/*`] });
+  return browserApi.permissions.contains(optionalStatsPermission(GLOBAL_STATS_ORIGIN));
 }
 
 async function runGlobalStats({ force = false } = {}) {
@@ -102,13 +103,13 @@ async function refreshBadge(state) {
   const open = state.items.filter((item) => item.status === "open" && !isAnnouncementRead(item, announcementRead));
   const overdue = open.filter((item) => Date.parse(item.dueAt) < now.getTime()).length;
   const today = open.filter((item) => Date.parse(item.dueAt) >= now.getTime() && sameDay(item.dueAt, now)).length;
-  await chrome.action.setBadgeBackgroundColor({ color: overdue ? "#b91c1c" : "#1d4ed8" });
-  if (chrome.action.setBadgeTextColor) await chrome.action.setBadgeTextColor({ color: "#ffffff" });
-  await chrome.action.setBadgeText({ text: overdue ? "!" : (today ? String(Math.min(today, 99)) : "") });
+  await browserApi.action.setBadgeBackgroundColor({ color: overdue ? "#b91c1c" : "#1d4ed8" });
+  if (browserApi.action.setBadgeTextColor) await browserApi.action.setBadgeTextColor({ color: "#ffffff" });
+  await browserApi.action.setBadgeText({ text: overdue ? "!" : (today ? String(Math.min(today, 99)) : "") });
 }
 
 async function createNotification(id, title, message, url) {
-  await chrome.notifications.create(id, {
+  await browserApi.notifications.create(id, {
     type: "basic",
     iconUrl: "icons/icon-128.png",
     title,
@@ -243,7 +244,7 @@ async function checkForUpdate({ force = false } = {}) {
   if (!UPDATE_CHECK_ENABLED) {
     return {
       status: "managed",
-      installedVersion: chrome.runtime.getManifest().version,
+      installedVersion: browserApi.runtime.getManifest().version,
       latestVersion: null,
       checkedAt: null,
       error: null,
@@ -252,7 +253,7 @@ async function checkForUpdate({ force = false } = {}) {
   if (updatePromise) return updatePromise;
   updatePromise = (async () => {
     const before = await getState();
-    const installedVersion = chrome.runtime.getManifest().version;
+    const installedVersion = browserApi.runtime.getManifest().version;
     const previous = before.update || {};
     const checkedAt = Date.parse(previous.checkedAt || "");
     const stillFresh = Number.isFinite(checkedAt)
@@ -388,23 +389,25 @@ async function setDeadlineAdjustment(itemId, dueAt) {
 }
 
 async function setup() {
-  await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+  if (browserApi.sidePanel?.setPanelBehavior) {
+    await browserApi.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+  }
   const settings = await getSettings();
-  await chrome.storage.local.set({ settings });
-  chrome.alarms.create(SYNC_ALARM, { delayInMinutes: 1, periodInMinutes: SYNC_MINUTES });
-  chrome.alarms.create(REMINDER_ALARM, { delayInMinutes: 1, periodInMinutes: REMINDER_MINUTES });
+  await browserApi.storage.local.set({ settings });
+  browserApi.alarms.create(SYNC_ALARM, { delayInMinutes: 1, periodInMinutes: SYNC_MINUTES });
+  browserApi.alarms.create(REMINDER_ALARM, { delayInMinutes: 1, periodInMinutes: REMINDER_MINUTES });
   if (UPDATE_CHECK_ENABLED) {
-    chrome.alarms.create(UPDATE_ALARM, { delayInMinutes: 2, periodInMinutes: UPDATE_CHECK_MINUTES });
+    browserApi.alarms.create(UPDATE_ALARM, { delayInMinutes: 2, periodInMinutes: UPDATE_CHECK_MINUTES });
   } else {
-    await chrome.alarms.clear(UPDATE_ALARM);
+    await browserApi.alarms.clear(UPDATE_ALARM);
   }
   if (settings.shareAnonymousStats && await hasGlobalStatsPermission()) {
-    chrome.alarms.create(GLOBAL_STATS_ALARM, {
+    browserApi.alarms.create(GLOBAL_STATS_ALARM, {
       delayInMinutes: 1,
       periodInMinutes: GLOBAL_STATS_INTERVAL_MINUTES,
     });
   } else {
-    await chrome.alarms.clear(GLOBAL_STATS_ALARM);
+    await browserApi.alarms.clear(GLOBAL_STATS_ALARM);
   }
   await refreshBadge();
 }
@@ -415,24 +418,28 @@ async function handleInstalled(details) {
   if (details.reason === "install" || details.reason === "update") await checkForUpdate({ force: true });
 }
 
-chrome.runtime.onInstalled.addListener((details) => handleInstalled(details).catch(console.error));
-chrome.runtime.onStartup.addListener(() => setup().then(() => Promise.all([syncCanvas(), checkForUpdate()])));
+browserApi.runtime.onInstalled.addListener((details) => handleInstalled(details).catch(console.error));
+browserApi.runtime.onStartup.addListener(() => setup().then(() => Promise.all([syncCanvas(), checkForUpdate()])));
 
-chrome.alarms.onAlarm.addListener((alarm) => {
+if (IS_FIREFOX_BUILD && browserApi.sidebarAction?.open) {
+  browserApi.action.onClicked.addListener(() => browserApi.sidebarAction.open());
+}
+
+browserApi.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === SYNC_ALARM) syncCanvas();
   if (alarm.name === REMINDER_ALARM) runReminders();
   if (alarm.name === UPDATE_ALARM) checkForUpdate();
   if (alarm.name === GLOBAL_STATS_ALARM) runGlobalStats();
 });
 
-chrome.notifications.onClicked.addListener(async (id) => {
+browserApi.notifications.onClicked.addListener(async (id) => {
   const state = await getState();
   const url = state.notificationLinks[id];
-  if (url) await chrome.tabs.create({ url });
-  await chrome.notifications.clear(id);
+  if (url) await browserApi.tabs.create({ url });
+  await browserApi.notifications.clear(id);
 });
 
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+browserApi.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (!message?.type) return false;
   (async () => {
     switch (message.type) {
@@ -474,18 +481,18 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         sendResponse({ state: await setDeadlineAdjustment(String(message.itemId), message.dueAt) });
         break;
       case "panel:open-canvas":
-        await chrome.tabs.create({ url: CANVAS_ORIGIN });
+        await browserApi.tabs.create({ url: CANVAS_ORIGIN });
         sendResponse({ ok: true });
         break;
       case "panel:open-options":
-        await chrome.runtime.openOptionsPage();
+        await browserApi.runtime.openOptionsPage();
         sendResponse({ ok: true });
         break;
       case "panel:check-update":
         sendResponse({ update: await checkForUpdate({ force: true }) });
         break;
       case "panel:open-update-guide":
-        await chrome.tabs.create({ url: UPDATE_GUIDE_URL });
+        await browserApi.tabs.create({ url: UPDATE_GUIDE_URL });
         sendResponse({ ok: true });
         break;
       case "options:get":
@@ -502,7 +509,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       case "stats:enable": {
         if (!(await hasGlobalStatsPermission())) throw new Error("Permission was not granted.");
         const settings = await setSettings({ shareAnonymousStats: true, statsOnboardingSeen: true });
-        chrome.alarms.create(GLOBAL_STATS_ALARM, {
+        browserApi.alarms.create(GLOBAL_STATS_ALARM, {
           delayInMinutes: 1,
           periodInMinutes: GLOBAL_STATS_INTERVAL_MINUTES,
         });
@@ -522,9 +529,9 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       }
       case "stats:disable": {
         if (await hasGlobalStatsPermission()) await deleteAnonymousStats();
-        else await chrome.storage.local.remove("globalStatsMeta");
+        else await browserApi.storage.local.remove("globalStatsMeta");
         const settings = await setSettings({ shareAnonymousStats: false });
-        await chrome.alarms.clear(GLOBAL_STATS_ALARM);
+        await browserApi.alarms.clear(GLOBAL_STATS_ALARM);
         sendResponse({ ok: true, settings, globalStats: await getAnonymousStatsStatus() });
         break;
       }
@@ -544,8 +551,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
           if (!(await hasGlobalStatsPermission())) throw new Error("Anonymous statistics permission is missing. Disable sharing before deleting data.");
           await deleteAnonymousStats();
         }
-        await chrome.storage.local.clear();
-        await chrome.permissions.remove({ origins: [`${GLOBAL_STATS_ORIGIN}/*`] });
+        await browserApi.storage.local.clear();
+        await browserApi.permissions.remove(optionalStatsPermission(GLOBAL_STATS_ORIGIN));
         await setup();
         sendResponse({ ok: true });
         break;

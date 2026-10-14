@@ -3,17 +3,17 @@
 // Keep the voice thankful and personal, but vary the opening and milestone
 // wording for each patch instead of turning this into a repeated template.
 export const CURRENT_RELEASE_NOTE = Object.freeze({
-  id: "1.6.0-local-20261012-08",
+  id: "1.6.0-local-20261014-09",
   version: "1.6.0",
-  date: "October 12, 2026",
+  date: "October 14, 2026",
   label: "Local preview",
   title: "Thanks for supporting OTNow",
   community: Object.freeze({
     launchedAt: "2026-10-04",
-    measuredAt: "2026-10-12",
-    measuredAtLabel: "October 12, 2026",
+    measuredAt: "2026-10-14",
+    measuredAtLabel: "October 14, 2026",
     reportingInstallations: 12,
-    totalItems: 781,
+    totalItems: 809,
   }),
   summary: "This update makes deadlines easier to find, stale Canvas sessions easier to fix, and support reports more useful without including coursework.",
   items: Object.freeze([
@@ -52,6 +52,10 @@ export const CURRENT_RELEASE_NOTE = Object.freeze({
     Object.freeze({
       title: "A cleaner Insights page",
       detail: "Activity, optional sharing, help, and About now follow a clear order, with the smaller links kept together at the bottom.",
+    }),
+    Object.freeze({
+      title: "Firefox is joining OTNow",
+      detail: "The same private-by-default OTNow experience now has a Firefox package using Mozilla's native sidebar and permission controls.",
     }),
   ]),
 });

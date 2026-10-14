@@ -1,12 +1,12 @@
 # OTNow 1.6 release plan
 
-Status: local 1.6.0 development candidate implemented October 12, 2026. It has not been pushed, deployed, submitted, or registered as the uninstall destination.
+Status: local 1.6.0 Chrome and Firefox development candidates implemented through October 14, 2026. They have not been pushed, deployed, submitted, or registered as the uninstall destination.
 
 Target: November 2026, with school work taking priority. Reading week can be used for the evidence, design, and implementation work below, but it does not remove the release freeze or verification gates. If representative Canvas data is unavailable or the announcement classification is unreliable, ship the completed-items, onboarding, feedback, and support improvements without announcement classification rather than guessing.
 
 ## Release goal
 
-Make announcement-like Canvas planner entries understandable and dismissible without weakening OTNow's local-first privacy model, correctly separate Canvas-declared discussion work from ordinary assignments, make completed work easier to review and restore, and improve the consent, feedback, support, and removal experience.
+Make announcement-like Canvas planner entries understandable and dismissible without weakening OTNow's local-first privacy model, correctly separate Canvas-declared discussion work from ordinary assignments, make completed work easier to review and restore, improve the consent, feedback, support, and removal experience, and make the same product available through Firefox without creating a divergent fork.
 
 ## Frozen 1.6 scope
 
@@ -113,6 +113,22 @@ Make announcement-like Canvas planner entries understandable and dismissible wit
 - Add a conditional technical-feedback path to the existing form and tell the student to paste the report from Insights. Keep the diagnostic optional while public users remain on 1.5, then make it required for that technical path only after 1.6 is published and the copy action is available to them. Feature suggestions and general feedback must bypass the technical section.
 - Keep security reports on GitHub’s private vulnerability route. A copied diagnostic is support context, not a substitute for a private security report.
 
+### 12. Ship a Firefox package from the same source
+
+- Keep one shared application codebase and separate only the browser manifest and packaging boundary.
+- Use Firefox's native `sidebar_action` and event-page background script while retaining Chrome's `side_panel` and service worker in the Chrome manifest.
+- Route browser calls through the shared promise-based adapter so Canvas reads, storage, reminders, support, and Insights behave the same in both browsers.
+- Set Firefox 142 as the minimum so Mozilla's built-in optional data-consent contract is available consistently. Declare no required data collection and classify the optional aggregate report only as `technicalAndInteraction`.
+- Keep the Canvas origin as the only required host. The statistics Worker remains optional, and the Firefox package removes the manual GitHub updater because Mozilla Add-ons manages updates.
+- Do not advertise a Firefox Add-ons URL until Mozilla assigns and approves the real listing. Mozilla review may finish after Chrome 1.6; it must not force a rushed Chrome release or a fake listing link.
+- Validate the exact package with Mozilla's `web-ext lint`, then temporarily install it in a clean Firefox profile for signed-in, signed-out, sidebar-open, permission, notification, and upgrade checks before submission.
+
+## Launch milestone
+
+- Prepare both release candidates now, but publish the 1.6 launch announcement only after the public opt-in dashboard reports at least **1,000 exact Canvas items organized**.
+- Read the exact live API value immediately before writing the announcement. Do not round 999 up or treat opt-in totals as every user.
+- If Mozilla review is still pending at the milestone, release Chrome 1.6 on its verified schedule and describe Firefox as submitted or coming only when that status is true. Publish the cross-browser promotion after the Firefox listing is actually installable.
+
 ## Reading-week research spike: match the active page theme
 
 The requested behaviour is to sample the page beside OTNow and select light or dark mode to match it, especially when Brave displays two tabs in Split View and OTNow opens on the right.
@@ -130,7 +146,6 @@ This is a prototype and release decision, not yet frozen 1.6 scope:
 ## Non-goals for 1.6
 
 - Google Calendar or any OAuth permission.
-- Firefox packaging.
 - Course-weight inference or priority ranking.
 - Syllabus or announcement text extraction for exam prediction.
 - A phone app, OTNow account, or hosted personal calendar.
@@ -143,6 +158,7 @@ This is a prototype and release decision, not yet frozen 1.6 scope:
 - `src/canvas-client.js` reads the two allowlisted Canvas endpoints and sends planner items to the model.
 - `src/canvas-model.js` normalizes item type, identity, due date, link, and completion state.
 - `src/constants.js` owns labels, reminder defaults, and the currently blank Ko-fi URL.
+- `src/browser-api.js` owns the Chrome/Firefox promise API adapter and Firefox's optional technical-data permission shape.
 - `src/view-model.js` owns type groups and counts.
 - `panel/panel.js` renders filters, groups, items, and the prepared support link.
 - `panel/panel.js` owns the non-blocking first-open statistics notification. `options/onboarding.html`, `options/onboarding.css`, `options/onboarding.js`, and `options/reactive-background.js` own the optional full disclosure and its restrained visual effects.
@@ -151,6 +167,7 @@ This is a prototype and release decision, not yet frozen 1.6 scope:
 - `stats-worker/src/dashboard-assets.js` owns the public dashboard presentation; `stats-worker/src/worker.js` and the D1 migration own the isolated daily Store-rating refresh and last-known-good value.
 - `src/storage.js` owns local settings and user state.
 - `src/background.js` owns synchronization and panel messages.
+- `manifest.firefox.json`, `scripts/check-firefox.mjs`, and `scripts/package-firefox.ps1` own the Firefox-specific manifest, validation, and AMO ZIP without changing the Chrome package.
 - `tests/canvas-model.test.mjs` is the first home for sanitized announcement fixtures and classification cases.
 
 ## Proposed local data design
@@ -260,6 +277,7 @@ announcementRead = {
 - Existing deadline completion, moved-date detection, reminder, extension-date, course mute, statistics opt-in, and cache behaviour remain unchanged.
 - Signed-in, signed-out, offline, stale-cache, first-run, upgrade, light, dark, force-dark, keyboard-only, reduced-motion, 360-pixel width, and 200% zoom checks pass.
 - `npm test`, `npm run check`, `npm run smoke:extension`, store packaging, checksum generation, and exact-package smoke testing pass.
+- `npm run check:firefox`, Firefox packaging, Mozilla `web-ext lint`, and a temporary clean-profile Firefox test pass.
 - Upgrade testing starts from the published 1.5.0 package with realistic local storage and verifies that no settings, manual check-offs, deadline adjustments, or cached items are lost.
 - The manifest adds no permission or origin unless separately approved and documented.
 
@@ -301,6 +319,8 @@ announcementRead = {
 - Run the full verification matrix and upgrade test.
 - Update privacy, store, support, README, changelog, and version references.
 - Build and inspect the exact store ZIP before submission.
+- Build and inspect the exact Firefox ZIP, validate it with Mozilla tooling, and submit it to AMO without inventing a listing URL.
+- Confirm the live public counter has crossed 1,000 before finalizing milestone copy; preserve the exact dated value in the release note.
 - Submit 1.6.0, monitor real feedback, and use 1.6.1 only for verified fixes.
 
 ## Release acceptance criteria
@@ -324,6 +344,9 @@ announcementRead = {
 17. Upgrades show one dismissible plain-language release notice, fresh installs do not, and the detailed themed page matches the current packaged announcement ID.
 18. Search, filter reset, stale-cache recovery, and the privacy-safe diagnostic pass the browser-level smoke test without any new permission.
 19. Technical feedback asks for the copied diagnostic and requires it only after 1.6 is publicly available; feature suggestions and general feedback bypass the technical section.
+20. Chrome and Firefox use the same feature code, while each package uses its native sidebar/background manifest and no unnecessary cross-browser permission.
+21. Firefox installation, opt-in, opt-out, sidebar, sync, notification, and deletion flows pass in a clean Firefox 142+ profile and Mozilla's validator reports no errors or warnings.
+22. Public launch copy is held until the exact opt-in dashboard total is at least 1,000 and labels the number accurately as Canvas items organized by reporting installations.
 
 ## Open blockers after local implementation
 
@@ -331,4 +354,6 @@ announcementRead = {
 - Live deployment and verification of the themed uninstall/support route.
 - Brave Split View behaviour for temporary active-page access; this blocks only automatic page-theme matching, not the rest of 1.6.
 - Continued availability of the public Chrome Web Store markup used by the isolated daily refresh; parser failure must retain the last known good value and cannot block the dashboard.
+- A real Firefox 142+ browser pass and Mozilla Add-ons review. Review timing may move the Firefox public listing after Chrome 1.6 without creating a separate feature fork.
+- The public aggregate counter reaching 1,000 exact Canvas items; this blocks milestone promotion, not local validation work.
 
