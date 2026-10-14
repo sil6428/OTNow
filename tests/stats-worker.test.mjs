@@ -219,8 +219,10 @@ test("serves the OTNow product landing page from the public root", async () => {
   const html = await response.text();
   assert.equal(response.status, 200);
   assert.match(html, /<title>OTNow — Your Canvas deadlines, organized<\/title>/);
-  assert.match(html, /Your Canvas deadlines/);
-  assert.match(html, /Without the maze/);
+  assert.match(html, /Every Canvas deadline/);
+  assert.match(html, /One clean<\/span> sidebar/);
+  assert.match(html, /src="\/product-preview\.png"/);
+  assert.match(html, /Know when a deadline moves/);
   assert.match(html, /Firefox 1\.6 in testing/);
   assert.match(html, /href="\/dashboard"/);
   assert.match(html, /href="\/privacy"/);
@@ -240,6 +242,7 @@ test("serves the dependency-free landing interactions", async () => {
   assert.match(script, /IntersectionObserver/);
   assert.match(script, /fetch\('\/api\/stats'/);
   assert.match(script, /pointermove/);
+  assert.match(script, /applyTheme\(storedTheme \|\| 'light'\)/);
 });
 
 test("serves the OTNow social preview artwork", async () => {
@@ -247,8 +250,21 @@ test("serves the OTNow social preview artwork", async () => {
   const svg = await response.text();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type"), /image\/svg\+xml/);
-  assert.match(svg, /Without the maze/);
+  assert.match(svg, /One clean sidebar/);
   assert.match(svg, /Firefox 1\.6 in testing/);
+});
+
+test("serves the sanitized product preview through the asset binding", async () => {
+  const env = aggregateEnvironment();
+  env.ASSETS = {
+    async fetch(request) {
+      assert.match(request.url, /otnow-real-deadlines-1280x800\.png$/);
+      return new Response(new Uint8Array([137, 80, 78, 71]), { headers: { "content-type": "image/png" } });
+    },
+  };
+  const response = await worker.fetch(new Request("https://stats.example/product-preview.png"), env);
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type"), /image\/png/);
 });
 
 test("public dashboard requires no token and explains the privacy boundary", async () => {

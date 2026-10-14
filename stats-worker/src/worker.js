@@ -1,5 +1,5 @@
 import { DASHBOARD_PAGE, DASHBOARD_SCRIPT } from "./dashboard-assets.js";
-import { LANDING_PAGE, LANDING_SCRIPT, SOCIAL_CARD } from "./landing-assets.js";
+import { LANDING_PAGE, LANDING_SCRIPT, SOCIAL_CARD } from "./marketing-assets.js";
 import { PRIVACY_PAGE } from "./privacy-assets.js";
 import { SUPPORT_PAGE, SUPPORT_SCRIPT, UNINSTALL_PAGE } from "./support-assets.js";
 
@@ -703,6 +703,11 @@ export default {
     if (url.pathname === "/landing.js" && request.method === "GET") return htmlResponse(LANDING_SCRIPT, "text/javascript; charset=utf-8");
     if (url.pathname === "/dashboard.js" && request.method === "GET") return htmlResponse(DASHBOARD_SCRIPT, "text/javascript; charset=utf-8");
     if (url.pathname === "/social-card.svg" && request.method === "GET") return htmlResponse(SOCIAL_CARD, "image/svg+xml; charset=utf-8");
+    if (url.pathname === "/product-preview.png" && request.method === "GET") {
+      if (!env.ASSETS?.fetch) return json({ ok: false, error: "Preview unavailable" }, 404);
+      const assetUrl = new URL("/otnow-real-deadlines-1280x800.png", url);
+      return env.ASSETS.fetch(new Request(assetUrl, request));
+    }
     if (url.pathname === "/favicon.svg" && request.method === "GET") return htmlResponse(FAVICON_SVG, "image/svg+xml; charset=utf-8");
     return json({ ok: false, error: "Not found" }, 404);
   },
