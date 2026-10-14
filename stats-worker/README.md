@@ -1,6 +1,14 @@
-# OTNow anonymous statistics service
+# OTNow public site and anonymous statistics service
 
-This Cloudflare Worker receives the optional anonymous numerical reports described in [the privacy policy](../PRIVACY.md) and serves the public aggregate dashboard.
+This Cloudflare Worker serves OTNow's public product site, receives the optional anonymous numerical reports described in [the privacy policy](../PRIVACY.md), and serves the aggregate dashboard.
+
+## Product landing page
+
+The public root at `/` is OTNow's link hub and product introduction. It links directly to the signed Chrome Web Store build, the in-testing Firefox release track, live statistics, privacy policy, feedback form, support page, source code, changelog, and private vulnerability reporting. It does not add any extension permission or analytics dependency.
+
+The page uses a dependency-free reactive signal field, cursor spotlight, click sparks, scroll reveals, subtle card tilt, live count-up values, and an animated extension preview. It honours `prefers-reduced-motion`, includes an explicit motion control, and disables pointer-heavy effects on coarse-pointer devices. The live counters reuse `/api/stats` and retain its opt-in boundary instead of implying that reporting installations equal all users.
+
+The social preview artwork is served at `/social-card.svg`. Firefox remains labelled as testing until Mozilla assigns and approves a public listing.
 
 ## Data boundary
 
@@ -18,7 +26,7 @@ The existing daily scheduled job fetches the public Chrome Web Store listing onc
 
 Written feedback uses a separate Google Form linked from the header and footer. The form does not collect email addresses, makes the name field optional, and writes responses to a private Google Sheet for review.
 
-The interface uses dependency-free cursor-reactive particles, count-up values, spotlight reactions, click sparks, and spring-like star feedback inspired by React Bits. Motion is disabled when the visitor requests reduced motion.
+The dashboard interface uses dependency-free cursor-reactive particles, count-up values, spotlight reactions, click sparks, and spring-like star feedback inspired by React Bits. Motion is disabled when the visitor requests reduced motion.
 
 Keeping the dashboard and API in the same Worker avoids a second deployment, cross-origin permissions, and duplicated configuration. Cloudflare Pages would be useful for a separate static marketing site, but this service depends on D1-backed server logic; Pages Functions would still execute on the Workers runtime.
 

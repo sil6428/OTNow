@@ -214,6 +214,43 @@ test("records a site rating without collecting an account identifier", async () 
   assert.equal(env.state.inserted[0], 5);
 });
 
+test("serves the OTNow product landing page from the public root", async () => {
+  const response = await worker.fetch(new Request("https://stats.example/"), aggregateEnvironment());
+  const html = await response.text();
+  assert.equal(response.status, 200);
+  assert.match(html, /<title>OTNow — Your Canvas deadlines, organized<\/title>/);
+  assert.match(html, /Your Canvas deadlines/);
+  assert.match(html, /Without the maze/);
+  assert.match(html, /Firefox 1\.6 in testing/);
+  assert.match(html, /href="\/dashboard"/);
+  assert.match(html, /href="\/privacy"/);
+  assert.match(html, /ekaachncjiajgiikgikhpafcnepompkn/);
+  assert.match(html, /forms\/d\/e\/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw\/viewform/);
+  assert.match(html, /src="\/landing\.js"/);
+  assert.match(html, /prefers-reduced-motion:reduce/);
+  assert.doesNotMatch(html, /Firefox available now/i);
+});
+
+test("serves the dependency-free landing interactions", async () => {
+  const response = await worker.fetch(new Request("https://stats.example/landing.js"), aggregateEnvironment());
+  const script = await response.text();
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type"), /text\/javascript/);
+  assert.match(script, /prefers-reduced-motion/);
+  assert.match(script, /IntersectionObserver/);
+  assert.match(script, /fetch\('\/api\/stats'/);
+  assert.match(script, /pointermove/);
+});
+
+test("serves the OTNow social preview artwork", async () => {
+  const response = await worker.fetch(new Request("https://stats.example/social-card.svg"), aggregateEnvironment());
+  const svg = await response.text();
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type"), /image\/svg\+xml/);
+  assert.match(svg, /Without the maze/);
+  assert.match(svg, /Firefox 1\.6 in testing/);
+});
+
 test("public dashboard requires no token and explains the privacy boundary", async () => {
   const response = await worker.fetch(new Request("https://stats.example/dashboard"), aggregateEnvironment());
   const html = await response.text();

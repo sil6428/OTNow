@@ -4,6 +4,8 @@ OTNow is an unofficial browser extension for Ontario Tech students who use Canva
 
 The project name is **OTNow**.
 
+**[Visit the OTNow product site](https://otnow-stats.sil6428-archtech.workers.dev/)** · [View live opt-in statistics](https://otnow-stats.sil6428-archtech.workers.dev/dashboard) · [Read the privacy policy](https://otnow-stats.sil6428-archtech.workers.dev/privacy)
+
 ![OTNow beside a sanitized Ontario Tech Canvas dashboard](docs/media/otnow-real-deadlines-1280x800.png)
 
 ## Install OTNow

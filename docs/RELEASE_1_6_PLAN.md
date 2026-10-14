@@ -8,6 +8,8 @@ Target: November 2026, with school work taking priority. Reading week can be use
 
 Make announcement-like Canvas planner entries understandable and dismissible without weakening OTNow's local-first privacy model, correctly separate Canvas-declared discussion work from ordinary assignments, make completed work easier to review and restore, improve the consent, feedback, support, and removal experience, and make the same product available through Firefox without creating a divergent fork.
 
+The existing Cloudflare Worker root also becomes OTNow's public landing page and link hub. This is a public presentation change, not an extension permission or data-flow change: `/dashboard`, `/privacy`, `/support`, `/uninstall`, feedback, source, Chrome, and the Firefox release track remain distinct destinations with honest status labels.
+
 ## Frozen 1.6 scope
 
 ### 1. Recognize announcements

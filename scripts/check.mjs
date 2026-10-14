@@ -46,6 +46,7 @@ const requiredFiles = [
   "options/changelog.html",
   "options/changelog.css",
   "options/changelog.js",
+  "stats-worker/src/landing-assets.js",
   "stats-worker/src/support-assets.js",
 ];
 await Promise.all(requiredFiles.map((file) => access(resolve(root, file), constants.R_OK)));
