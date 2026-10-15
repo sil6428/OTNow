@@ -1,4 +1,5 @@
 import { GLOBAL_STATS_ORIGIN } from "../src/constants.js";
+import { browserApi, optionalStatsPermission } from "../src/browser-api.js";
 
 const share = document.querySelector("#share");
 const decline = document.querySelector("#decline");
@@ -8,10 +9,14 @@ const success = document.querySelector("#success");
 const successHeading = document.querySelector("#success-heading");
 const successCopy = document.querySelector("#success-copy");
 const statsLink = document.querySelector("#stats-link");
+const returnToPanel = new URLSearchParams(location.search).get("source") === "panel";
 
 statsLink.href = `${GLOBAL_STATS_ORIGIN}/dashboard`;
 
-chrome.runtime.sendMessage({ type: "stats:onboarding-opened" }).catch(() => {});
+function continueToPanel() {
+  if (!returnToPanel) return;
+  setTimeout(() => location.replace("../panel/panel.html"), 550);
+}
 
 function busy(value) {
   share.disabled = value;
@@ -30,25 +35,34 @@ function ordinal(value) {
 
 share.addEventListener("click", async () => {
   busy(true);
-  status.textContent = "Waiting for Chrome permission…";
+  status.textContent = "Waiting for browser permission…";
   try {
-    const granted = await chrome.permissions.request({ origins: [`${GLOBAL_STATS_ORIGIN}/*`] });
+    const granted = await browserApi.permissions.request(optionalStatsPermission(GLOBAL_STATS_ORIGIN));
     if (!granted) {
-      status.textContent = "Permission was not granted. Nothing was shared; you can enable it later in Settings.";
-      busy(false);
+      await browserApi.runtime.sendMessage({ type: "stats:onboarding-decline" });
+      status.textContent = "Permission was not granted. Nothing was shared; you can enable it later in Insights.";
+      actions.hidden = true;
+      successHeading.textContent = "Nothing was shared";
+      successCopy.textContent = "OTNow remains fully available. You can enable anonymous statistics later in Insights.";
+      statsLink.hidden = true;
+      success.hidden = false;
+      continueToPanel();
       return;
     }
     status.textContent = "Permission granted. Adding your anonymous signal…";
-    const response = await chrome.runtime.sendMessage({ type: "stats:enable" });
+    const response = await browserApi.runtime.sendMessage({ type: "stats:enable" });
     if (!response?.ok) throw new Error(response?.error || "Anonymous statistics could not be enabled.");
     const position = Number(response.report?.reportingPosition);
     if (Number.isSafeInteger(position) && position > 0) {
-      successHeading.textContent = `You are the ${ordinal(position)} person to opt in.`;
-      successCopy.textContent = `Your light is now signal #${position} in the public OTNow community field.`;
+      successHeading.textContent = "Anonymous statistics enabled";
+      successCopy.textContent = `This installation is the ${ordinal(position)} current opt-in. Only the disclosed numerical totals will be reported.`;
     }
     actions.hidden = true;
     success.hidden = false;
-    status.textContent = "Anonymous statistics are enabled. You can view the public totals or close this tab.";
+    status.textContent = returnToPanel
+      ? "Your choice is saved. Returning to OTNow…"
+      : "Your choice is saved. You can view the public totals or close this tab.";
+    continueToPanel();
   } catch (error) {
     status.textContent = String(error?.message || error);
     busy(false);
@@ -57,12 +71,19 @@ share.addEventListener("click", async () => {
 
 decline.addEventListener("click", async () => {
   busy(true);
-  const response = await chrome.runtime.sendMessage({ type: "stats:onboarding-decline" });
+  const response = await browserApi.runtime.sendMessage({ type: "stats:onboarding-decline" });
   if (!response?.ok) {
     status.textContent = response?.error || "Your choice could not be saved.";
     busy(false);
     return;
   }
-  status.textContent = "Nothing was shared. You can close this tab or enable it later in Settings.";
+  status.textContent = returnToPanel
+    ? "Nothing was shared. Returning to OTNow…"
+    : "Nothing was shared. You can close this tab or enable it later in Insights.";
   actions.hidden = true;
+  successHeading.textContent = "Nothing was shared";
+  successCopy.textContent = "OTNow remains fully available. You can enable anonymous statistics later in Insights.";
+  statsLink.hidden = true;
+  success.hidden = false;
+  continueToPanel();
 });

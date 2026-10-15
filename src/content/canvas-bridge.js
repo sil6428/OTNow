@@ -1,4 +1,5 @@
 (() => {
+  const browserApi = globalThis.browser || globalThis.chrome;
   const allowedPaths = [
     /^\/api\/v1\/planner\/items(?:\?|$)/,
     /^\/api\/v1\/courses(?:\?|$)/,
@@ -8,7 +9,7 @@
     return !path.includes("..") && allowedPaths.some((pattern) => pattern.test(path));
   }
 
-  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  browserApi.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (!message || message.type !== "canvas:fetch") return false;
     const path = String(message.path || "");
     if (!allowed(path)) {
@@ -50,5 +51,5 @@
     return true;
   });
 
-  chrome.runtime.sendMessage({ type: "canvas:page-ready" }).catch(() => {});
+  browserApi.runtime.sendMessage({ type: "canvas:page-ready" }).catch(() => {});
 })();

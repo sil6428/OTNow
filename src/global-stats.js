@@ -1,5 +1,6 @@
 import { GLOBAL_STATS_API_URL, GLOBAL_STATS_INTERVAL_MINUTES } from "./constants.js";
 import { mergeMetrics } from "./metrics.js";
+import { browserApi } from "./browser-api.js";
 
 const META_KEY = "globalStatsMeta";
 const REQUEST_TIMEOUT_MS = 10_000;
@@ -34,11 +35,11 @@ export function buildAnonymousReport(metrics, installId, version, rating = null)
 }
 
 async function readMeta({ create = false } = {}) {
-  const stored = (await chrome.storage.local.get(META_KEY))[META_KEY] || {};
+  const stored = (await browserApi.storage.local.get(META_KEY))[META_KEY] || {};
   if (!stored.installId && create) {
     stored.installId = crypto.randomUUID();
     stored.createdAt = new Date().toISOString();
-    await chrome.storage.local.set({ [META_KEY]: stored });
+    await browserApi.storage.local.set({ [META_KEY]: stored });
   }
   return stored;
 }
@@ -74,7 +75,7 @@ export async function reportAnonymousStats(metrics, { force = false } = {}) {
     const result = await request("POST", buildAnonymousReport(
       metrics,
       meta.installId,
-      chrome.runtime.getManifest().version,
+      browserApi.runtime.getManifest().version,
       meta.rating,
     ));
     const next = {
@@ -82,11 +83,11 @@ export async function reportAnonymousStats(metrics, { force = false } = {}) {
       lastReportAt: new Date().toISOString(),
       lastError: null,
     };
-    await chrome.storage.local.set({ [META_KEY]: next });
+    await browserApi.storage.local.set({ [META_KEY]: next });
     return { ...result, lastReportAt: next.lastReportAt };
   } catch (error) {
     const next = { ...meta, lastError: String(error?.message || error) };
-    await chrome.storage.local.set({ [META_KEY]: next });
+    await browserApi.storage.local.set({ [META_KEY]: next });
     throw error;
   }
 }
@@ -94,7 +95,7 @@ export async function reportAnonymousStats(metrics, { force = false } = {}) {
 export async function deleteAnonymousStats() {
   const meta = await readMeta();
   if (meta.installId) await request("DELETE", { installId: meta.installId });
-  await chrome.storage.local.remove(META_KEY);
+  await browserApi.storage.local.remove(META_KEY);
   return { ok: true };
 }
 
@@ -103,7 +104,7 @@ export async function setAnonymousRating(rating) {
   if (!Number.isSafeInteger(value) || value < 1 || value > 5) throw new Error("Rating must be from 1 to 5.");
   const meta = await readMeta({ create: true });
   const next = { ...meta, rating: value, ratedAt: new Date().toISOString() };
-  await chrome.storage.local.set({ [META_KEY]: next });
+  await browserApi.storage.local.set({ [META_KEY]: next });
   return next;
 }
 

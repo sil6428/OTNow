@@ -1,13 +1,16 @@
 {
   "name": "otnow-extension",
-  "version": "1.5.0",
+  "version": "1.6.1",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test",
     "check": "node scripts/check.mjs",
+    "check:firefox": "node scripts/check-firefox.mjs",
     "smoke:extension": "node scripts/smoke-extension.mjs",
     "package:release": "powershell -ExecutionPolicy Bypass -File scripts/package-release.ps1",
-    "package:store": "powershell -ExecutionPolicy Bypass -File scripts/package-store.ps1"
+    "package:store": "powershell -ExecutionPolicy Bypass -File scripts/package-store.ps1",
+    "package:firefox": "powershell -ExecutionPolicy Bypass -File scripts/package-firefox.ps1",
+    "package:firefox-source": "powershell -ExecutionPolicy Bypass -File scripts/package-firefox-source.ps1"
   }
 }

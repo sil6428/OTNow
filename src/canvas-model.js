@@ -4,12 +4,29 @@ const COMPLETED_WORKFLOW_STATES = new Set(["submitted", "graded", "pending_revie
 
 export function normalizeType(value = "") {
   const type = String(value).toLowerCase();
+  if (type === "announcement") return "announcement";
   if (type.includes("quiz")) return "quiz";
   if (type.includes("discussion")) return "discussion";
   if (type.includes("assignment")) return "assignment";
   if (type.includes("calendar") || type.includes("event")) return "event";
   if (type.includes("note")) return "note";
   return "other";
+}
+
+export function plannerTypeFor(raw = {}) {
+  const type = normalizeType(raw.plannable_type);
+  if (type !== "assignment") return type;
+  const plannable = raw.plannable || {};
+  const submissionTypes = Array.isArray(plannable.submission_types)
+    ? plannable.submission_types.map((value) => String(value).toLowerCase())
+    : [];
+  const canvasUrl = String(raw.html_url || plannable.html_url || "");
+  if (
+    submissionTypes.includes("discussion_topic")
+    || plannable.discussion_topic_id != null
+    || /\/discussion_topics\//i.test(canvasUrl)
+  ) return "discussion";
+  return type;
 }
 
 export function dueAtFor(raw) {
@@ -27,10 +44,11 @@ function titleFor(raw) {
   return value.title || value.name || value.message || value.description || "Untitled Canvas item";
 }
 
-function absoluteCanvasUrl(value) {
+export function absoluteCanvasUrl(value) {
   if (!value) return CANVAS_ORIGIN;
   try {
-    return new URL(value, CANVAS_ORIGIN).href;
+    const url = new URL(value, CANVAS_ORIGIN);
+    return url.origin === CANVAS_ORIGIN ? url.href : CANVAS_ORIGIN;
   } catch {
     return CANVAS_ORIGIN;
   }
@@ -60,10 +78,10 @@ export function normalizeCourse(raw, index = 0) {
 
 export function normalizePlannerItem(raw, coursesById = {}, manualDone = {}) {
   const dueAt = dueAtFor(raw);
-  if (!dueAt || Number.isNaN(Date.parse(dueAt))) return null;
+  if (raw?.plannable_id == null || raw.plannable_id === "" || !dueAt || Number.isNaN(Date.parse(dueAt))) return null;
 
   const courseId = raw.course_id == null ? "personal" : String(raw.course_id);
-  const type = normalizeType(raw.plannable_type);
+  const type = plannerTypeFor(raw);
   const id = `${raw.plannable_type || "item"}:${raw.plannable_id}`;
   const submitted = submissionComplete(raw.submissions);
   const canvasComplete = Boolean(raw.planner_override?.marked_complete);

@@ -1,5 +1,6 @@
 import { CANVAS_ORIGIN } from "./constants.js";
 import { normalizeCourse, normalizePlannerItem, parseNextLink } from "./canvas-model.js";
+import { browserApi } from "./browser-api.js";
 
 const ALLOWED_PATHS = [
   /^\/api\/v1\/planner\/items(?:\?|$)/,
@@ -40,7 +41,7 @@ async function directFetch(path) {
 async function tabFetch(path) {
   let tabs = [];
   try {
-    tabs = await chrome.tabs.query({ url: `${CANVAS_ORIGIN}/*` });
+    tabs = await browserApi.tabs.query({ url: `${CANVAS_ORIGIN}/*` });
   } catch {
     return { status: 0, noTab: true };
   }
@@ -49,7 +50,7 @@ async function tabFetch(path) {
   for (const tab of tabs) {
     if (!tab.id || tab.discarded) continue;
     try {
-      const response = await chrome.tabs.sendMessage(tab.id, { type: "canvas:fetch", path });
+      const response = await browserApi.tabs.sendMessage(tab.id, { type: "canvas:fetch", path });
       if (response) return response;
     } catch {
       // Tabs opened before the extension was installed need one reload.

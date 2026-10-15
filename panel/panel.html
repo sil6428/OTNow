@@ -29,13 +29,16 @@
     <div id="notice" class="notice" hidden></div>
     <main id="app" aria-live="polite"></main>
 
-    <section id="support" class="support" aria-label="Support OTNow" hidden>
-      <span>OTNow is free and independent.</span>
-      <a id="support-link" href="#" target="_blank" rel="noopener noreferrer">Support OTNow on Ko-fi</a>
+    <section id="support" class="support" aria-label="OTNow feedback and support">
+      <span>Help improve OTNow.</span>
+      <span class="support-actions">
+        <a id="feedback-link" href="#" target="_blank" rel="noopener noreferrer">Send feedback</a>
+        <a id="support-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Support future OTNow development</a>
+      </span>
     </section>
 
     <footer class="footer">
-      <span id="sync-status">Not synced yet</span>
+      <span id="sync-status" tabindex="0">Not synced yet</span>
       <span id="app-version" class="footer-version"></span>
       <span class="privacy"><span class="status-dot"></span> Local only</span>
     </footer>

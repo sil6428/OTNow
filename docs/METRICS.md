@@ -1,6 +1,6 @@
 # Measuring OTNow responsibly
 
-OTNow uses two distinct measurement sources. Chrome Web Store reports remain authoritative for total installations and weekly users. A separate public dashboard summarizes only the students who explicitly opt in to anonymous numerical statistics.
+OTNow uses distinct measurement sources. Each official browser store remains authoritative for installations and active-use measures on that store. A separate public dashboard summarizes only the installations that explicitly opt in to anonymous numerical statistics.
 
 ## Public OTNow dashboard
 
@@ -50,4 +50,4 @@ Use only a number visible in an exported report or dated screenshot. Accurate pa
 - Maintained **X releases** with automated tests, packaged artifacts, checksums, and update documentation.
 - Resolved **X user-reported issues** and shipped **Y feature releases** while keeping identifiable Canvas data local.
 
-Do not present public-dashboard totals as all users, do not estimate time saved, and do not combine unlike reporting windows. The in-extension **Insights** page describes only the current Chrome profile; the public global dashboard includes only installations that opted in.
+Do not present public-dashboard totals as all users, do not estimate time saved, and do not combine unlike reporting windows. If Chrome and Firefox store counts are added, label the result **browser-store installations**, not unique users, because one person can install both. The in-extension **Insights** page describes only the current browser profile; the public global dashboard includes only installations that opted in.

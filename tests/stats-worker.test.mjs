@@ -214,6 +214,63 @@ test("records a site rating without collecting an account identifier", async () 
   assert.equal(env.state.inserted[0], 5);
 });
 
+test("serves the OTNow product landing page from the public root", async () => {
+  const response = await worker.fetch(new Request("https://stats.example/"), aggregateEnvironment());
+  const html = await response.text();
+  assert.equal(response.status, 200);
+  assert.match(html, /<title>OTNow — Your Canvas deadlines, organized<\/title>/);
+  assert.match(html, /Every Canvas deadline/);
+  assert.match(html, /One clean<\/span> sidebar/);
+  assert.match(html, /src="\/product-preview\.png"/);
+  assert.match(html, /Know when a deadline moves/);
+  assert.match(html, /Firefox 1\.6 submitted/);
+  assert.match(html, /href="\/dashboard"/);
+  assert.match(html, /href="\/privacy"/);
+  assert.match(html, /ekaachncjiajgiikgikhpafcnepompkn/);
+  assert.match(html, /forms\/d\/e\/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw\/viewform/);
+  assert.match(html, /ko-fi\.com\/sil6428/);
+  assert.match(html, /src="\/landing\.js"/);
+  assert.match(html, /prefers-reduced-motion:reduce/);
+  assert.doesNotMatch(html, /--yellow|#ffc83d|#ffd864|#ffc648|#fff6df/i);
+  assert.doesNotMatch(html, /Firefox available now/i);
+});
+
+test("serves the dependency-free landing interactions", async () => {
+  const response = await worker.fetch(new Request("https://stats.example/landing.js"), aggregateEnvironment());
+  const script = await response.text();
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type"), /text\/javascript/);
+  assert.match(script, /prefers-reduced-motion/);
+  assert.match(script, /IntersectionObserver/);
+  assert.match(script, /fetch\('\/api\/stats'/);
+  assert.match(script, /pointermove/);
+  assert.match(script, /applyTheme\(storedTheme \|\| 'light'\)/);
+  assert.doesNotMatch(script, /#ffc83d|#ffd864|#ffc648|#fff6df/i);
+});
+
+test("serves the OTNow social preview artwork", async () => {
+  const response = await worker.fetch(new Request("https://stats.example/social-card.svg"), aggregateEnvironment());
+  const svg = await response.text();
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type"), /image\/svg\+xml/);
+  assert.match(svg, /One clean sidebar/);
+  assert.match(svg, /Firefox 1\.6 submitted/);
+  assert.doesNotMatch(svg, /#ffc83d|#ffd864|#ffc648|#fff6df/i);
+});
+
+test("serves the sanitized product preview through the asset binding", async () => {
+  const env = aggregateEnvironment();
+  env.ASSETS = {
+    async fetch(request) {
+      assert.match(request.url, /otnow-real-deadlines-1280x800\.png$/);
+      return new Response(new Uint8Array([137, 80, 78, 71]), { headers: { "content-type": "image/png" } });
+    },
+  };
+  const response = await worker.fetch(new Request("https://stats.example/product-preview.png"), env);
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type"), /image\/png/);
+});
+
 test("public dashboard requires no token and explains the privacy boundary", async () => {
   const response = await worker.fetch(new Request("https://stats.example/dashboard"), aggregateEnvironment());
   const html = await response.text();
@@ -243,6 +300,43 @@ test("serves a themed privacy policy page", async () => {
   assert.match(html, /Last updated · October 4, 2026/);
   assert.match(html, /ekaachncjiajgiikgikhpafcnepompkn/);
   assert.match(html, /Public totals may use compact display labels/);
+});
+
+test("serves a concise support page", async () => {
+  const response = await worker.fetch(new Request("https://stats.example/support"), aggregateEnvironment());
+  const html = await response.text();
+  assert.equal(response.status, 200);
+  assert.match(html, /<title>OTNow - Support<\/title>/);
+  assert.match(html, /How can we help\?/);
+  assert.match(html, /Open feedback form/);
+  assert.match(html, /Chrome Web Store/);
+  assert.match(html, /ko-fi\.com\/sil6428/);
+  assert.match(html, /security\/advisories\/new/);
+  assert.match(html, /class="wash"/);
+  assert.match(html, /src="\/support\.js"/);
+});
+
+test("serves a concise uninstall thank-you page", async () => {
+  const response = await worker.fetch(new Request("https://stats.example/uninstall"), aggregateEnvironment());
+  const html = await response.text();
+  assert.equal(response.status, 200);
+  assert.match(html, /<title>OTNow - Thanks for trying it<\/title>/);
+  assert.match(html, /Thanks for trying OTNow/);
+  assert.match(html, /Uninstalling OTNow removes its local extension data through Chrome/);
+  assert.match(html, /Share feedback/);
+  assert.match(html, /Reinstall OTNow/);
+  assert.match(html, /security\/advisories\/new/);
+  assert.match(html, /class="wash"/);
+  assert.match(html, /src="\/support\.js"/);
+});
+
+test("serves the reactive support background script", async () => {
+  const response = await worker.fetch(new Request("https://stats.example/support.js"), aggregateEnvironment());
+  const script = await response.text();
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type"), /text\/javascript/);
+  assert.match(script, /prefers-reduced-motion/);
+  assert.match(script, /pointermove/);
 });
 
 test("serves the OTNow browser icon", async () => {

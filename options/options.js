@@ -1,7 +1,7 @@
 import { GLOBAL_STATS_ORIGIN, TYPE_LABELS } from "../src/constants.js";
+import { browserApi, optionalStatsPermission } from "../src/browser-api.js";
 
 const theme = document.querySelector("#theme");
-const showCompleted = document.querySelector("#show-completed");
 const notifications = document.querySelector("#notifications");
 const movedDates = document.querySelector("#moved-dates");
 const leadSettings = document.querySelector("#lead-settings");
@@ -38,7 +38,7 @@ function flashSaved(text = "Saved") {
 }
 
 async function persist() {
-  settings = (await chrome.runtime.sendMessage({ type: "options:set", settings })).settings;
+  settings = (await browserApi.runtime.sendMessage({ type: "options:set", settings })).settings;
   flashSaved();
 }
 
@@ -102,10 +102,9 @@ function renderCourses() {
 }
 
 async function load() {
-  ({ settings, state, globalStats } = await chrome.runtime.sendMessage({ type: "options:get" }));
+  ({ settings, state, globalStats } = await browserApi.runtime.sendMessage({ type: "options:get" }));
   theme.value = settings.theme;
   applyTheme(settings.theme);
-  showCompleted.checked = settings.showCompleted;
   notifications.checked = settings.notificationsEnabled;
   movedDates.checked = settings.notifyMovedDates;
   anonymousStats.checked = settings.shareAnonymousStats;
@@ -121,7 +120,6 @@ async function load() {
 }
 
 theme.addEventListener("change", () => { settings.theme = theme.value; applyTheme(settings.theme); queueSave(); });
-showCompleted.addEventListener("change", () => { settings.showCompleted = showCompleted.checked; queueSave(); });
 notifications.addEventListener("change", () => { settings.notificationsEnabled = notifications.checked; queueSave(); });
 movedDates.addEventListener("change", () => { settings.notifyMovedDates = movedDates.checked; queueSave(); });
 
@@ -129,20 +127,20 @@ anonymousStats.addEventListener("change", async () => {
   anonymousStats.disabled = true;
   try {
     if (anonymousStats.checked) {
-      const granted = await chrome.permissions.request({ origins: [`${GLOBAL_STATS_ORIGIN}/*`] });
+      const granted = await browserApi.permissions.request(optionalStatsPermission(GLOBAL_STATS_ORIGIN));
       if (!granted) throw new Error("Permission was not granted, so anonymous statistics remain off.");
-      const response = await chrome.runtime.sendMessage({ type: "stats:enable" });
+      const response = await browserApi.runtime.sendMessage({ type: "stats:enable" });
       if (!response?.ok) throw new Error(response?.error || "Could not enable anonymous statistics.");
       settings = response.settings;
       globalStats = response.globalStats;
       statsStatus.textContent = "Anonymous statistics are on. The first numerical report was sent successfully.";
       flashSaved("Anonymous statistics enabled");
     } else {
-      const response = await chrome.runtime.sendMessage({ type: "stats:disable" });
+      const response = await browserApi.runtime.sendMessage({ type: "stats:disable" });
       if (!response?.ok) throw new Error(response?.error || "Could not delete anonymous statistics.");
       settings = response.settings;
       globalStats = response.globalStats;
-      await chrome.permissions.remove({ origins: [`${GLOBAL_STATS_ORIGIN}/*`] });
+      await browserApi.permissions.remove(optionalStatsPermission(GLOBAL_STATS_ORIGIN));
       statsStatus.textContent = "Anonymous statistics are off and this installation's aggregate row was deleted.";
       flashSaved("Anonymous statistics disabled");
     }
@@ -159,7 +157,7 @@ deleteData.addEventListener("click", async () => {
   const card = deleteData.closest(".delete-card");
   card?.classList.add("is-shredding");
   await new Promise((resolve) => setTimeout(resolve, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 520));
-  const response = await chrome.runtime.sendMessage({ type: "options:delete-data" });
+  const response = await browserApi.runtime.sendMessage({ type: "options:delete-data" });
   if (!response?.ok) {
     card?.classList.remove("is-shredding");
     flashSaved(response?.error || "Data could not be deleted");

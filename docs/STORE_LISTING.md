@@ -45,6 +45,10 @@ English
 
 https://docs.google.com/forms/d/e/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw/viewform
 
+## Optional contributions URL
+
+https://ko-fi.com/sil6428
+
 ## Homepage URL
 
 https://github.com/sil6428/OTNow

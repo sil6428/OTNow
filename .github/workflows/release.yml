@@ -29,19 +29,26 @@ jobs:
         shell: pwsh
         run: |
           $version = (Get-Content manifest.json -Raw | ConvertFrom-Json).version
+          $firefoxVersion = (Get-Content manifest.firefox.json -Raw | ConvertFrom-Json).version
           if ($env:GITHUB_REF_NAME -ne "v$version") {
             throw "Tag $env:GITHUB_REF_NAME does not match manifest version $version."
+          }
+          if ($firefoxVersion -ne $version) {
+            throw "Firefox manifest version $firefoxVersion does not match Chrome manifest version $version."
           }
 
       - name: Run unit tests and package validation
         run: |
           npm test
           npm run check
+          npm run check:firefox
 
       - name: Build release packages
         run: |
           npm run package:release
           npm run package:store
+          npm run package:firefox
+          npm run package:firefox-source
 
       - name: Write SHA-256 checksums
         shell: pwsh
@@ -57,4 +64,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $version = (Get-Content manifest.json -Raw | ConvertFrom-Json).version
-          gh release create $env:GITHUB_REF_NAME dist\otnow-$version.zip dist\otnow-store-$version.zip dist\SHA256SUMS.txt --verify-tag --generate-notes --title "OTNow $version"
+          gh release create $env:GITHUB_REF_NAME dist\otnow-$version.zip dist\otnow-store-$version.zip dist\otnow-firefox-$version.zip dist\otnow-firefox-source-$version.zip dist\SHA256SUMS.txt --verify-tag --generate-notes --title "OTNow $version"
