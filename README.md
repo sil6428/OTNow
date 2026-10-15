@@ -11,6 +11,11 @@
   </p>
 
   <p>
+    <a href="https://otnow-stats.sil6428-archtech.workers.dev/dashboard"><img alt="Live Canvas items organized" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fotnow-stats.sil6428-archtech.workers.dev%2Fapi%2Fstats&amp;query=%24.summary.totalItems&amp;label=Canvas%20items%20organized&amp;color=0891B2&amp;cacheSeconds=3600"></a>
+    <a href="https://otnow-stats.sil6428-archtech.workers.dev/dashboard"><img alt="Live opt-in reporting installations" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fotnow-stats.sil6428-archtech.workers.dev%2Fapi%2Fstats&amp;query=%24.summary.reportingInstallations&amp;label=Opt-in%20reporting%20installations&amp;color=1D4ED8&amp;cacheSeconds=3600"></a>
+  </p>
+
+  <p>
     <a href="https://otnow-stats.sil6428-archtech.workers.dev/">Website</a> ·
     <a href="https://otnow-stats.sil6428-archtech.workers.dev/dashboard">Live statistics</a> ·
     <a href="https://otnow-stats.sil6428-archtech.workers.dev/privacy">Privacy</a> ·
