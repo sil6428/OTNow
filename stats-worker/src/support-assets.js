@@ -1,6 +1,7 @@
 const FEEDBACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw/viewform";
 const STORE_URL = "https://chromewebstore.google.com/detail/otnow/ekaachncjiajgiikgikhpafcnepompkn";
 const REPOSITORY_URL = "https://github.com/sil6428/OTNow";
+const KO_FI_URL = "https://ko-fi.com/sil6428";
 const SECURITY_URL = `${REPOSITORY_URL}/security/advisories/new`;
 
 const PAGE_STYLE = String.raw`
@@ -34,7 +35,7 @@ export const SUPPORT_PAGE = page({
   heading: "How can we help?",
   lead: "Report a problem, suggest an improvement, or find the official installation and project pages.",
   notice: "Before sending feedback, remove student numbers, grades, private course content, and screenshots containing personal information.",
-  actions: `<a class="button primary" href="${FEEDBACK_URL}">Open feedback form ↗</a><a class="button" href="${REPOSITORY_URL}">GitHub help ↗</a><a class="button" href="${STORE_URL}">Chrome Web Store ↗</a>`,
+  actions: `<a class="button primary" href="${FEEDBACK_URL}">Open feedback form ↗</a><a class="button" href="${REPOSITORY_URL}">GitHub help ↗</a><a class="button" href="${STORE_URL}">Chrome Web Store ↗</a><a class="button" href="${KO_FI_URL}">Support OTNow on Ko-fi ↗</a>`,
   help: `Found a possible security issue? <a href="${SECURITY_URL}">Report it privately through GitHub ↗</a>`,
 });
 

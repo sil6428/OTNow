@@ -63,6 +63,11 @@ import {
 
 let syncPromise = null;
 let updatePromise = null;
+const NOTIFICATION_ICON_URL = browserApi.runtime.getURL("icons/icon-128.png");
+
+function reportBackgroundWarning(label, error) {
+  console.warn(`[OTNow] ${label}`, error);
+}
 
 async function hasGlobalStatsPermission() {
   return browserApi.permissions.contains(optionalStatsPermission(GLOBAL_STATS_ORIGIN));
@@ -111,7 +116,7 @@ async function refreshBadge(state) {
 async function createNotification(id, title, message, url) {
   await browserApi.notifications.create(id, {
     type: "basic",
-    iconUrl: "icons/icon-128.png",
+    iconUrl: NOTIFICATION_ICON_URL,
     title,
     message,
     priority: 1,
@@ -128,8 +133,12 @@ async function notifyMoved(items, settings) {
     const date = new Intl.DateTimeFormat(undefined, {
       weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
     }).format(new Date(item.dueAt));
-    await createNotification(id, `${item.courseCode} moved a deadline`, `${item.title} is now due ${date}.`, item.url);
-    links[id] = item.url;
+    try {
+      await createNotification(id, `${item.courseCode} moved a deadline`, `${item.title} is now due ${date}.`, item.url);
+      links[id] = item.url;
+    } catch (error) {
+      reportBackgroundWarning("A moved-deadline notification could not be created; Canvas data remains synced.", error);
+    }
   }
   if (Object.keys(links).length) await updateState((state) => {
     state.notificationLinks = { ...state.notificationLinks, ...links };
@@ -162,12 +171,17 @@ async function runReminders({ initial = false } = {}) {
     const due = new Intl.DateTimeFormat(undefined, {
       weekday: "short", hour: "numeric", minute: "2-digit",
     }).format(new Date(item.dueAt));
-    await createNotification(
-      id,
-      `${item.courseCode}: ${TYPE_LABELS[item.type] || TYPE_LABELS.other}`,
-      `${item.title} is due ${due}.`,
-      item.url,
-    );
+    try {
+      await createNotification(
+        id,
+        `${item.courseCode}: ${TYPE_LABELS[item.type] || TYPE_LABELS.other}`,
+        `${item.title} is due ${due}.`,
+        item.url,
+      );
+    } catch (error) {
+      reportBackgroundWarning("A deadline notification could not be created; Canvas data remains synced.", error);
+      continue;
+    }
     state.notificationLinks[id] = item.url;
     state.sentReminders[key] = new Date().toISOString();
     remindersSent += 1;
@@ -213,10 +227,12 @@ async function syncCanvas({ userInitiated = false } = {}) {
       };
       pruneTracking(next, items);
       await setState(next);
-      await refreshBadge(next);
+      await refreshBadge(next).catch((error) => reportBackgroundWarning("The toolbar badge could not be refreshed.", error));
       const settings = await getSettings();
-      if (!firstSync) await notifyMoved(moved, settings);
-      await runReminders({ initial: firstSync });
+      if (!firstSync) {
+        await notifyMoved(moved, settings).catch((error) => reportBackgroundWarning("Moved-deadline notifications failed after a successful sync.", error));
+      }
+      await runReminders({ initial: firstSync }).catch((error) => reportBackgroundWarning("Deadline reminders failed after a successful sync.", error));
       runGlobalStats().catch(() => {});
       return { ok: true };
     } catch (error) {
@@ -231,7 +247,7 @@ async function syncCanvas({ userInitiated = false } = {}) {
         metrics: recordFailedSync(before.metrics),
       };
       await setState(next);
-      await refreshBadge(next);
+      await refreshBadge(next).catch((badgeError) => reportBackgroundWarning("The toolbar badge could not be refreshed after a failed sync.", badgeError));
       return { ok: false, error: next.error, errorKind: next.errorKind, userInitiated };
     } finally {
       syncPromise = null;
@@ -426,10 +442,10 @@ if (IS_FIREFOX_BUILD && browserApi.sidebarAction?.open) {
 }
 
 browserApi.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === SYNC_ALARM) syncCanvas();
-  if (alarm.name === REMINDER_ALARM) runReminders();
-  if (alarm.name === UPDATE_ALARM) checkForUpdate();
-  if (alarm.name === GLOBAL_STATS_ALARM) runGlobalStats();
+  if (alarm.name === SYNC_ALARM) syncCanvas().catch((error) => reportBackgroundWarning("Scheduled Canvas sync failed.", error));
+  if (alarm.name === REMINDER_ALARM) runReminders().catch((error) => reportBackgroundWarning("Scheduled reminders failed.", error));
+  if (alarm.name === UPDATE_ALARM) checkForUpdate().catch((error) => reportBackgroundWarning("The update check failed.", error));
+  if (alarm.name === GLOBAL_STATS_ALARM) runGlobalStats().catch((error) => reportBackgroundWarning("The optional statistics report failed.", error));
 });
 
 browserApi.notifications.onClicked.addListener(async (id) => {
@@ -504,7 +520,7 @@ browserApi.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         break;
       case "options:set":
         sendResponse({ settings: await setSettings(message.settings || {}) });
-        await runReminders();
+        await runReminders().catch((error) => reportBackgroundWarning("Reminder settings were saved, but a notification could not be created.", error));
         break;
       case "stats:enable": {
         if (!(await hasGlobalStatsPermission())) throw new Error("Permission was not granted.");

@@ -4,13 +4,13 @@ This Cloudflare Worker serves OTNow's public product site, receives the optional
 
 ## Product landing page
 
-The public root at `/` is OTNow's link hub and product introduction. It links directly to the signed Chrome Web Store build, the in-testing Firefox release track, live statistics, privacy policy, feedback form, support page, source code, changelog, and private vulnerability reporting. It does not add any extension permission or analytics dependency.
+The public root at `/` is OTNow's link hub and product introduction. It links directly to the signed Chrome Web Store build, the submitted Firefox release track, live statistics, privacy policy, feedback form, Ko-fi page, support page, source code, changelog, and private vulnerability reporting. It does not add any extension permission or analytics dependency.
 
 The page uses a light, Canvas-adjacent OTNow palette with an optional dark theme. Its hero shows the real sanitized OTNow sidebar beside an Ontario Tech Canvas dashboard, while later sections demonstrate changed-date detection, organization, and local announcement cleanup rather than relying on generic feature cards. Dependency-free course-colour particles, cursor reactions, click sparks, scroll reveals, subtle product tilt, and live count-up values provide the animation layer. It honours `prefers-reduced-motion`, includes an explicit motion control, and disables pointer-heavy effects on coarse-pointer devices. The live counters reuse `/api/stats` and retain its opt-in boundary instead of implying that reporting installations equal all users.
 
 The bundled static-asset binding exposes the existing sanitized screenshots in `docs/media` to the Worker. `/product-preview.png` deliberately maps to the real deadline screenshot used by the landing page; coursework shown there is fictionalized and sanitized.
 
-The social preview artwork is served at `/social-card.svg`. Firefox remains labelled as testing until Mozilla assigns and approves a public listing.
+The social preview artwork is served at `/social-card.svg`. Firefox remains labelled as submitted until Mozilla publishes the listing and the signed build passes final installation testing.
 
 ## Data boundary
 

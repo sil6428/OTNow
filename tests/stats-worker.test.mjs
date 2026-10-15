@@ -223,11 +223,12 @@ test("serves the OTNow product landing page from the public root", async () => {
   assert.match(html, /One clean<\/span> sidebar/);
   assert.match(html, /src="\/product-preview\.png"/);
   assert.match(html, /Know when a deadline moves/);
-  assert.match(html, /Firefox 1\.6 in testing/);
+  assert.match(html, /Firefox 1\.6 submitted/);
   assert.match(html, /href="\/dashboard"/);
   assert.match(html, /href="\/privacy"/);
   assert.match(html, /ekaachncjiajgiikgikhpafcnepompkn/);
   assert.match(html, /forms\/d\/e\/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw\/viewform/);
+  assert.match(html, /ko-fi\.com\/sil6428/);
   assert.match(html, /src="\/landing\.js"/);
   assert.match(html, /prefers-reduced-motion:reduce/);
   assert.doesNotMatch(html, /--yellow|#ffc83d|#ffd864|#ffc648|#fff6df/i);
@@ -253,7 +254,7 @@ test("serves the OTNow social preview artwork", async () => {
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type"), /image\/svg\+xml/);
   assert.match(svg, /One clean sidebar/);
-  assert.match(svg, /Firefox 1\.6 in testing/);
+  assert.match(svg, /Firefox 1\.6 submitted/);
   assert.doesNotMatch(svg, /#ffc83d|#ffd864|#ffc648|#fff6df/i);
 });
 
@@ -309,6 +310,7 @@ test("serves a concise support page", async () => {
   assert.match(html, /How can we help\?/);
   assert.match(html, /Open feedback form/);
   assert.match(html, /Chrome Web Store/);
+  assert.match(html, /ko-fi\.com\/sil6428/);
   assert.match(html, /security\/advisories\/new/);
   assert.match(html, /class="wash"/);
   assert.match(html, /src="\/support\.js"/);

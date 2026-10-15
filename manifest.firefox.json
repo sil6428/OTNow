@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "OTNow",
   "short_name": "OTNow",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "An unofficial, private-by-default Canvas deadline sidebar for Ontario Tech students.",
   "homepage_url": "https://github.com/sil6428/OTNow",
   "incognito": "not_allowed",

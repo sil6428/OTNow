@@ -1,157 +1,184 @@
-# OTNow
+<div align="center">
+  <img src="icons/icon-128.png" width="88" alt="OTNow logo">
+  <h1>OTNow</h1>
+  <p><strong>Your Ontario Tech Canvas deadlines, organized in one browser sidebar.</strong></p>
+  <p>OTNow is an unofficial, private-by-default extension that finds dated coursework, notices moved due dates, and sends configurable reminders without asking for your Canvas password.</p>
 
-OTNow is an unofficial browser extension for Ontario Tech students who use Canvas. It puts dated coursework in a persistent sidebar, notices when due dates move, and sends configurable reminders without asking for a Canvas password or sending course data to a separate server.
+  <p>
+    <a href="https://chromewebstore.google.com/detail/otnow/ekaachncjiajgiikgikhpafcnepompkn"><img alt="Install from the Chrome Web Store" src="https://img.shields.io/badge/Chrome_Web_Store-Install_OTNow-0b57d0?logo=googlechrome&amp;logoColor=white"></a>
+    <a href="docs/FIREFOX_RELEASE.md"><img alt="Firefox version submitted" src="https://img.shields.io/badge/Firefox-Submitted_for_review-ff7139?logo=firefoxbrowser&amp;logoColor=white"></a>
+    <a href="https://ko-fi.com/sil6428"><img alt="Support OTNow on Ko-fi" src="https://img.shields.io/badge/Ko--fi-Support_OTNow-ff5e5b?logo=kofi&amp;logoColor=white"></a>
+  </p>
 
-The project name is **OTNow**.
+  <p>
+    <a href="https://otnow-stats.sil6428-archtech.workers.dev/">Website</a> ·
+    <a href="https://otnow-stats.sil6428-archtech.workers.dev/dashboard">Live statistics</a> ·
+    <a href="https://otnow-stats.sil6428-archtech.workers.dev/privacy">Privacy</a> ·
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw/viewform">Feedback</a>
+  </p>
+</div>
 
-**[Visit the OTNow product site](https://otnow-stats.sil6428-archtech.workers.dev/)** · [View live opt-in statistics](https://otnow-stats.sil6428-archtech.workers.dev/dashboard) · [Read the privacy policy](https://otnow-stats.sil6428-archtech.workers.dev/privacy)
+![OTNow — Canvas deadlines, one panel](docs/media/otnow-marquee-1400x560.png)
 
-![OTNow beside a sanitized Ontario Tech Canvas dashboard](docs/media/otnow-real-deadlines-1280x800.png)
+## What you get
 
-## Install OTNow
+- **One deadline list.** Assignments, quizzes, discussions, announcements, events, planner notes, and other dated Canvas items appear together.
+- **Useful organization.** Filter by course or type, search by name, and group work by date or item type.
+- **Changed-date detection.** When Canvas moves a due date, OTNow highlights the change for seven days and can notify you.
+- **Flexible reminders.** Choose different reminder timing for assignments, quizzes, discussions, events, and planner notes, or mute one course without hiding it.
+- **Clear completion history.** Completed work has its own organized view, and local check-offs can be restored without changing Canvas.
+- **Offline resilience.** If Canvas or the network is unavailable, OTNow keeps showing the most recent successful read and tries again later.
 
-The Chrome Web Store is the preferred installation method. It provides one-click setup, automatic background updates, no Developer mode or permanent unpacked folder, and Chrome-managed package delivery. The Store build also removes OTNow's manual GitHub update checker and its related GitHub host permission because Chrome handles updates directly.
+OTNow also includes direct course links, local approved-extension dates, automatic light/dark appearance, a private activity summary, and optional anonymous aggregate statistics.
 
-**[Install OTNow from the Chrome Web Store](https://chromewebstore.google.com/detail/otnow/ekaachncjiajgiikgikhpafcnepompkn)**
+<details>
+<summary><strong>See the full feature list</strong></summary>
 
-The packaged GitHub release remains available for development and manual installation, but most students should use the Chrome Web Store version.
+- Reads active courses and dated Canvas planner items every 30 minutes while the browser is running.
+- Groups deadlines into useful date ranges or by item type.
+- Keeps announcement read status locally, supports course-aware bulk marking, and can undo the latest bulk action.
+- Links directly to each course's home, modules, assignments, quizzes, discussions, files, and grades.
+- Distinguishes Canvas completion from an OTNow check-off.
+- Applies a student-entered extension date locally and restores the original Canvas date with one action.
+- Tracks local totals for organized deadlines, moved dates, reminders, and manual check-offs.
+- Shows a short, dismissible summary after an update with a link to the complete changelog.
+- Lets students opt into or out of anonymous numerical statistics at any time.
+- Updates automatically when installed from an official browser store.
 
-### Firefox status
+</details>
 
-The Firefox 1.6 build is now maintained from the same source as Chrome and is being prepared for Mozilla Add-ons review. It uses Firefox's native sidebar, Mozilla-managed updates, and Firefox's built-in optional technical-and-interaction-data consent for OTNow's off-by-default aggregate statistics. No Firefox listing is advertised until Mozilla assigns and approves the public URL. See the [Firefox release track](docs/FIREFOX_RELEASE.md) for its validation and submission checklist.
+## What it looks like
 
-**[Download the latest packaged release](https://github.com/sil6428/OTNow/releases/latest)** · [Open the full beginner installation guide](INSTALL.md)
+| Deadlines | Courses |
+| --- | --- |
+| ![Upcoming deadlines grouped by date](docs/media/otnow-real-deadlines-1280x800.png) | ![Course directory and direct Canvas links](docs/media/otnow-real-courses-1280x800.png) |
+| **Insights** | **Dark appearance** |
+| ![Private on-device activity and support tools](docs/media/otnow-real-insights-1280x800.png) | ![OTNow using its dark appearance](docs/media/otnow-real-dark-1280x800.png) |
 
-> [!IMPORTANT]
-> Open the [latest OTNow release](https://github.com/sil6428/OTNow/releases/latest) and download the file named `otnow-VERSION.zip` under **Assets**. Do **not** use the green **Code > Download ZIP** button. GitHub's source ZIP adds an extra repository folder and can cause Chrome's “manifest file is missing or unreadable” error when the wrong folder is selected.
+Screenshots use sanitized Canvas information and contain no real grades, student identifiers, or private coursework.
 
-1. Under **Assets**, download `otnow-VERSION.zip` from the [latest release](https://github.com/sil6428/OTNow/releases/latest). Ignore the automatically generated **Source code** downloads.
-2. Right-click the downloaded ZIP and choose **Extract All**.
-3. Open the extracted folder and confirm that `manifest.json` is visible beside the `icons`, `options`, `panel`, and `src` folders.
-4. In Chrome, open `chrome://extensions`.
-5. Turn on **Developer mode**.
-6. Select **Load unpacked** and choose the exact folder that directly contains `manifest.json`.
-7. Pin **OTNow**, open Ontario Tech Canvas, and click the OTNow toolbar icon.
+## Install
 
-If Chrome reports that it cannot read the manifest, the selected folder is one level too high. Open the folder inside it and select the folder where `manifest.json` is directly visible.
+### Chrome and Chromium browsers
 
-## Current feature set
+**[Install OTNow from the Chrome Web Store](https://chromewebstore.google.com/detail/otnow/ekaachncjiajgiikgikhpafcnepompkn).** This is the recommended option for Chrome, Brave, Edge, and other Chromium-based browsers because the browser handles installation and updates.
 
-- Reads the current student's active courses and Canvas planner items.
-- Groups dated work by **type** or by **due-date range**.
-- Filters by course and item type, including announcements, assignments, quizzes, discussions, events, planner notes, and other dated Canvas items.
-- Lets students locally mark visible announcements read by course, undo the latest bulk action, and show read announcements again without changing Canvas.
-- Provides a Courses directory with direct links to each course's home, modules, assignments, quizzes, discussions, files, and grades.
-- Separates completed work into its own view, identifies whether Canvas or OTNow supplied the completion state, and restores only local check-offs.
-- Lets a student apply an approved extension date to one item, updates OTNow reminders and grouping around it, and restores the original Canvas date with one action.
-- Highlights a moved due date for seven days and can notify the student.
-- Supports per-type reminder timing for assignments, quizzes, discussions, events, and planner notes.
-- Allows reminder notifications to be muted for individual courses without hiding their deadlines.
-- Keeps the last successful read available when Canvas or the network is unavailable.
-- Supports light, dark, or system appearance.
-- Shows a local-only Insights summary of deadlines organized, due-date changes detected, reminders delivered, and manual check-offs.
-- Offers separate, off-by-default anonymous global statistics that send only a random installation ID, version, numerical totals, and an optional 1–5 rating after explicit consent.
-- Shows a one-time first-run consent screen with clear **Share anonymous statistics** and **Not now** choices; neither is preselected.
-- GitHub-installed Chrome copies check the public OTNow repository for a newer version and link to [step-by-step update instructions](UPDATE_GUIDE.md); official Chrome and Firefox store copies update automatically.
-- Refreshes every 30 minutes while the browser is running.
+After installing, sign in to [Ontario Tech Canvas](https://learn.ontariotechu.ca/), pin OTNow, and select its toolbar icon. If Canvas was already open during installation, reload that tab once.
 
-## Privacy and security model
+### Firefox
 
-- The extension uses the existing browser session at `https://learn.ontariotechu.ca`.
-- It never requests, receives, or stores the student's password.
-- The Canvas bridge permits only two read-only endpoints:
-  - `GET /api/v1/courses`
-  - `GET /api/v1/planner/items`
-- GitHub-installed copies read only OTNow's public `manifest.json` about every six hours and send no student or course information; the Chrome Web Store build disables this request because Chrome supplies automatic updates.
-- All course data, settings, manual check-offs, locally read announcement markers, local deadline adjustments, reminder history, and Insights totals live in extension-local browser storage on the student's computer.
-- There is no analytics SDK, ad code, behavioural tracker, or OTNow account. Optional anonymous numerical statistics use a narrow, separately granted host permission and can be deleted by opting out.
-- OTNow is not affiliated with or endorsed by Ontario Tech University or Instructure.
+An initial OTNow 1.6.0 package was submitted to Mozilla Add-ons on October 14, 2026. The corrected 1.6.1 candidate includes the final notification-sync fix and supersedes that package. The Firefox build uses the same feature source as Chrome and Firefox's native sidebar. A public install link will be added only after Mozilla publishes the signed build and it passes a final installation test.
 
-Read the [themed public privacy policy](https://otnow-stats.sil6428-archtech.workers.dev/privacy) or review its source in [PRIVACY.md](PRIVACY.md).
+Follow progress in the [Firefox release record](docs/FIREFOX_RELEASE.md).
 
-## Feedback and security
+<details>
+<summary><strong>Manual installation from GitHub</strong></summary>
+
+Most students should use a browser store. The packaged GitHub release is available for development and transparent manual installation:
+
+1. Open the [latest OTNow release](https://github.com/sil6428/OTNow/releases/latest).
+2. Under **Assets**, download `otnow-VERSION.zip`. Do not use GitHub's green **Code → Download ZIP** button.
+3. Extract the ZIP and open the folder where `manifest.json` is directly visible.
+4. Open `chrome://extensions`, enable **Developer mode**, and select **Load unpacked**.
+5. Choose the folder that directly contains `manifest.json`.
+
+See the [beginner installation guide](INSTALL.md) and [manual update guide](UPDATE_GUIDE.md) for complete instructions.
+
+</details>
+
+## Privacy by default
+
+OTNow uses the Ontario Tech Canvas session already open in your browser. It never asks for, receives, or stores your password.
+
+- Canvas access is restricted to read-only course and planner requests.
+- Course names, coursework, due dates, settings, reminders, and check-offs stay in extension storage on your computer.
+- There is no OTNow account, advertising code, analytics SDK, or behavioural tracker.
+- Anonymous global statistics are **off by default**. Nothing is transmitted unless the student explicitly enables them.
+- Optional reports contain only a random installation ID, version, numerical totals, and an optional 1–5 rating—never names, courses, coursework titles, grades, emails, student numbers, Canvas IDs, or URLs.
+- Opting out requests deletion of that installation's aggregate row and removes its reporting ID locally.
+
+The Chrome Web Store package has no GitHub host permission because Chrome manages its updates. Manually installed Chrome copies read only OTNow's public manifest periodically to check for a newer version. Firefox uses Mozilla-managed updates.
+
+Read the [public privacy policy](https://otnow-stats.sil6428-archtech.workers.dev/privacy), its [repository copy](PRIVACY.md), or the detailed [permission explanations](docs/PERMISSION_JUSTIFICATIONS.md).
+
+## How it works
+
+```text
+Signed-in Canvas tab
+        ↓ read-only requests
+Canvas courses + planner items
+        ↓ normalize and compare
+Local browser storage
+        ↓
+Sidebar, reminders, changed dates, and Insights
+```
+
+OTNow allows only these Canvas API reads:
+
+- `GET /api/v1/courses`
+- `GET /api/v1/planner/items`
+
+The extension keeps the last successful result so a temporary Canvas or network failure does not empty the sidebar. Notification failures are isolated from syncing, so they cannot turn a successful Canvas refresh into a stale-data warning.
+
+## Support the project
+
+OTNow is maintained independently and does not charge students. If it has helped you, you can **[support OTNow on Ko-fi](https://ko-fi.com/sil6428)**. Donations are optional and never unlock features or change how the extension works.
 
 - [Report a bug or suggest an improvement](https://docs.google.com/forms/d/e/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw/viewform)
-- [Report a vulnerability privately](https://github.com/sil6428/OTNow/security/advisories/new)
+- [Report a security issue privately](https://github.com/sil6428/OTNow/security/advisories/new)
+- [View the public opt-in statistics dashboard](https://otnow-stats.sil6428-archtech.workers.dev/dashboard)
 
-The feedback form accepts an optional name and sends responses privately to the OTNow maintainer. Remove student numbers, grades, private course content, session details, and other personal information before submitting. Security vulnerabilities should not be submitted through the general feedback form; follow [SECURITY.md](SECURITY.md) instead.
-
-If Canvas was already open before installing OTNow, reload that Canvas tab once. Future versions can be installed without removing OTNow; follow [UPDATE_GUIDE.md](UPDATE_GUIDE.md) so local settings remain attached to the same unpacked extension folder.
-
-Overall reach is measured separately with each browser store's reports. A [public OTNow statistics dashboard](https://otnow-stats.sil6428-archtech.workers.dev/dashboard) separately shows aggregate totals from consenting reporting installations. See [Measuring OTNow responsibly](docs/METRICS.md) for the reporting workflow and accurate resume wording.
-
-## Chrome Web Store
-
-OTNow v1.5.0 is [available on the Chrome Web Store](https://chromewebstore.google.com/detail/otnow/ekaachncjiajgiikgikhpafcnepompkn). The packaged GitHub release remains available as a transparent manual-installation and development option. See [the store submission guide](docs/CHROME_WEB_STORE_SUBMISSION.md) for the release process.
+Please remove student numbers, grades, private course content, session details, and other personal information from feedback. Security vulnerabilities should follow [SECURITY.md](SECURITY.md), not the general feedback form.
 
 ## Development
 
-OTNow has no build step and no runtime dependencies. Its source is the extension package.
-
-```text
-manifest.json             Chrome Manifest V3 configuration
-manifest.firefox.json     Firefox Manifest V3 source configuration
-src/browser-api.js        Promise-based Chrome/Firefox API adapter
-src/background.js        Sync, reminders, moved dates, badges, and messages
-src/canvas-client.js      Allowlisted Canvas reads and pagination
-src/content/              Same-origin Canvas session bridge
-src/canvas-model.js       Data normalization and due-date reconciliation
-src/deadline-adjustments.js  Local approved-extension dates and Canvas-date restoration
-src/metrics.js            Local activity counters and migrations
-src/global-stats.js       Strict opt-in anonymous-report payload and deletion
-stats-worker/             Private aggregate dashboard service and D1 schema
-panel/                    Side-panel interface
-options/                  Reminder, appearance, and privacy settings
-tests/                    Node unit tests for pure application logic
-```
-
-Run the local checks with a recent Node.js version:
+OTNow has no runtime dependencies or extension build step: the repository source is the extension package. Packaging scripts create browser-specific store ZIPs from that shared source.
 
 ```bash
 npm test
 npm run check
 npm run check:firefox
+npm run smoke:extension
 ```
-
-Create the clean Chrome Web Store ZIP on Windows:
 
 ```powershell
 npm run package:store
 npm run package:firefox
+npm run package:release
 ```
 
-Create the GitHub release ZIP with the manual update guide using `npm run package:release`.
+### Repository map
 
-Pushing a tag that exactly matches both browser manifest versions, such as `v1.6.0`, runs the release workflow. It validates the shared code, builds the manual Chrome, Chrome Web Store, and Firefox ZIPs, writes SHA-256 checksums, and publishes the GitHub release automatically.
+| Path | Purpose |
+| --- | --- |
+| `src/background.js` | Canvas syncing, reminders, changed dates, badges, and messages |
+| `src/canvas-client.js` | Allowlisted Canvas reads and pagination |
+| `src/canvas-model.js` | Canvas data normalization and due-date reconciliation |
+| `src/global-stats.js` | Strict opt-in anonymous report and deletion flow |
+| `src/metrics.js` | Private on-device activity counters and migrations |
+| `panel/` | Chrome side panel and Firefox sidebar interface |
+| `options/` | Reminder, appearance, privacy, and consent screens |
+| `stats-worker/` | Public website, aggregate dashboard, privacy page, and D1 service |
+| `scripts/` | Validation and browser-specific packaging |
+| `tests/` | Unit and integration tests using representative Canvas response shapes |
 
-## Live validation
+Pushing a tag that matches both browser manifest versions, such as `v1.6.1`, validates the shared code, creates the Chrome, Firefox, and manual-release packages, writes SHA-256 checksums, and publishes the GitHub release.
 
-The extension's installation, Ontario Tech Canvas session bridge, first course/deadline refresh, and side-panel rendering were validated against `learn.ontariotechu.ca` on September 24, 2026.
+### Project documentation
 
-### Remaining release checks
+| Document | Contents |
+| --- | --- |
+| [Changelog](CHANGELOG.md) | User-facing release history |
+| [1.6 release plan](docs/RELEASE_1_6_PLAN.md) | Scope, acceptance criteria, and remaining checks |
+| [Release checklist](docs/RELEASE_CHECKLIST.md) | Packaging and publication gates |
+| [Chrome submission guide](docs/CHROME_WEB_STORE_SUBMISSION.md) | Chrome Web Store release process |
+| [Firefox release record](docs/FIREFOX_RELEASE.md) | Firefox validation and Mozilla submission status |
+| [Metrics guide](docs/METRICS.md) | Responsible measurement and public wording |
 
-The automated tests use representative Canvas response shapes. Before recommending OTNow for broad use, validate these cases with consenting Ontario Tech test users:
+## Status and attribution
 
-- SSO sign-in and sign-out
-- a course nickname and a long course name
-- assignment, quiz, discussion, calendar event, and planner note
-- submitted, graded, missing, excused, and manually completed states
-- due-date extension and shortened deadline
-- more than 100 planner items (pagination)
-- Chrome closed during a reminder time
-- network offline and Canvas unavailable
-- screen reader and keyboard-only navigation
+GitHub provides the transparent manual OTNow 1.6.1 release. The Chrome Web Store continues to serve 1.5.0 until the public Canvas-item milestone reaches 1,000 or Mozilla approves the corrected Firefox package. Firefox should not be described as available until its signed listing is live and passes a final installation test.
 
-## Sources and design references
+OTNow is not affiliated with or endorsed by Ontario Tech University or Instructure. The product direction was inspired in part by [WATnow](https://github.com/EricJujianZou/watnow), an MIT-licensed deadline-panel project for Brightspace schools.
 
-- [Ontario Tech Canvas service page](https://itsc.ontariotechu.ca/services/canvas.php)
-- [Ontario Tech official colour standards](https://brand.ontariotechu.ca/guidelines/brand-standards/colours-design-graphics-and-fonts/colours.php)
-- [Canvas Planner API](https://developerdocs.instructure.com/services/canvas/resources/planner)
-- [Canvas Courses API](https://developerdocs.instructure.com/services/canvas/resources/courses)
-- [Chrome Side Panel API](https://developer.chrome.com/docs/extensions/reference/api/sidePanel)
-- [Firefox sidebar extensions](https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/user_interface/Sidebars)
-- [WATnow](https://github.com/EricJujianZou/watnow), the MIT-licensed Waterloo deadline-panel project that inspired the product direction
-
-## License
-
-MIT. See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Released under the [MIT License](LICENSE). Third-party notices are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

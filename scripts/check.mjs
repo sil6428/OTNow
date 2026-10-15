@@ -109,6 +109,8 @@ assert.match(panelSource, /Chrome Web Store/, "Insights must link back to the of
 const backgroundSource = await readFile(resolve(root, "src/background.js"), "utf8");
 assert.doesNotMatch(backgroundSource, /tabs\.create\(\{\s*url:\s*chrome\.runtime\.getURL\("options\/onboarding\.html"\)/, "Installation must not open the statistics choice before OTNow is used");
 assert.doesNotMatch(backgroundSource, /stats:onboarding-opened/, "Viewing the consent screen alone must not record a choice");
+assert.match(backgroundSource, /runtime\.getURL\("icons\/icon-128\.png"\)/, "Notifications must use a fully resolved extension icon URL");
+assert.match(backgroundSource, /Canvas data remains synced/, "Notification failures must not invalidate a successful Canvas refresh");
 
 const panelHtml = await readFile(resolve(root, "panel/panel.html"), "utf8");
 assert.match(panelHtml, /id="feedback-link"/, "Side panel must expose the feedback form");

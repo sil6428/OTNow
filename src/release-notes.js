@@ -1,19 +1,19 @@
-// Bump this ID whenever a meaningful local preview changes. Before a Store
-// release, consolidate the preview notes and use the final version as the ID.
+// Use the shipped version as the final ID. Bump it for every release so the
+// announcement appears once per upgrade without appearing on a fresh install.
 // Keep the voice thankful and personal, but vary the opening and milestone
 // wording for each patch instead of turning this into a repeated template.
 export const CURRENT_RELEASE_NOTE = Object.freeze({
-  id: "1.6.0-local-20261014-09",
-  version: "1.6.0",
-  date: "October 14, 2026",
-  label: "Local preview",
+  id: "1.6.1",
+  version: "1.6.1",
+  date: "October 15, 2026",
+  label: "What's new",
   title: "Thanks for supporting OTNow",
   community: Object.freeze({
     launchedAt: "2026-10-04",
-    measuredAt: "2026-10-14",
-    measuredAtLabel: "October 14, 2026",
-    reportingInstallations: 12,
-    totalItems: 809,
+    measuredAt: "2026-10-15",
+    measuredAtLabel: "October 15, 2026",
+    reportingInstallations: 13,
+    totalItems: 903,
   }),
   summary: "This update makes deadlines easier to find, stale Canvas sessions easier to fix, and support reports more useful without including coursework.",
   items: Object.freeze([
@@ -44,6 +44,10 @@ export const CURRENT_RELEASE_NOTE = Object.freeze({
     Object.freeze({
       title: "Better sync recovery",
       detail: "Stale saved data now explains what happened, shows the exact last sync on hover, and offers Canvas and retry actions.",
+    }),
+    Object.freeze({
+      title: "Notifications no longer block sync",
+      detail: "A browser notification or icon error can no longer turn a successful Canvas refresh into a stale-data warning.",
     }),
     Object.freeze({
       title: "Privacy-safe troubleshooting",

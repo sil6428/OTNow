@@ -106,7 +106,7 @@ try {
     throw new Error("Declining optional statistics did not preserve the privacy-first defaults.");
   }
   const releasePrompt = await page.locator(".release-note-prompt").innerText();
-  if (!releasePrompt.includes("Thanks for supporting OTNow") || !releasePrompt.includes("781 Canvas items") || !releasePrompt.includes("See changes")) {
+  if (!releasePrompt.includes("Thanks for supporting OTNow") || !releasePrompt.includes("903 Canvas items") || !releasePrompt.includes("See changes")) {
     throw new Error("The one-time release announcement is missing or unclear.");
   }
   const releasePromptLayout = await page.locator(".release-note-prompt").evaluate((prompt) => ({

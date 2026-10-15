@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.6.0 — Local development candidate (2026-10-14)
+## 1.6.1 — 2026-10-15
 
 - Recognizes Canvas-declared announcement planner items without guessing from titles, and keeps ambiguous items under **Course item**.
 - Adds course-aware **Mark announcements read** with a six-second floating Undo. Read announcements leave Deadlines, appear in Completed, and can be marked unread without changing Canvas.
@@ -8,15 +8,16 @@
 - Makes Deadline organization collapsible, remembers the choice locally, and defaults new installations to date grouping.
 - Makes the established feedback form available from the panel footer and Insights, with security reports directed to GitHub's private vulnerability route.
 - Replaces the mandatory first-open statistics screen with a compact, non-blocking notification that links to the full opt-in disclosure.
-- Adds a one-time plain-language release announcement and a themed **What’s new** page. Local previews use a revision ID so each meaningful build can be tested once before release notes are consolidated.
+- Adds a one-time plain-language release announcement and a themed **What’s new** page.
 - Removes refresh and days-used vanity cards from personal Insights without deleting their saved counters.
 - Adds local search inside the collapsible **Organize** area in Deadlines and Completed, plus a one-click reset when a search or filter produces no results.
 - Adds a stale-sync recovery notice with an exact last-successful-sync tooltip, **Open Canvas**, and **Try again** actions while preserving the offline cache.
 - Expands Insights with a privacy-safe troubleshooting report that copies technical state and anonymous counts without names, coursework, dates, URLs, Canvas IDs, extension identifiers, passwords, sessions, authentication tokens, or a full browser user-agent string.
 - Reorders Insights into local activity, optional sharing, help and feedback, then a compact unboxed About and Settings link row.
 - Adds themed `/support` and `/uninstall` routes to the statistics Worker. Chrome uninstall registration remains deferred until the route is deployed and verified.
-- Keeps the Ko-fi link hidden until the canonical URL is confirmed and adds no new permissions.
-- Adds a Firefox 142+ package from the same source, using Firefox's native sidebar, Mozilla-managed updates, and built-in optional data-sharing consent without broadening Canvas access.
+- Enables the restrained Ko-fi support link now that `https://ko-fi.com/sil6428` is confirmed, without adding permissions or placing it ahead of core controls.
+- Adds a Firefox 142+ package from the same source, using Firefox's native sidebar, Mozilla-managed updates, and built-in optional data-sharing consent without broadening Canvas access. The corrected 1.6.1 package supersedes the initial 1.6.0 submission from October 14, 2026.
+- Resolves notification icons through the browser extension URL and isolates notification failures from Canvas refreshes, preventing a failed reminder image from reverting freshly synced deadlines to a stale warning.
 
 ## 2026-10-04
 

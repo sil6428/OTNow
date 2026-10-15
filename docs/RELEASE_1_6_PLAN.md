@@ -1,6 +1,6 @@
 # OTNow 1.6 release plan
 
-Status: local 1.6.0 Chrome and Firefox development candidates implemented through October 14, 2026. They have not been pushed, deployed, submitted, or registered as the uninstall destination.
+Status: 1.6.1 final release candidate implemented through October 15, 2026. The landing, statistics, privacy, support, and uninstall routes are deployed. An earlier Firefox 1.6.0 package was submitted on October 14 and is superseded by 1.6.1 because the notification-sync fix changed packaged code. GitHub publication follows the final matrix below; Chrome Store submission remains gated.
 
 Target: November 2026, with school work taking priority. Reading week can be used for the evidence, design, and implementation work below, but it does not remove the release freeze or verification gates. If representative Canvas data is unavailable or the announcement classification is unreliable, ship the completed-items, onboarding, feedback, and support improvements without announcement classification rather than guessing.
 
@@ -127,7 +127,7 @@ The existing Cloudflare Worker root also becomes OTNow's public landing page and
 
 ## Launch milestone
 
-- Prepare both release candidates now, but publish the 1.6 launch announcement only after the public opt-in dashboard reports at least **1,000 exact Canvas items organized**.
+- Prepare and publish the transparent GitHub 1.6 release after the final validation matrix. Hold the Chrome Store submission and broad launch announcement until either the public opt-in dashboard reports at least **1,000 exact Canvas items organized** or Mozilla approves the corrected Firefox package.
 - Read the exact live API value immediately before writing the announcement. Do not round 999 up or treat opt-in totals as every user.
 - If Mozilla review is still pending at the milestone, release Chrome 1.6 on its verified schedule and describe Firefox as submitted or coming only when that status is true. Publish the cross-browser promotion after the Firefox listing is actually installable.
 
@@ -212,7 +212,7 @@ announcementRead = {
 - Canvas's official Assignment API documents `discussion_topic` as a submission type. The implementation also accepts a structured `discussion_topic_id` or an Ontario Tech Canvas `/discussion_topics/` link, while ordinary assignments remain assignments and title or description text is never used as evidence.
 - The existing model continues to accept only dated planner entries. The live Ontario Tech examples were present in the dated To Do feed; undated announcements remain outside OTNow's current planner scope.
 - The local key reuses Canvas's documented `plannable_type` plus `plannable_id`, producing stable IDs such as `announcement:<id>` without storing announcement text in the read-state record.
-- Canonical Ko-fi URL.
+- Canonical Ko-fi URL confirmed as `https://ko-fi.com/sil6428`; the restrained support link can now ship.
 - Deployment and verification of the new `/support` or `/uninstall` route before registering it with Chrome.
 - A direct Brave Split View test confirming which tab receives temporary `activeTab` access when OTNow is opened from the toolbar.
 
@@ -322,8 +322,8 @@ announcementRead = {
 - Update privacy, store, support, README, changelog, and version references.
 - Build and inspect the exact store ZIP before submission.
 - Build and inspect the exact Firefox ZIP, validate it with Mozilla tooling, and submit it to AMO without inventing a listing URL.
-- Confirm the live public counter has crossed 1,000 before finalizing milestone copy; preserve the exact dated value in the release note.
-- Submit 1.6.0, monitor real feedback, and use 1.6.1 only for verified fixes.
+- Preserve an exact dated dashboard snapshot in the release note; the October 15 candidate records 13 reporting installations and 903 Canvas items.
+- Publish 1.6.1 to GitHub after the final matrix. Submit Chrome only after the 1,000-item milestone or corrected Firefox approval, then monitor real feedback and reserve later patch versions for verified fixes.
 
 ## Release acceptance criteria
 
@@ -333,7 +333,7 @@ announcementRead = {
 4. No assignment, quiz, discussion, event, or note is hidden by the new action.
 5. No new permission is requested.
 6. The uninstall/support route is live and neutral.
-7. Ko-fi remains hidden if the canonical URL is still unknown.
+7. Ko-fi uses only the confirmed `https://ko-fi.com/sil6428` URL and remains visually secondary to product, feedback, and privacy controls.
 8. All automated, accessibility, packaging, and 1.5.0 upgrade checks pass.
 9. Completed items are separated from active deadlines and manual check-offs can be restored without changing Canvas-reported status.
 10. Feedback is reachable from the panel and Insights without statistics consent.
@@ -348,14 +348,14 @@ announcementRead = {
 19. Technical feedback asks for the copied diagnostic and requires it only after 1.6 is publicly available; feature suggestions and general feedback bypass the technical section.
 20. Chrome and Firefox use the same feature code, while each package uses its native sidebar/background manifest and no unnecessary cross-browser permission.
 21. Firefox installation, opt-in, opt-out, sidebar, sync, notification, and deletion flows pass in a clean Firefox 142+ profile and Mozilla's validator reports no errors or warnings.
-22. Public launch copy is held until the exact opt-in dashboard total is at least 1,000 and labels the number accurately as Canvas items organized by reporting installations.
+22. Chrome Store submission and broad launch copy are held until the exact opt-in dashboard total is at least 1,000 or Mozilla approves the corrected Firefox package. Every published statistic remains dated and labels the number accurately as Canvas items organized by reporting installations.
 
-## Open blockers after local implementation
+## Remaining external release gates
 
-- Canonical Ko-fi URL.
-- Live deployment and verification of the themed uninstall/support route.
-- Brave Split View behaviour for temporary active-page access; this blocks only automatic page-theme matching, not the rest of 1.6.
+- Corrected Mozilla Add-ons submission and publication or manual-review outcome; version 1.6.1 supersedes the October 14 version 1.6.0 upload.
+- Chrome uninstall URL registration in the store dashboard; the themed destination is live and verified.
+- Brave Split View behaviour for temporary active-page access remains deferred and does not block 1.6.
 - Continued availability of the public Chrome Web Store markup used by the isolated daily refresh; parser failure must retain the last known good value and cannot block the dashboard.
-- A real Firefox 142+ browser pass and Mozilla Add-ons review. Review timing may move the Firefox public listing after Chrome 1.6 without creating a separate feature fork.
-- The public aggregate counter reaching 1,000 exact Canvas items; this blocks milestone promotion, not local validation work.
+- A final signed Firefox 142+ installation pass and Mozilla Add-ons review for 1.6.1.
+- Either the public aggregate counter reaching 1,000 exact Canvas items or corrected Firefox approval; this blocks Chrome Store submission and broad promotion, not GitHub publication.
 
