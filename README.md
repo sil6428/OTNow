@@ -4,6 +4,8 @@ OTNow is an unofficial Chrome extension for Ontario Tech students who use Canvas
 
 The project name is **OTNow**.
 
+[![Support OTNow on Ko-fi](https://img.shields.io/badge/Ko--fi-Support_OTNow-ff5e5b?logo=kofi&logoColor=white)](https://ko-fi.com/sil6428)
+
 ![OTNow beside a sanitized Ontario Tech Canvas dashboard](docs/media/otnow-real-deadlines-1280x800.png)
 
 ## Install OTNow
@@ -67,8 +69,11 @@ Read the [themed public privacy policy](https://otnow-stats.sil6428-archtech.wor
 
 - [Report a bug or suggest an improvement](https://docs.google.com/forms/d/e/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw/viewform)
 - [Report a vulnerability privately](https://github.com/sil6428/OTNow/security/advisories/new)
+- [Support OTNow on Ko-fi](https://ko-fi.com/sil6428)
 
 The feedback form accepts an optional name and sends responses privately to the OTNow maintainer. Remove student numbers, grades, private course content, session details, and other personal information before submitting. Security vulnerabilities should not be submitted through the general feedback form; follow [SECURITY.md](SECURITY.md) instead.
+
+Donations are optional, do not unlock features, and do not change how OTNow works.
 
 If Canvas was already open before installing OTNow, reload that Canvas tab once. Future versions can be installed without removing OTNow; follow [UPDATE_GUIDE.md](UPDATE_GUIDE.md) so local settings remain attached to the same unpacked extension folder.
 
