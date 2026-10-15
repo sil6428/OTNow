@@ -86,4 +86,17 @@ export function releasePromptMessage(note = CURRENT_RELEASE_NOTE) {
   return `Only ${days} days in: ${exactNumber(milestone.reportingInstallations)} installs sharing anonymous stats and ${exactNumber(milestone.totalItems)} Canvas items organized. Thanks for using OTNow. Keep spreading the word, and see what changed.`;
 }
 
+export function shouldShowReleaseNote({
+  installedVersion = "",
+  note = CURRENT_RELEASE_NOTE,
+  releaseNoteSeen = "",
+  statsOnboardingSeen = false,
+} = {}) {
+  return Boolean(
+    statsOnboardingSeen
+    && installedVersion === note.version
+    && releaseNoteSeen !== note.id
+  );
+}
+
 export const FULL_CHANGELOG_URL = "https://github.com/sil6428/OTNow/blob/main/CHANGELOG.md";

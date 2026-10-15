@@ -40,10 +40,23 @@ import {
   recordSuccessfulSync,
 } from "../src/metrics.js";
 import { buildAnonymousReport } from "../src/global-stats.js";
+import { CURRENT_RELEASE_NOTE, shouldShowReleaseNote } from "../src/release-notes.js";
 
 const courses = {
   "42": { id: "42", code: "INFR 4611U", name: "Trust Systems", color: "#2563eb" },
 };
+
+test("shows a release note only after the running extension reaches that version", () => {
+  const base = {
+    note: CURRENT_RELEASE_NOTE,
+    releaseNoteSeen: "1.6.0",
+    statsOnboardingSeen: true,
+  };
+  assert.equal(shouldShowReleaseNote({ ...base, installedVersion: "1.6.0" }), false);
+  assert.equal(shouldShowReleaseNote({ ...base, installedVersion: CURRENT_RELEASE_NOTE.version }), true);
+  assert.equal(shouldShowReleaseNote({ ...base, installedVersion: CURRENT_RELEASE_NOTE.version, releaseNoteSeen: CURRENT_RELEASE_NOTE.id }), false);
+  assert.equal(shouldShowReleaseNote({ ...base, installedVersion: CURRENT_RELEASE_NOTE.version, statsOnboardingSeen: false }), false);
+});
 
 test("normalizes common Canvas planner types", () => {
   assert.equal(normalizeType("announcement"), "announcement");

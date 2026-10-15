@@ -100,6 +100,7 @@ assert.match(panelSource, /Review anonymous statistics/, "Insights must keep ano
 assert.match(panelSource, /statistics-prompt/, "The first panel open must use a non-blocking statistics notification");
 assert.match(panelSource, /statsOnboardingSeen/, "The statistics notification must stop after the user chooses or dismisses it");
 assert.match(panelSource, /release-note-prompt/, "Version changes must use a one-time release announcement");
+assert.match(panelSource, /installedVersion:\s*browserApi\.runtime\.getManifest\(\)\.version/, "Release announcements must wait until the running extension reaches that version");
 assert.match(panelSource, /renderSyncNotice/, "Stale cached data must expose a recovery notice");
 assert.match(panelSource, /Copy troubleshooting info/, "Insights must expose privacy-safe troubleshooting information");
 assert.match(panelSource, /Privacy check: This report contains no names/, "Troubleshooting information must state its privacy boundary");

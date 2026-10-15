@@ -22,7 +22,11 @@ import {
   plannerItemsForView,
   TYPE_GROUPS,
 } from "../src/view-model.js";
-import { CURRENT_RELEASE_NOTE, releasePromptMessage } from "../src/release-notes.js";
+import {
+  CURRENT_RELEASE_NOTE,
+  releasePromptMessage,
+  shouldShowReleaseNote,
+} from "../src/release-notes.js";
 
 const app = document.querySelector("#app");
 const refreshButton = document.querySelector("#refresh");
@@ -351,7 +355,11 @@ async function dismissReleaseNote() {
 }
 
 function renderReleaseNotePrompt(settings) {
-  if (!settings.statsOnboardingSeen || current.releaseNoteSeen === CURRENT_RELEASE_NOTE.id) return null;
+  if (!shouldShowReleaseNote({
+    installedVersion: browserApi.runtime.getManifest().version,
+    releaseNoteSeen: current.releaseNoteSeen,
+    statsOnboardingSeen: settings.statsOnboardingSeen,
+  })) return null;
   const prompt = element("section", "release-note-prompt");
   prompt.setAttribute("aria-label", `What changed in OTNow ${CURRENT_RELEASE_NOTE.version}`);
   const copy = element("div", "release-note-prompt-copy");
