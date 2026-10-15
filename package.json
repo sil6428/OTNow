@@ -10,6 +10,7 @@
     "smoke:extension": "node scripts/smoke-extension.mjs",
     "package:release": "powershell -ExecutionPolicy Bypass -File scripts/package-release.ps1",
     "package:store": "powershell -ExecutionPolicy Bypass -File scripts/package-store.ps1",
-    "package:firefox": "powershell -ExecutionPolicy Bypass -File scripts/package-firefox.ps1"
+    "package:firefox": "powershell -ExecutionPolicy Bypass -File scripts/package-firefox.ps1",
+    "package:firefox-source": "powershell -ExecutionPolicy Bypass -File scripts/package-firefox-source.ps1"
   }
 }

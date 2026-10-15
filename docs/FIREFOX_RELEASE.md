@@ -21,6 +21,7 @@ npm test
 npm run check
 npm run check:firefox
 npm run package:firefox
+npm run package:firefox-source
 ```
 
 Validate the extracted `dist/otnow-firefox-1.6.1.zip` with Mozilla's current `web-ext lint --warnings-as-errors`. The final result must contain zero errors, notices, and warnings.
@@ -37,7 +38,7 @@ For a temporary browser test:
 
 ## AMO submission
 
-- Submit the exact corrected Firefox ZIP produced by `npm run package:firefox` and a reproducible source archive with Windows PowerShell build instructions. The earlier 1.6.0 upload must not be promoted as the final package.
+- Submit the exact corrected Firefox ZIP produced by `npm run package:firefox` and `dist/otnow-firefox-source-1.6.1.zip` produced by `npm run package:firefox-source`. The source archive contains Windows PowerShell build instructions and the readable files needed to reproduce the add-on. The earlier 1.6.0 upload must not be promoted as the final package.
 - Provided the public privacy-policy URL and described the Canvas course/planner reads, local storage, optional numeric report, Cloudflare Worker, and deletion flow exactly as implemented.
 - Stated that Canvas names, codes, titles, links, dates, grades, credentials, tokens, and browsing history are never sent to OTNow's statistics service.
 - Included reviewer instructions explaining the Ontario Tech authenticated Canvas boundary without providing personal university credentials.

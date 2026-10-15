@@ -144,6 +144,7 @@ npm run smoke:extension
 ```powershell
 npm run package:store
 npm run package:firefox
+npm run package:firefox-source
 npm run package:release
 ```
 

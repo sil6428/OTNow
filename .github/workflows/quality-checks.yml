@@ -50,6 +50,9 @@ jobs:
       - name: Build Firefox package
         run: npm run package:firefox
 
+      - name: Build Firefox reviewer source
+        run: npm run package:firefox-source
+
       - name: Upload validated packages
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

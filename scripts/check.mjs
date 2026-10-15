@@ -48,6 +48,8 @@ const requiredFiles = [
   "options/changelog.js",
   "stats-worker/src/marketing-assets.js",
   "stats-worker/src/support-assets.js",
+  "scripts/package-firefox-source.ps1",
+  "FIREFOX_SOURCE_README.md",
 ];
 await Promise.all(requiredFiles.map((file) => access(resolve(root, file), constants.R_OK)));
 
