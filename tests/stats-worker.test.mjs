@@ -230,6 +230,7 @@ test("serves the OTNow product landing page from the public root", async () => {
   assert.match(html, /forms\/d\/e\/1FAIpQLSfvZY5paIPzJv8adIeHdkpgwzXldEqnMhM4Zbp2_c8kg7dqXw\/viewform/);
   assert.match(html, /src="\/landing\.js"/);
   assert.match(html, /prefers-reduced-motion:reduce/);
+  assert.doesNotMatch(html, /--yellow|#ffc83d|#ffd864|#ffc648|#fff6df/i);
   assert.doesNotMatch(html, /Firefox available now/i);
 });
 
@@ -243,6 +244,7 @@ test("serves the dependency-free landing interactions", async () => {
   assert.match(script, /fetch\('\/api\/stats'/);
   assert.match(script, /pointermove/);
   assert.match(script, /applyTheme\(storedTheme \|\| 'light'\)/);
+  assert.doesNotMatch(script, /#ffc83d|#ffd864|#ffc648|#fff6df/i);
 });
 
 test("serves the OTNow social preview artwork", async () => {
@@ -252,6 +254,7 @@ test("serves the OTNow social preview artwork", async () => {
   assert.match(response.headers.get("content-type"), /image\/svg\+xml/);
   assert.match(svg, /One clean sidebar/);
   assert.match(svg, /Firefox 1\.6 in testing/);
+  assert.doesNotMatch(svg, /#ffc83d|#ffd864|#ffc648|#fff6df/i);
 });
 
 test("serves the sanitized product preview through the asset binding", async () => {
